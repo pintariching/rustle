@@ -38,6 +38,7 @@ static dissalowed_contents: HashMap<&str, Vec<&str>> = HashMap::from([
 	("th", vec!["td", "th", "tr"]),
 ]);
 
+// TODO: fix this
 pub fn decode_character_references(html: &str) -> String {
     ENTITY_PATTERN
         .replace(html, |captures: &Captures| {
