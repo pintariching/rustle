@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 // The `foreign` namespace covers all DOM implementations that aren"t HTML5.
 // It opts out of HTML5-specific a11y checks and case-insensitive attribute names.
 pub const FOREIGN: &str = "https://svelte.dev/docs#template-syntax-svelte-options";
