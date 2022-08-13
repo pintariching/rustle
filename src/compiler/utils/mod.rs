@@ -8,4 +8,4 @@ mod full_char_code_at;
 
 //re-exports
 pub use get_code_frame::get_code_frame;
-pub use full_char_code_at::full_char_code_at;
+pub use full_char_code_at::word;
