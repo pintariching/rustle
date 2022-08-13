@@ -5,7 +5,7 @@ fn tabs_to_spaces(str: &str) -> String {
     let re = Regex::new(r"^\t+").unwrap();
     re.replace_all(str, |caps: &Captures| {
         let matched = &caps[0];
-        matched.as_str().split("\t").collect::<Vec<&str>>().join("  ")
+        matched.split("\t").collect::<Vec<&str>>().join("  ")
     }).to_string()
 }
 
