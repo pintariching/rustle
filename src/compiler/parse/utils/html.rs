@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
@@ -16,7 +16,7 @@ lazy_static! {
     .unwrap();
 }
 
-static windows_1252: [i32; 32] = [
+static windows_1252: [u32; 32] = [
     8364, 129, 8218, 402, 8222, 8230, 8224, 8225, 710, 8240, 352, 8249, 338, 141, 381, 143, 144,
     8216, 8217, 8220, 8221, 8226, 8211, 8212, 732, 8482, 353, 8250, 339, 157, 382, 376,
 ];
@@ -42,11 +42,23 @@ static dissalowed_contents: HashMap<&str, Vec<&str>> = HashMap::from([
 pub fn decode_character_references(html: &str) -> String {
     ENTITY_PATTERN
         .replace(html, |captures: &Captures| {
-            let code: i32;
+            let code: u32;
+            
 
-            if &captures[0] != "#" {
-                code = Entity::from_code(code)
+            // The 0th capture always corresponds to the entire match. Each subsequent index corresponds to the next capture group in the regex
+            if *&captures[1].chars().nth(0).unwrap() != '#' {
+                code = Entity::from_str(&captures[1]).unwrap() as u32;
+            } else if *&captures[1].chars().nth(1).unwrap() == 'x' {
+                code = u32::from_str_radix(&captures[1][2..], 16).unwrap();
+            } else {
+                code = u32::from_str_radix(&captures[1][1..], 10).unwrap();
             }
+
+            if code == 0 {
+                return captures[0].to_string();
+            }
+            let validated = validate_code(Entity::from_code(code)).unwrap() as u32;
+            return char::from_u32(validated).unwrap().to_string();
         })
         .into_owned()
 }
@@ -72,7 +84,7 @@ pub fn validate_code(entity: Entity) -> Option<Entity> {
     // code points 128-159 are dealt with leniently by browsers, but they're incorrect. We need
     // to correct the mistake or we'll end up with missing € signs and so on
     if code <= 159 {
-        return Some(Entity::from_code(windows_1252[(code - 128) as usize]));
+        return Some(Entity::from_code(windows_1252[(code - 128) as usize] ));
     }
 
     // basic multilingual plane

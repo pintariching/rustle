@@ -1,7 +1,8 @@
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
+use strum_macros::EnumString;
 
-#[derive(EnumIter, PartialEq)]
+#[derive(EnumIter, PartialEq, EnumString)]
 pub enum Entity {
     CounterClockwiseContourIntegral,
     ClockwiseContourIntegral,
@@ -2037,7 +2038,7 @@ pub enum Entity {
 }
 
 impl Entity {
-    pub fn to_code(&self) -> i32 {
+    pub fn to_code(&self) -> u32 {
         match self {
             Entity::CounterClockwiseContourIntegral => 8755,
             Entity::ClockwiseContourIntegral => 8754,
@@ -4073,7 +4074,7 @@ impl Entity {
         }
     }
 
-    pub fn from_code(code: i32) -> Entity {
+    pub fn from_code(code: u32) -> Entity {
         match code {
             8755 => Entity::CounterClockwiseContourIntegral,
             8754 => Entity::ClockwiseContourIntegral,
