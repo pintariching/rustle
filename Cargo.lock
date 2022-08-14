@@ -526,6 +526,7 @@ name = "rustle"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
+ "locate_character",
  "regex",
  "strum",
  "strum_macros",
