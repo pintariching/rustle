@@ -14,5 +14,6 @@ regex = "1.6.0"
 strum = "0.24.1"
 strum_macros = "0.24.3"
 swc_ecma_parser = "0.117.0"
+locate_character = { path = "locate_character", version = "0.1.0" }
 swc_estree_ast = "0.17.2"
 chumsky = "0.8.0"

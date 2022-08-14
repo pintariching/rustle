@@ -585,6 +585,7 @@ version = "0.1.0"
 dependencies = [
  "chumsky",
  "lazy_static",
+ "locate_character",
  "regex",
  "strum",
  "strum_macros",
