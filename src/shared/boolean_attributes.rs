@@ -1,6 +1,4 @@
-use std::collections::HashSet;
-
-pub const boolean_attributes: HashSet<&str> = HashSet::from([
+pub static boolean_attributes: [&str; 24] = [
     "allowfullscreen",
     "allowpaymentrequest",
     "async",
@@ -25,4 +23,4 @@ pub const boolean_attributes: HashSet<&str> = HashSet::from([
     "required",
     "reversed",
     "selected",
-]);
+];
