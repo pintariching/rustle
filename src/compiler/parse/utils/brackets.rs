@@ -1,31 +1,29 @@
-#[derive(PartialEq)]
-#[repr(u8)]
-pub enum Bracket {
-    SquareBracketOpen = b'[',
-    SquareBracketClose = b']',
-    CurlyBracketOpen = b'{',
-    CurlyBracketClose = b'}',
+const SQUARE_BRACKET_OPEN: char = '[';
+const SQUARE_BRACKET_CLOSE: char = ']';
+const CURLY_BRACKET_OPEN: char = '{';
+const CURLY_BRACKET_CLOSE: char = '}';
+
+pub fn is_bracket_open(code: char) -> bool {
+    code == SQUARE_BRACKET_OPEN || code == CURLY_BRACKET_OPEN
 }
 
-impl Bracket {
-    pub fn is_open(&self) -> bool {
-        self == &Bracket::SquareBracketOpen || self == &Bracket::CurlyBracketOpen
+pub fn is_bracket_close(code: char) -> bool {
+    code == SQUARE_BRACKET_CLOSE || code == CURLY_BRACKET_CLOSE
+}
+
+pub fn is_bracket_pair(open: char, close: char) -> bool {
+    (open == SQUARE_BRACKET_OPEN && close == SQUARE_BRACKET_CLOSE)
+        || (open == CURLY_BRACKET_OPEN && close == CURLY_BRACKET_CLOSE)
+}
+
+pub fn get_bracket_close(open: char) -> char {
+    if open == SQUARE_BRACKET_OPEN {
+        return SQUARE_BRACKET_CLOSE;
     }
 
-    pub fn is_closed(&self) -> bool {
-        self == &Bracket::SquareBracketClose || self == &Bracket::CurlyBracketClose
+    if open == CURLY_BRACKET_OPEN {
+        return CURLY_BRACKET_CLOSE;
     }
 
-    pub fn is_pair(&self, close: &Bracket) -> bool {
-        (self == &Bracket::SquareBracketOpen && close == &Bracket::SquareBracketClose)
-            || (self == &Bracket::CurlyBracketOpen && close == &Bracket::CurlyBracketClose)
-    }
-
-    pub fn get_bracket_close(&self) -> Bracket {
-        match self {
-			Bracket::SquareBracketOpen => Bracket::SquareBracketClose,
-			Bracket::CurlyBracketOpen => Bracket::CurlyBracketClose,
-			_ => panic!("Bracket needs to be either Bracket::SquareBracketOpen or Bracket::CurlyBracketOpen")
-		}
-    }
+    unreachable!()
 }

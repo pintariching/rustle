@@ -11,28 +11,28 @@ enum ParserState {
     Void,
 }
 
-struct LastAutoClosedTag {
-    tag: String,
-    reason: String,
-    depth: i32,
+pub struct LastAutoClosedTag {
+    pub tag: String,
+    pub reason: String,
+    pub depth: i32,
 }
 
 pub struct Parser {
-    template: String,
-    filename: Option<String>,
-    custom_element: bool,
-    index: i32,
-    stack: Vec<TemplateNode>,
-    html: Fragment,
-    css: Vec<Style>,
-    js: Vec<Script>,
-    meta_tags: Vec<String>,
-    last_auto_closed_tag: Option<LastAutoClosedTag>,
+    pub template: String,
+    pub filename: Option<String>,
+    pub custom_element: bool,
+    pub index: i32,
+    pub stack: Vec<TemplateNode>,
+    pub html: Fragment,
+    pub css: Vec<Style>,
+    pub js: Vec<Script>,
+    pub meta_tags: Vec<String>,
+    pub last_auto_closed_tag: Option<LastAutoClosedTag>,
 }
 
 impl Parser {
     fn new(template: String, options: ParserOptions) -> Parser {
-        let parser = Parser {
+        let mut parser = Parser {
             template: TEMPLATE_REGEX.replace(&template, "").to_string(),
             filename: options.filename,
             custom_element: options.custom_element,
@@ -53,8 +53,21 @@ impl Parser {
             last_auto_closed_tag: None,
         };
 
+        // parser.stack.push(parser.html);
+
+        // let state: ParserState = fragment;
+
+        // while parser.index < parser.template.len() {
+        //     state = state(parser);
+        // }
+
         // TODO rewrite the constructor
 
         parser
+    }
+
+    // called "match" in the svelte parser
+    pub fn match_str(&self, str: &str) -> bool {
+        &self.template[self.index as usize..self.index as usize + str.len()] == str
     }
 }
