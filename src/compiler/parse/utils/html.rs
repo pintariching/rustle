@@ -14,6 +14,23 @@ lazy_static! {
         .as_str()
     )
     .unwrap();
+
+    static ref DISSALOWED_CONTENTS: HashMap<&'static str, Vec<&'static str>> = HashMap::from([
+        ("li", vec!["li"]),
+        ("dt", vec!["dt", "dd"]),
+        ("dd", vec!["dt", "dt"]),
+        ("p", "address article aside blockquote div dl fieldset footer form h1 h2 h3 h4 h5 h6 header hgroup hr main menu nav ol p pre section table ul".split(" ").collect::<Vec<&str>>()),
+        ("rt", vec!["rt", "rp"]),
+        ("rp", vec!["rt", "rp"]),
+        ("optgroup", vec!["optgroup"]),
+        ("option", vec!["option", "optgroup"]),
+        ("thead", vec!["tbody", "tfoot"]),
+        ("tbody", vec!["tbody", "tfoot"]),
+        ("tfoot", vec!["tbody"]),
+        ("tr", vec!["tr", "tbody"]),
+        ("td", vec!["td", "th", "tr"]),
+        ("th", vec!["td", "th", "tr"]),
+]);
 }
 
 static windows_1252: [i32; 32] = [
@@ -21,34 +38,19 @@ static windows_1252: [i32; 32] = [
     8216, 8217, 8220, 8221, 8226, 8211, 8212, 732, 8482, 353, 8250, 339, 157, 382, 376,
 ];
 
-static dissalowed_contents: HashMap<&str, Vec<&str>> = HashMap::from([
-    ("li", vec!["li"]),
-    ("dt", vec!["dt", "dd"]),
-    ("dd", vec!["dt", "dt"]),
-	("p", "address article aside blockquote div dl fieldset footer form h1 h2 h3 h4 h5 h6 header hgroup hr main menu nav ol p pre section table ul".split(" ").collect::<Vec<&str>>()),
-	("rt", vec!["rt", "rp"]),
-	("rp", vec!["rt", "rp"]),
-	("optgroup", vec!["optgroup"]),
-	("option", vec!["option", "optgroup"]),
-	("thead", vec!["tbody", "tfoot"]),
-	("tbody", vec!["tbody", "tfoot"]),
-	("tfoot", vec!["tbody"]),
-	("tr", vec!["tr", "tbody"]),
-	("td", vec!["td", "th", "tr"]),
-	("th", vec!["td", "th", "tr"]),
-]);
-
 // TODO: fix this
 pub fn decode_character_references(html: &str) -> String {
-    ENTITY_PATTERN
-        .replace(html, |captures: &Captures| {
-            let code: i32;
+    // ENTITY_PATTERN
+    //     .replace(html, |captures: &Captures| {
+    //         let code: i32;
 
-            if &captures[0] != "#" {
-                code = Entity::from_code(code)
-            }
-        })
-        .into_owned()
+    //         if &captures[0] != "#" {
+    //             code = Entity::from_code(code)
+    //         }
+    //     })
+    //     .into_owned()
+
+    todo!()
 }
 
 // some code points are verboten. If we were inserting HTML, the browser would replace the illegal
@@ -106,9 +108,9 @@ pub fn validate_code(entity: Entity) -> Option<Entity> {
 // can this be a child of the parent element, or does it implicitly
 // close it, like `<li>one<li>two`?
 pub fn closing_tag_ommited(current: &str, next: Option<&str>) -> bool {
-    if dissalowed_contents.contains_key(current) {
+    if DISSALOWED_CONTENTS.contains_key(current) {
         if let Some(next) = next {
-            if let Some(contents) = dissalowed_contents.get(current) {
+            if let Some(contents) = DISSALOWED_CONTENTS.get(current) {
                 if contents.contains(&next) {
                     return true;
                 }
