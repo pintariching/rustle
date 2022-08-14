@@ -2,16 +2,16 @@ use std::collections::HashMap;
 
 use swc_estree_ast::{AssignmentExpression, Program};
 
-struct BaseNode {
-    start: i32,
-    end: i32,
-    node_type: String,
-    children: Option<Vec<TemplateNode>>,
-    prop_name: Vec<String>,
+pub struct BaseNode {
+    pub start: i32,
+    pub end: i32,
+    pub node_type: String,
+    pub children: Option<Vec<TemplateNode>>,
+    pub prop_name: Vec<String>,
 }
 
 pub struct Fragment {
-    base_node: BaseNode,
+    pub base_node: BaseNode,
 }
 
 pub struct Text {
@@ -248,8 +248,8 @@ pub struct CompileOptions {
 }
 
 pub struct ParserOptions {
-    filename: Option<String>,
-    custom_element: Option<bool>,
+    pub filename: Option<String>,
+    pub custom_element: bool,
 }
 
 pub struct Visitor {
