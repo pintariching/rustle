@@ -30,7 +30,7 @@ pub fn get_code_frame(source: String, line: isize, column: isize) -> String {
             return format!("{line_num}: {}", tabs_to_spaces(*t.1));
         })
         .collect::<Vec<String>>()
-        .join(" ");
+        .join("\n");
 
     joined.to_owned()
 }
