@@ -21,7 +21,7 @@ pub struct Parser {
     pub template: String,
     pub filename: Option<String>,
     pub custom_element: bool,
-    pub index: i32,
+    pub index: usize,
     pub stack: Vec<TemplateNode>,
     pub html: Fragment,
     pub css: Vec<Style>,
