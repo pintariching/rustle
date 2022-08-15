@@ -102,7 +102,7 @@ mod tests {
             end: Location { line: 1, column: 1 },
             pos: 0,
             filename: "filename".to_string(),
-            frame: "1: source\n    ^".to_string(),
+            frame: "1: source\n   ^".to_string(),
             message: "error".to_string(),
         };
 
