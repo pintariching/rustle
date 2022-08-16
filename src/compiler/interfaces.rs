@@ -6,6 +6,7 @@ use swc_estree_ast::{AssignmentExpression, Program};
 
 use super::node::Node;
 
+#[derive(Clone)]
 pub struct BaseNode {
     pub start: usize,
     pub end: usize,
@@ -26,6 +27,7 @@ impl BaseNode {
     }
 }
 
+#[derive(Clone)]
 pub struct Fragment {
     pub base_node: BaseNode,
 }
@@ -38,6 +40,7 @@ impl Fragment {
     }
 }
 
+#[derive(Clone)]
 pub struct Text {
     pub base_node: BaseNode,
     pub data: String,
@@ -52,6 +55,7 @@ impl Text {
     }
 }
 
+#[derive(Clone)]
 pub struct MustacheTag {
     pub base_node: BaseNode,
     expression: Node,
@@ -73,6 +77,7 @@ impl MustacheTag {
     }
 }
 
+#[derive(Clone)]
 pub struct Comment {
     pub base_node: BaseNode,
     pub data: String,
@@ -89,6 +94,7 @@ impl Comment {
     }
 }
 
+#[derive(Clone)]
 pub struct ConstTag {
     pub base_node: BaseNode,
     pub expression: AssignmentExpression,
@@ -103,6 +109,7 @@ impl ConstTag {
     }
 }
 
+#[derive(Clone)]
 pub struct DebugTag {
     pub base_node: BaseNode,
     pub identifiers: Vec<Node>,
@@ -130,6 +137,7 @@ pub enum DirectiveType {
     Transition,
 }
 
+#[derive(Clone)]
 pub struct BaseDirective {
     pub base_node: BaseNode,
     pub name: String,
@@ -144,6 +152,7 @@ impl BaseDirective {
     }
 }
 
+#[derive(Clone)]
 pub struct BaseExpressionDirective {
     pub base_directive: BaseDirective,
     pub expression: Option<Node>,
@@ -180,12 +189,14 @@ pub enum ElementType {
     Body,
 }
 
+#[derive(Clone)]
 pub enum ElementAttributes {
     BaseDirective(BaseDirective),
     Attribute(Attribute),
     SpreadAttribute(SpreadAttribute),
 }
 
+#[derive(Clone)]
 pub struct Element {
     pub base_node: BaseNode,
     pub name: String,
@@ -206,6 +217,7 @@ impl Element {
     }
 }
 
+#[derive(Clone)]
 pub struct Attribute {
     pub base_node: BaseNode,
     pub name: String,
@@ -222,6 +234,7 @@ impl Attribute {
     }
 }
 
+#[derive(Clone)]
 pub struct SpreadAttribute {
     pub base_node: BaseNode,
     pub expression: Node,
@@ -236,6 +249,7 @@ impl SpreadAttribute {
     }
 }
 
+#[derive(Clone)]
 pub struct Transition {
     pub base_expression_directive: BaseExpressionDirective,
     pub intro: bool,
@@ -257,12 +271,14 @@ impl Transition {
     }
 }
 
+#[derive(Clone)]
 pub enum Directive {
     BaseDirective(BaseDirective),
     BaseExpressionDirective(BaseExpressionDirective),
     Transition(Transition),
 }
 
+#[derive(Clone)]
 pub enum TemplateNode {
     Text(Text),
     ConstTag(ConstTag),
@@ -277,17 +293,20 @@ pub enum TemplateNode {
     Comment(Comment),
 }
 
-pub struct Parser {
-    pub template: String,
-    pub filename: Option<String>,
-    pub index: i32,
-    pub stack: Vec<Node>,
-    pub html: Node,
-    pub css: Node,
-    pub js: Node,
-    pub meta_tags: Vec<String>,
-}
+// We don't have interfaces in Rust
+// So I guess we don't need this here?
+// pub struct Parser {
+//     pub template: String,
+//     pub filename: Option<String>,
+//     pub index: i32,
+//     pub stack: Vec<Node>,
+//     pub html: Node,
+//     pub css: Node,
+//     pub js: Node,
+//     pub meta_tags: Vec<String>,
+// }
 
+#[derive(Clone)]
 pub struct Script {
     pub base_node: BaseNode,
     pub context: String,
@@ -304,6 +323,7 @@ impl Script {
     }
 }
 
+#[derive(Clone)]
 pub struct Style {
     pub base_node: BaseNode,
     // pub attributes: Vec<String>, // TODO - from svelte
@@ -320,6 +340,7 @@ impl Style {
     }
 }
 
+#[derive(Clone)]
 pub struct StyleContent {
     pub start: i32,
     pub end: i32,
@@ -333,7 +354,7 @@ impl StyleContent {
 }
 
 pub struct Ast {
-    pub html: TemplateNode,
+    pub html: Fragment,
     pub css: Option<Style>,
     pub instance: Option<Script>,
     pub module: Option<Script>,
@@ -341,7 +362,7 @@ pub struct Ast {
 
 impl Ast {
     pub fn new(
-        html: TemplateNode,
+        html: Fragment,
         css: Option<Style>,
         instance: Option<Script>,
         module: Option<Script>,

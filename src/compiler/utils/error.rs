@@ -29,12 +29,12 @@ impl ToString for CompileError {
 
 #[derive(Copy, Clone)]
 pub struct NewErrorProps<'a> {
-    name: &'a str,
-    code: &'a str,
-    source: &'a str,
-    filename: &'a str,
-    start: usize,
-    end: Option<usize>,
+    pub name: &'a str,
+    pub code: &'a str,
+    pub source: &'a str,
+    pub filename: &'a str,
+    pub start: usize,
+    pub end: Option<usize>,
 }
 
 impl CompileError {

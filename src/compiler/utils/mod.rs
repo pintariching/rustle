@@ -9,6 +9,7 @@ mod patterns;
 mod push_vec;
 
 //re-exports
+pub use error::{CompileError, Location, NewErrorProps};
 pub use full_char_at::full_char_at;
 pub use full_char_code_at::full_char_code_at;
 pub use get_code_frame::get_code_frame;
