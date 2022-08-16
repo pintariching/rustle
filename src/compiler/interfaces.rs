@@ -507,3 +507,5 @@ impl CssResult {
         CssResult { code, map }
     }
 }
+
+pub enum Node {}
