@@ -1,46 +1,119 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Debug};
 
+use magic_string::SourceMap;
+use strum_macros::Display;
 use swc_estree_ast::{AssignmentExpression, Program};
 
 pub struct BaseNode {
-    pub start: i32,
-    pub end: i32,
+    pub start: usize,
+    pub end: usize,
     pub node_type: String,
     pub children: Option<Vec<TemplateNode>>,
     pub prop_name: Vec<String>,
+}
+
+impl BaseNode {
+    fn new(node_type: String) -> BaseNode {
+        BaseNode {
+            start: 0,
+            end: 0,
+            node_type,
+            children: Some(Vec::new()),
+            prop_name: Vec::new(),
+        }
+    }
 }
 
 pub struct Fragment {
     pub base_node: BaseNode,
 }
 
+impl Fragment {
+    pub fn new() -> Fragment {
+        Fragment {
+            base_node: BaseNode::new("Fragment".to_string()),
+        }
+    }
+}
+
 pub struct Text {
-    base_node: BaseNode,
-    data: String,
+    pub base_node: BaseNode,
+    pub data: String,
+}
+
+impl Text {
+    pub fn new(data: String) -> Text {
+        Text {
+            base_node: BaseNode::new("Text".to_string()),
+            data,
+        }
+    }
 }
 
 pub struct MustacheTag {
-    base_node: BaseNode,
+    pub base_node: BaseNode,
     // expression: Node
 }
 
+impl MustacheTag {
+    pub fn new(raw_mustache_tag: bool) -> MustacheTag {
+        if raw_mustache_tag {
+            MustacheTag {
+                base_node: BaseNode::new("RawMustacheTag".to_string()),
+            }
+        } else {
+            MustacheTag {
+                base_node: BaseNode::new("MustacheTag".to_string()),
+            }
+        }
+    }
+}
+
 pub struct Comment {
-    base_node: BaseNode,
-    data: String,
-    ignores: Vec<String>,
+    pub base_node: BaseNode,
+    pub data: String,
+    pub ignores: Vec<String>,
+}
+
+impl Comment {
+    pub fn new(data: String, ignores: Vec<String>) -> Comment {
+        Comment {
+            base_node: BaseNode::new("Comment".to_string()),
+            data,
+            ignores,
+        }
+    }
 }
 
 pub struct ConstTag {
-    base_node: BaseNode,
-    expression: AssignmentExpression,
+    pub base_node: BaseNode,
+    pub expression: AssignmentExpression,
 }
 
-struct DebugTag {
-    base_node: BaseNode,
-    // identifiers: Vec<Node>
+impl ConstTag {
+    pub fn new(expression: AssignmentExpression) -> ConstTag {
+        ConstTag {
+            base_node: BaseNode::new("ConstTag".to_string()),
+            expression,
+        }
+    }
 }
 
-pub enum DirectiveTypes {
+pub struct DebugTag {
+    pub base_node: BaseNode,
+    // pub identifiers: Vec<Node>
+}
+
+impl DebugTag {
+    pub fn new() -> DebugTag {
+        DebugTag {
+            base_node: BaseNode::new("DebugTag".to_string()),
+        }
+    }
+}
+
+#[derive(Display)]
+pub enum DirectiveType {
     Action,
     Animation,
     Binding,
@@ -52,18 +125,42 @@ pub enum DirectiveTypes {
     Transition,
 }
 
-struct BaseDirective {
-    base_node: BaseNode,
-    name: String,
+pub struct BaseDirective {
+    pub base_node: BaseNode,
+    pub name: String,
 }
 
-struct BaseExpressionDirective {
-    base_directive: BaseDirective,
-    // expression: Optionn<Node>
-    name: String,
-    modifiers: Vec<String>,
+impl BaseDirective {
+    pub fn new(directive_type: DirectiveType, name: String) -> BaseDirective {
+        BaseDirective {
+            base_node: BaseNode::new(directive_type.to_string()),
+            name,
+        }
+    }
 }
 
+pub struct BaseExpressionDirective {
+    pub base_directive: BaseDirective,
+    // pub expression: Option<Node>
+    pub name: String,
+    pub modifiers: Vec<String>,
+}
+
+impl BaseExpressionDirective {
+    pub fn new(
+        directive_type: DirectiveType,
+        name: String,
+        modifiers: Vec<String>,
+    ) -> BaseExpressionDirective {
+        BaseExpressionDirective {
+            base_directive: BaseDirective::new(directive_type, name.clone()),
+            name,
+            modifiers,
+        }
+    }
+}
+
+#[derive(Display)]
 pub enum ElementType {
     InlineComponent,
     SlotTemplate,
@@ -83,26 +180,72 @@ pub enum ElementAttributes {
 }
 
 pub struct Element {
-    base_node: BaseNode,
-    element_type: ElementType,
-    attributes: Vec<ElementAttributes>,
+    pub base_node: BaseNode,
+    pub name: String,
+    pub attributes: Vec<ElementAttributes>,
+}
+
+impl Element {
+    pub fn new(
+        element_type: ElementType,
+        attributes: Vec<ElementAttributes>,
+        name: String,
+    ) -> Element {
+        Element {
+            base_node: BaseNode::new(element_type.to_string()),
+            name,
+            attributes,
+        }
+    }
 }
 
 pub struct Attribute {
-    base_node: BaseNode,
-    name: String,
-    value: Vec<String>,
+    pub base_node: BaseNode,
+    pub name: String,
+    pub value: Vec<String>,
+}
+
+impl Attribute {
+    pub fn new(name: String, value: Vec<String>) -> Attribute {
+        Attribute {
+            base_node: BaseNode::new("Attribute".to_string()),
+            name,
+            value,
+        }
+    }
 }
 
 pub struct SpreadAttribute {
-    base_node: BaseNode,
-    // expression: Node
+    pub base_node: BaseNode,
+    // pub expression: Node
+}
+
+impl SpreadAttribute {
+    pub fn new() -> SpreadAttribute {
+        SpreadAttribute {
+            base_node: BaseNode::new("Spread".to_string()),
+        }
+    }
 }
 
 pub struct Transition {
-    base_expression_directive: BaseExpressionDirective,
-    intro: bool,
-    outro: bool,
+    pub base_expression_directive: BaseExpressionDirective,
+    pub intro: bool,
+    pub outro: bool,
+}
+
+impl Transition {
+    pub fn new(name: String, modifiers: Vec<String>, intro: bool, outro: bool) -> Transition {
+        Transition {
+            base_expression_directive: BaseExpressionDirective::new(
+                DirectiveType::Transition,
+                name,
+                modifiers,
+            ),
+            intro,
+            outro,
+        }
+    }
 }
 
 pub enum Directive {
@@ -126,60 +269,135 @@ pub enum TemplateNode {
 }
 
 pub struct Parser {
-    template: String,
-    filename: Option<String>,
-    index: i32,
-    //stack: Vec<Node>
-    //html: Node,
-    //css: Node,
-    //js: Node,
-    meta_tags: Vec<String>,
+    pub template: String,
+    pub filename: Option<String>,
+    pub index: i32,
+    //pub stack: Vec<Node>
+    //pub html: Node,
+    //pub css: Node,
+    //pub js: Node,
+    pub meta_tags: Vec<String>,
 }
 
 pub struct Script {
-    base_node: BaseNode,
-    context: String,
-    content: Program,
+    pub base_node: BaseNode,
+    pub context: String,
+    pub content: Program,
+}
+
+impl Script {
+    pub fn new(context: String, content: Program) -> Script {
+        Script {
+            base_node: BaseNode::new("Script".to_string()),
+            context,
+            content,
+        }
+    }
 }
 
 pub struct Style {
-    base_node: BaseNode,
-    // attributes: Vec<String>, // TODO - from svelte
-    // children: Vec<String>,   // TODO add CSS node types - from svelte
-    content: StyleContent,
+    pub base_node: BaseNode,
+    // pub attributes: Vec<String>, // TODO - from svelte
+    // pub children: Vec<String>,   // TODO add CSS node types - from svelte
+    pub content: StyleContent,
 }
 
-struct StyleContent {
-    start: i32,
-    end: i32,
-    styles: String,
+impl Style {
+    pub fn new(content: StyleContent) -> Style {
+        Style {
+            base_node: BaseNode::new("style".to_string()),
+            content,
+        }
+    }
+}
+
+pub struct StyleContent {
+    pub start: i32,
+    pub end: i32,
+    pub styles: String,
+}
+
+impl StyleContent {
+    pub fn new(start: i32, end: i32, styles: String) -> StyleContent {
+        StyleContent { start, end, styles }
+    }
 }
 
 pub struct Ast {
-    html: TemplateNode,
-    css: Option<Style>,
-    instance: Option<Script>,
-    module: Option<Script>,
+    pub html: TemplateNode,
+    pub css: Option<Style>,
+    pub instance: Option<Script>,
+    pub module: Option<Script>,
+}
+
+impl Ast {
+    pub fn new(
+        html: TemplateNode,
+        css: Option<Style>,
+        instance: Option<Script>,
+        module: Option<Script>,
+    ) -> Ast {
+        Ast {
+            html,
+            css,
+            instance,
+            module,
+        }
+    }
 }
 
 pub struct WarningStart {
-    line: i32,
-    column: i32,
-    pos: Option<i32>,
+    pub line: i32,
+    pub column: i32,
+    pub pos: Option<i32>,
+}
+
+impl WarningStart {
+    pub fn new(line: i32, column: i32, pos: Option<i32>) -> WarningStart {
+        WarningStart { line, column, pos }
+    }
 }
 
 pub struct WarningEnd {
-    line: i32,
-    column: i32,
+    pub line: i32,
+    pub column: i32,
+}
+
+impl WarningEnd {
+    pub fn new(line: i32, column: i32) -> WarningEnd {
+        WarningEnd { line, column }
+    }
 }
 pub struct Warnning {
-    start: Option<WarningStart>,
-    end: Option<WarningEnd>,
-    pos: Option<i32>,
-    code: String,
-    message: String,
-    filename: Option<String>,
-    frame: Option<String>,
+    pub start: Option<WarningStart>,
+    pub end: Option<WarningEnd>,
+    pub pos: Option<i32>,
+    pub code: String,
+    pub message: String,
+    pub filename: Option<String>,
+    pub frame: Option<String>,
+}
+
+impl Warnning {
+    pub fn new(
+        start: Option<WarningStart>,
+        end: Option<WarningEnd>,
+        pos: Option<i32>,
+        code: String,
+        message: String,
+        filename: Option<String>,
+        frame: Option<String>,
+    ) -> Warnning {
+        Warnning {
+            start,
+            end,
+            pos,
+            code,
+            message,
+            filename,
+            frame,
+        }
+    }
 }
 
 pub enum ModuleFormat {
@@ -192,15 +410,11 @@ pub enum EnableSourcemap {
     Type { js: bool, css: bool },
 }
 
-// TODO
-pub enum CssHashGetter {
-    // **Typescript**
-    // 	export type CssHashGetter = (args: {
-    // 	name: string;
-    // 	filename: string | undefined;
-    // 	css: string;
-    // 	hash: (input: string) => string;
-    // }) => string;
+pub struct CssHashGetter {
+    name: String,
+    filename: Option<String>,
+    css: String,
+    hash: String,
 }
 
 pub enum Generate {
@@ -221,30 +435,30 @@ pub enum VariablesReport {
 }
 
 pub struct CompileOptions {
-    format: Option<ModuleFormat>,
-    name: Option<String>,
-    filename: Option<String>,
-    generate: Option<Generate>,
-    error_mode: Option<ErrorMode>,
-    vars_report: Option<VariablesReport>,
-    sourcemap: Option<String>, // object | string
-    enable_sourcemap: Option<EnableSourcemap>,
-    output_filename: Option<String>,
-    css_output_filename: Option<String>,
-    svelte_path: Option<String>,
-    dev: Option<bool>,
-    accesors: Option<bool>,
-    immutable: Option<bool>,
-    hydratable: Option<bool>,
-    legacy: Option<bool>,
-    custom_element: Option<bool>,
-    tag: Option<String>,
-    css: Option<bool>,
-    loop_guard_timenout: Option<i32>,
-    namespace: Option<String>,
-    css_hash: Option<CssHashGetter>,
-    preserve_comments: Option<bool>,
-    preserve_whitespace: Option<bool>,
+    pub format: Option<ModuleFormat>,
+    pub name: Option<String>,
+    pub filename: Option<String>,
+    pub generate: Option<Generate>,
+    pub error_mode: Option<ErrorMode>,
+    pub vars_report: Option<VariablesReport>,
+    pub sourcemap: Option<String>, // object | string
+    pub enable_sourcemap: Option<EnableSourcemap>,
+    pub output_filename: Option<String>,
+    pub css_output_filename: Option<String>,
+    pub svelte_path: Option<String>,
+    pub dev: Option<bool>,
+    pub accesors: Option<bool>,
+    pub immutable: Option<bool>,
+    pub hydratable: Option<bool>,
+    pub legacy: Option<bool>,
+    pub custom_element: Option<bool>,
+    pub tag: Option<String>,
+    pub css: Option<bool>,
+    pub loop_guard_timenout: Option<i32>,
+    pub namespace: Option<String>,
+    pub css_hash: Option<CssHashGetter>,
+    pub preserve_comments: Option<bool>,
+    pub preserve_whitespace: Option<bool>,
 }
 
 pub struct ParserOptions {
@@ -259,33 +473,37 @@ pub struct Visitor {
 }
 
 pub struct AppendTarget {
-    slots: HashMap<String, String>,
-    slot_stack: Vec<String>,
+    pub slots: HashMap<String, String>,
+    pub slot_stack: Vec<String>,
 }
 
 pub struct Var {
-    name: String,
-    export_name: Option<String>, // the `bar` in `export { foo as bar }`
-    injected: Option<bool>,
-    module: Option<bool>,
-    mutated: Option<bool>,
-    reassigned: Option<bool>,
-    referenced: Option<bool>,             // referenced from template scope
-    referenced_from_script: Option<bool>, // referenced from script
+    pub name: String,
+    pub export_name: Option<String>, // the `bar` in `export { foo as bar }`
+    pub injected: Option<bool>,
+    pub module: Option<bool>,
+    pub mutated: Option<bool>,
+    pub reassigned: Option<bool>,
+    pub referenced: Option<bool>, // referenced from template scope
+    pub referenced_from_script: Option<bool>, // referenced from script
 
     // used internally, but not exposed
-    global: Option<bool>,
-    internal: Option<bool>, // event handlers, bindings
-    initialised: Option<bool>,
-    hoistable: Option<bool>,
-    subscribable: Option<bool>,
-    is_reactive_dependency: Option<bool>,
-    imported: Option<bool>,
+    pub global: Option<bool>,
+    pub internal: Option<bool>, // event handlers, bindings
+    pub initialised: Option<bool>,
+    pub hoistable: Option<bool>,
+    pub subscribable: Option<bool>,
+    pub is_reactive_dependency: Option<bool>,
+    pub imported: Option<bool>,
 }
 
-// TODO
 pub struct CssResult {
-    code: String,
-    // magic-string SourceMap
-    // map: SourceMap
+    pub code: String,
+    pub map: SourceMap,
+}
+
+impl CssResult {
+    pub fn new(code: String, map: SourceMap) -> CssResult {
+        CssResult { code, map }
+    }
 }
