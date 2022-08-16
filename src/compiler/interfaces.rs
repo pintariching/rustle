@@ -1,8 +1,10 @@
-use std::{collections::HashMap, fmt::Debug};
+use std::collections::HashMap;
 
 use magic_string::SourceMap;
 use strum_macros::Display;
 use swc_estree_ast::{AssignmentExpression, Program};
+
+use super::node::Node;
 
 pub struct BaseNode {
     pub start: usize,
@@ -52,18 +54,20 @@ impl Text {
 
 pub struct MustacheTag {
     pub base_node: BaseNode,
-    // expression: Node
+    expression: Node,
 }
 
 impl MustacheTag {
-    pub fn new(raw_mustache_tag: bool) -> MustacheTag {
+    pub fn new(raw_mustache_tag: bool, expression: Node) -> MustacheTag {
         if raw_mustache_tag {
             MustacheTag {
                 base_node: BaseNode::new("RawMustacheTag".to_string()),
+                expression,
             }
         } else {
             MustacheTag {
                 base_node: BaseNode::new("MustacheTag".to_string()),
+                expression,
             }
         }
     }
@@ -101,13 +105,14 @@ impl ConstTag {
 
 pub struct DebugTag {
     pub base_node: BaseNode,
-    // pub identifiers: Vec<Node>
+    pub identifiers: Vec<Node>,
 }
 
 impl DebugTag {
-    pub fn new() -> DebugTag {
+    pub fn new(identifiers: Vec<Node>) -> DebugTag {
         DebugTag {
             base_node: BaseNode::new("DebugTag".to_string()),
+            identifiers,
         }
     }
 }
@@ -141,7 +146,7 @@ impl BaseDirective {
 
 pub struct BaseExpressionDirective {
     pub base_directive: BaseDirective,
-    // pub expression: Option<Node>
+    pub expression: Option<Node>,
     pub name: String,
     pub modifiers: Vec<String>,
 }
@@ -149,11 +154,13 @@ pub struct BaseExpressionDirective {
 impl BaseExpressionDirective {
     pub fn new(
         directive_type: DirectiveType,
+        expression: Option<Node>,
         name: String,
         modifiers: Vec<String>,
     ) -> BaseExpressionDirective {
         BaseExpressionDirective {
             base_directive: BaseDirective::new(directive_type, name.clone()),
+            expression,
             name,
             modifiers,
         }
@@ -217,13 +224,14 @@ impl Attribute {
 
 pub struct SpreadAttribute {
     pub base_node: BaseNode,
-    // pub expression: Node
+    pub expression: Node,
 }
 
 impl SpreadAttribute {
-    pub fn new() -> SpreadAttribute {
+    pub fn new(expression: Node) -> SpreadAttribute {
         SpreadAttribute {
             base_node: BaseNode::new("Spread".to_string()),
+            expression,
         }
     }
 }
@@ -235,12 +243,13 @@ pub struct Transition {
 }
 
 impl Transition {
-    pub fn new(name: String, modifiers: Vec<String>, intro: bool, outro: bool) -> Transition {
+    pub fn new(intro: bool, outro: bool) -> Transition {
         Transition {
             base_expression_directive: BaseExpressionDirective::new(
                 DirectiveType::Transition,
-                name,
-                modifiers,
+                None,
+                String::new(),
+                Vec::new(),
             ),
             intro,
             outro,
@@ -272,10 +281,10 @@ pub struct Parser {
     pub template: String,
     pub filename: Option<String>,
     pub index: i32,
-    //pub stack: Vec<Node>
-    //pub html: Node,
-    //pub css: Node,
-    //pub js: Node,
+    pub stack: Vec<Node>,
+    pub html: Node,
+    pub css: Node,
+    pub js: Node,
     pub meta_tags: Vec<String>,
 }
 
@@ -441,7 +450,7 @@ pub struct CompileOptions {
     pub generate: Option<Generate>,
     pub error_mode: Option<ErrorMode>,
     pub vars_report: Option<VariablesReport>,
-    pub sourcemap: Option<String>, // object | string
+    pub sourcemap: Option<String>, // object | string in svelte
     pub enable_sourcemap: Option<EnableSourcemap>,
     pub output_filename: Option<String>,
     pub css_output_filename: Option<String>,
@@ -507,5 +516,3 @@ impl CssResult {
         CssResult { code, map }
     }
 }
-
-pub enum Node {}
