@@ -64,7 +64,7 @@ impl CompileError {
             column: start.column,
         });
         let frame = start
-            .map(|start| get_code_frame(props.source.to_string(), (start.line - 1) as isize, start.column as isize));
+            .map(|start| get_code_frame(props.source.to_string(), start.line - 1, start.column));
 
         Self {
             code: props.code.to_string(),
