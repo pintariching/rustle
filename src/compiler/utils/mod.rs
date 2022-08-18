@@ -13,3 +13,4 @@ pub use error::{CompileError, Location, NewErrorProps};
 pub use full_char_at::full_char_at;
 pub use full_char_code_at::full_char_code_at;
 pub use get_code_frame::get_code_frame;
+pub use patterns::{DIMENSIONS, END_WHITESPACE, START_NEWLINE, START_WHITESPACE, WHITESPACE};

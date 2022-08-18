@@ -1,5 +1,6 @@
 use crate::list;
 
+#[derive(Debug)]
 pub struct Error<'a> {
     pub code: &'a str,
     pub message: &'a str,

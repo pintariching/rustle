@@ -1,9 +1,14 @@
-use crate::compiler::{
-    interfaces::{Ast, BaseNode, Fragment, ParserOptions, Script, Style, TemplateNode},
-    utils::{CompileError, NewErrorProps},
+use std::ops::Index;
+
+use crate::compiler::interfaces::{
+    Ast, BaseNode, Fragment, ParserOptions, Script, Style, TemplateNode,
 };
-use lazy_static::lazy_static;
+use crate::compiler::utils::{full_char_at, WHITESPACE};
+use crate::compiler::utils::{CompileError, NewErrorProps};
 use regex::Regex;
+use swc_ecma_ast::Ident;
+
+use super::errors::Error;
 
 enum ParserState {
     Parser(Parser),
@@ -123,9 +128,102 @@ impl Parser {
         let compile_error = CompileError::new(message, error);
         panic!("{:#?}", compile_error);
     }
+
+    fn eat(&mut self, str: &str, required: bool, error: Option<Error>) -> bool {
+        if self.match_str(str) {
+            self.index += str.len();
+            return true;
+        }
+
+        if required {
+            let error: Error;
+            if let Some(err) = error {
+                error = err
+            } else {
+                if self.index == self.template.len() {
+                    error = Error::unexpected_eof_token(str);
+                } else {
+                    error = Error::unexpected_token(str)
+                }
+            }
+            self.error(error.code, error.message)
+        }
+
+        false
+    }
+
     // called "match" in the svelte parser
     pub fn match_str(&self, str: &str) -> bool {
         &self.template[self.index as usize..self.index as usize + str.len()] == str
+    }
+
+    pub fn match_regex(&self, pattern: Regex) -> Option<String> {
+        let matches = pattern
+            .find_iter(&self.template[self.index..self.template.len()])
+            .collect::<Vec<String>>();
+
+        if matches.is_empty() {
+            None
+        }
+
+        Some(matches[0])
+    }
+
+    pub fn allow_whitespace(&mut self) {
+        while self.index < self.template.len() && WHITESPACE.is_match(self.template[self.index]) {
+            self.index += 1
+        }
+    }
+
+    pub fn read(&self, pattern: Regex) -> Option<String> {
+        let result = self.match_regex(pattern);
+
+        if let Some(r) = result {
+            self.index += r.len();
+        }
+
+        result
+    }
+
+    pub fn read_identifier(&self, allow_reserved: Option<bool>) {
+        let start = self.index;
+        let i = self.index;
+
+        let code = full_char_at(&self.template, i);
+
+        if !Ident::is_valid_start(code) {
+            return None;
+        }
+
+        // Javascript magic?
+        // i += code <= 0xffff ? 1 : 2;
+
+        while i < self.template.len() {
+            let code = full_char_at(&self.template, i);
+
+            if !Ident::verify_symbol(code) {
+                break;
+            }
+
+            // More magic?
+            // i += code <= 0xffff ? 1 : 2;
+        }
+
+        // what does (this.index = i) mean?
+        // const identifier = this.template.slice(this.index, (this.index = i));
+        // let identifier = self.template[self.index, ?];
+
+        // if (!allow_reserved && reserved.has(identifier)) {
+        // 	this.error(
+        // 		{
+        // 			code: "unexpected-reserved-word",
+        // 			message: `'${identifier}' is a reserved word in JavaScript and cannot be used here`,
+        // 		},
+        // 		start
+        // 	);
+        // }
+
+        // return identifier;
     }
 }
 
