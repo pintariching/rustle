@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use lazy_static::lazy_static;
 
 lazy_static! {
-    pub static ref Entity: HashMap<&'static str, u32> = HashMap::from([
+    pub static ref ENTITY: HashMap<&'static str, u32> = HashMap::from([
         ("CounterClockwiseContourIntegral", 8755),
         ("ClockwiseContourIntegral", 8754),
         ("DoubleLongLeftRightArrow", 10234),
@@ -2038,9 +2038,9 @@ lazy_static! {
     ]);
 }
 
-impl Entity {
+impl ENTITY {
     pub fn aggregate_to_string() -> String {
-        Entity
+        ENTITY
             .iter()
             .map(|e| e.1.to_string())
             .collect::<Vec<String>>()

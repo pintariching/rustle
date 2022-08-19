@@ -1,17 +1,20 @@
 use crate::list;
 
 #[derive(Debug)]
-pub struct Error<'a> {
-    pub code: &'a str,
-    pub message: &'a str,
+pub struct Error {
+    pub code: String,
+    pub message: String,
 }
 
-impl<'a> Error<'a> {
-    fn new(code: &'a str, message: &'a str) -> Error {
-        Error { code, message }
+impl Error {
+    fn new(code: &str, message: &str) -> Error {
+        Error {
+            code: code.to_string(),
+            message: message.to_string(),
+        }
     }
 
-    pub fn css_syntax_error(message: &'a str) -> Error {
+    pub fn css_syntax_error(message: &str) -> Error {
         Error::new("css-syntax-error", message)
     }
 
@@ -19,7 +22,7 @@ impl<'a> Error<'a> {
         Error::new("duplicate-attribute", "Attributes need to be unique")
     }
 
-    pub fn duplicate_element(slug: &'a str, name: &'a str) -> Error {
+    pub fn duplicate_element(slug: &str, name: &str) -> Error {
         Error::new(
             &format!("duplicate-{}", slug),
             &format!("A component can only have one <{}> tag", name),
@@ -33,14 +36,14 @@ impl<'a> Error<'a> {
         )
     }
 
-    pub fn empty_attribute_shorthand() {
+    pub fn empty_attribute_shorthand() -> Error {
         Error::new(
             "empty-attribute-shorthand",
             "Attribute shorthand cannot be empty",
         )
     }
 
-    pub fn empty_directive_name(directive_type: &'a str) -> Error {
+    pub fn empty_directive_name(directive_type: &str) -> Error {
         Error::new(
             "empty-directive-name",
             &format!("{} name cannot be empty", directive_type),
@@ -60,7 +63,7 @@ impl<'a> Error<'a> {
     }
 
     // TODO: block is of type any - &str is a placeholder
-    pub fn invalid_catch_placement_unclosed_block(block: &'a str) -> Error {
+    pub fn invalid_catch_placement_unclosed_block(block: &str) -> Error {
         Error::new(
             "invalid-catch-placement",
             &format!("Expected to close {} before seeing {{:catch}} block", block),
@@ -81,7 +84,7 @@ impl<'a> Error<'a> {
         )
     }
 
-    pub fn invalid_closing_tag_unopened(name: &'a str) -> Error {
+    pub fn invalid_closing_tag_unopened(name: &str) -> Error {
         Error::new(
             "invalid-closing-tag",
             &format!(
@@ -91,7 +94,7 @@ impl<'a> Error<'a> {
         )
     }
 
-    pub fn invalid_closing_tag_autoclosed(name: &'a str, reason: &'a str) -> Error {
+    pub fn invalid_closing_tag_autoclosed(name: &str, reason: &str) -> Error {
         Error::new(
             "invalid-closing-tag",
             &format!(
@@ -130,7 +133,7 @@ impl<'a> Error<'a> {
         )
     }
 
-    pub fn invalid_elseif_placement_unclosed_block(block: &'a str) -> Error {
+    pub fn invalid_elseif_placement_unclosed_block(block: &str) -> Error {
         Error::new(
             "invalid-elseif-placement",
             &format!(
@@ -147,14 +150,14 @@ impl<'a> Error<'a> {
         )
     }
 
-    pub fn invalid_else_placement_unclosed_block(block: &'a str) -> Error {
+    pub fn invalid_else_placement_unclosed_block(block: &str) -> Error {
         Error::new(
             "invalid-else-placement",
             &format!("Expected to close {} before seeing {{:else}} block", block),
         )
     }
 
-    pub fn invalid_element_content(slug: &'a str, name: &'a str) -> Error {
+    pub fn invalid_element_content(slug: &str, name: &str) -> Error {
         Error::new(
             &format!("invalid-{}-content", slug),
             &format!("<{}> cannot have children", name),
@@ -165,14 +168,14 @@ impl<'a> Error<'a> {
         Error::new("invalid-element-definition", "Invalid element definition")
     }
 
-    pub fn invalid_element_placement(slug: &'a str, name: &'a str) -> Error {
+    pub fn invalid_element_placement(slug: &str, name: &str) -> Error {
         Error::new(
             &format!("invalid-{}-placement", slug),
             &format!("<{}> tags cannot be inside elements or blocks", name),
         )
     }
 
-    pub fn invalid_ref_directive(name: &'a str) -> Error {
+    pub fn invalid_ref_directive(name: &str) -> Error {
         Error::new(
             "invalid-ref-directive",
             &format!(
@@ -225,7 +228,7 @@ impl<'a> Error<'a> {
         Error::new("invalid-tag-name", "Expected valid tag name")
     }
 
-    pub fn invalid_tag_name_svelte_element(tags: &'a [str], match_str: &'a str) -> Error {
+    pub fn invalid_tag_name_svelte_element(tags: &[&str], match_str: &str) -> Error {
         if match_str.len() > 0 {
             Error::new(
                 "invalid-tag-name",
@@ -243,7 +246,7 @@ impl<'a> Error<'a> {
         }
     }
 
-    pub fn invalid_then_placement_unclosed_block(block: &'a str) -> Error {
+    pub fn invalid_then_placement_unclosed_block(block: &str) -> Error {
         Error::new(
             "invalid-then-placement",
             &format!("Expected to close {} before seeing {{:then}} block", block),
@@ -257,7 +260,7 @@ impl<'a> Error<'a> {
         )
     }
 
-    pub fn invalid_void_content(name: &'a str) -> Error {
+    pub fn invalid_void_content(name: &str) -> Error {
         Error::new(
             "invalid-void-content",
             &format!(
@@ -300,7 +303,7 @@ impl<'a> Error<'a> {
         Error::new("unclosed-comment", "comment was left open, expected -->")
     }
 
-    pub fn unclosed_attribute_value(token: &'a str) -> Error {
+    pub fn unclosed_attribute_value(token: &str) -> Error {
         Error::new(
             "unclosed-attribute-value",
             &format!("Expected to close the attribute value with {}", token),
@@ -315,11 +318,11 @@ impl<'a> Error<'a> {
         Error::new("unexpected-eof", "Unexpected end of input")
     }
 
-    pub fn unexpected_eof_token(token: &'a str) -> Error {
+    pub fn unexpected_eof_token(token: &str) -> Error {
         Error::new("unexpected-eof", &format!("Unexpected {}", token))
     }
 
-    pub fn unexpected_token(token: &'a str) -> Error {
+    pub fn unexpected_token(token: &str) -> Error {
         Error::new("unexpected-token", &format!("Expected {}", token))
     }
 

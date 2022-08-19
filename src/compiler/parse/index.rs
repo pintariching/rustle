@@ -136,17 +136,17 @@ impl Parser {
         }
 
         if required {
-            let error: Error;
+            let e: Error;
             if let Some(err) = error {
-                error = err
+                e = err
             } else {
                 if self.index == self.template.len() {
-                    error = Error::unexpected_eof_token(str);
+                    e = Error::unexpected_eof_token(str);
                 } else {
-                    error = Error::unexpected_token(str)
+                    e = Error::unexpected_token(str)
                 }
             }
-            self.error(error.code, error.message)
+            self.error(&e.code, &e.message)
         }
 
         false
@@ -160,32 +160,35 @@ impl Parser {
     pub fn match_regex(&self, pattern: Regex) -> Option<String> {
         let matches = pattern
             .find_iter(&self.template[self.index..self.template.len()])
+            .map(|m| m.as_str().to_owned())
             .collect::<Vec<String>>();
 
         if matches.is_empty() {
-            None
+            return None;
         }
 
-        Some(matches[0])
+        Some(matches[0].clone())
     }
 
     pub fn allow_whitespace(&mut self) {
-        while self.index < self.template.len() && WHITESPACE.is_match(self.template[self.index]) {
+        while self.index < self.template.len()
+            && WHITESPACE.is_match(&self.template[self.index..self.template.len()])
+        {
             self.index += 1
         }
     }
 
-    pub fn read(&self, pattern: Regex) -> Option<String> {
+    pub fn read(&mut self, pattern: Regex) -> Option<String> {
         let result = self.match_regex(pattern);
 
-        if let Some(r) = result {
+        if let Some(r) = result.clone() {
             self.index += r.len();
         }
 
         result
     }
 
-    pub fn read_identifier(&self, allow_reserved: Option<bool>) {
+    pub fn read_identifier(&self, allow_reserved: Option<bool>) -> Option<String> {
         let start = self.index;
         let i = self.index;
 
@@ -201,9 +204,8 @@ impl Parser {
         while i < self.template.len() {
             let code = full_char_at(&self.template, i);
 
-            if !Ident::verify_symbol(code) {
-                break;
-            }
+            // TODO: find replacement for acorn/isIdentifierChar
+            //if (!isIdentifierChar(code, true)) break;
 
             // More magic?
             // i += code <= 0xffff ? 1 : 2;
@@ -224,6 +226,8 @@ impl Parser {
         // }
 
         // return identifier;
+
+        todo!()
     }
 }
 

@@ -3,13 +3,13 @@ use std::collections::HashMap;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use crate::compiler::parse::utils::entities::Entity;
+use crate::compiler::parse::utils::entities::ENTITY;
 
 lazy_static! {
     static ref ENTITY_PATTERN: Regex = Regex::new(
         format!(
             "&(#?(?:x[\\w\\d]+|\\d+|{}))(?:;|\\b)",
-            Entity::aggregate_to_string()
+            ENTITY::aggregate_to_string()
         )
         .as_str()
     )
@@ -33,7 +33,7 @@ lazy_static! {
 ]);
 }
 
-static windows_1252: [i32; 32] = [
+static WINDOWS_1252: [u32; 32] = [
     8364, 129, 8218, 402, 8222, 8230, 8224, 8225, 710, 8240, 352, 8249, 338, 141, 381, 143, 144,
     8216, 8217, 8220, 8221, 8226, 8211, 8212, 732, 8482, 353, 8250, 339, 157, 382, 376,
 ];
@@ -58,28 +58,26 @@ pub fn decode_character_references(html: &str) -> String {
 // to replace them ourselves
 //
 // Source: http://en.wikipedia.org/wiki/Character_encodings_in_HTML#Illegal_characters
-pub fn validate_code(entity: Entity) -> Option<Entity> {
-    let code = entity.to_code();
-
+pub fn validate_code(code: u32) -> Option<u32> {
     // line feed becomes generic whitespace
     if code == 10 {
-        return Some(Entity::from_code(32));
+        return Some(32);
     }
 
     // ASCII range. (Why someone would use HTML entities for ASCII characters I don't know, but...)
     if code < 128 {
-        return Some(entity);
+        return Some(code);
     }
 
     // code points 128-159 are dealt with leniently by browsers, but they're incorrect. We need
     // to correct the mistake or we'll end up with missing € signs and so on
     if code <= 159 {
-        return Some(Entity::from_code(windows_1252[(code - 128) as usize]));
+        return Some(WINDOWS_1252[(code - 128) as usize]);
     }
 
     // basic multilingual plane
     if code < 55269 {
-        return Some(entity);
+        return Some(code);
     }
 
     // UTF-16 surrogate halves
@@ -89,17 +87,17 @@ pub fn validate_code(entity: Entity) -> Option<Entity> {
 
     // rest of the basic multilingual plane
     if code <= 65535 {
-        return Some(entity);
+        return Some(code);
     }
 
     // supplementary multilingual plane 0x10000 - 0x1ffff
     if code >= 65536 && code <= 131071 {
-        return Some(entity);
+        return Some(code);
     }
 
     // supplementary ideographic plane 0x20000 - 0x2ffff
     if code >= 131072 && code <= 196607 {
-        return Some(entity);
+        return Some(code);
     }
 
     None
