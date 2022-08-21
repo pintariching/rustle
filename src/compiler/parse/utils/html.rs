@@ -40,15 +40,13 @@ static WINDOWS_1252: [u32; 32] = [
 
 // TODO: fix this
 pub fn decode_character_references(html: &str) -> String {
-    // ENTITY_PATTERN
-    //     .replace(html, |captures: &Captures| {
-    //         let code: i32;
+    let matches = ENTITY_PATTERN
+        .find_iter(html)
+        .map(|m| m.as_str())
+        .collect::<Vec<&str>>();
 
-    //         if &captures[0] != "#" {
-    //             code = Entity::from_code(code)
-    //         }
-    //     })
-    //     .into_owned()
+    let code: &str;
+    if matches[0] != "#" {}
 
     todo!()
 }
