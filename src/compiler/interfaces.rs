@@ -293,6 +293,59 @@ pub enum TemplateNode {
     Comment(Comment),
 }
 
+impl TemplateNode {
+    pub fn to_string(&self) -> String {
+        match self.get_type().as_str() {
+            "IfBlock" => "{#if} block".to_string(),
+            "ThenBlock" => "{:then} block".to_string(),
+            "ElseBlock" => "{:else} block".to_string(),
+            "PendingBlock" | "AwaitBlock" => "{#await} block".to_string(),
+            "CatchBlock" => "{:catch} block".to_string(),
+            "EachBlock" => "{#each} block".to_string(),
+            "RawMustacheTag" => "{@html} block".to_string(),
+            "DebugTag" => "{@debug} block".to_string(),
+            "ConstTag" => "{@const} tag".to_string(),
+            "Element" | "InlineComponent" | "Slot" | "Title" => match self {
+                TemplateNode::Element(e) => return format!("<{}> tag", e.name),
+                _ => panic!("This shouldn't happen"),
+            },
+            default => String::from(default),
+        }
+    }
+
+    pub fn get_type(&self) -> String {
+        match self {
+            TemplateNode::Text(t) => t.base_node.node_type.clone(),
+            TemplateNode::ConstTag(c) => c.base_node.node_type.clone(),
+            TemplateNode::DebugTag(d) => d.base_node.node_type.clone(),
+            TemplateNode::MustacheTag(m) => m.base_node.node_type.clone(),
+            TemplateNode::BaseNode(b) => b.node_type.clone(),
+            TemplateNode::Element(e) => e.base_node.node_type.clone(),
+            TemplateNode::Attribute(a) => a.base_node.node_type.clone(),
+            TemplateNode::SpreadAttribute(s) => s.base_node.node_type.clone(),
+            TemplateNode::Directive(d) => match d {
+                Directive::BaseDirective(b) => b.base_node.node_type.clone(),
+                Directive::BaseExpressionDirective(b) => {
+                    b.base_directive.base_node.node_type.clone()
+                }
+                Directive::Transition(t) => t
+                    .base_expression_directive
+                    .base_directive
+                    .base_node
+                    .node_type
+                    .clone(),
+            },
+            TemplateNode::Transition(t) => t
+                .base_expression_directive
+                .base_directive
+                .base_node
+                .node_type
+                .clone(),
+            TemplateNode::Comment(c) => c.base_node.node_type.clone(),
+        }
+    }
+}
+
 // We don't have interfaces in Rust
 // So I guess we don't need this here?
 // pub struct Parser {
