@@ -39,9 +39,9 @@ static WINDOWS_1252: [u32; 32] = [
 ];
 
 // TODO: fix this
-pub fn decode_character_references(html: &str) -> String {
+pub fn decode_character_references(html: String) -> String {
     let matches = ENTITY_PATTERN
-        .find_iter(html)
+        .find_iter(&html)
         .map(|m| m.as_str())
         .collect::<Vec<&str>>();
 
