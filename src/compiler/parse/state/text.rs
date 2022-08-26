@@ -2,7 +2,7 @@ use crate::compiler::interfaces::{BaseNode, Text, TemplateNode};
 use crate::compiler::parse::index::{Parser, StateReturn};
 use crate::compiler::parse::utils::decode_character_references;
 
-pub fn text(parser: Parser) -> StateReturn {
+pub fn text(parser: &mut Parser) -> StateReturn {
     let start = parser.index;
     let mut data = String::new();
 
@@ -25,7 +25,7 @@ pub fn text(parser: Parser) -> StateReturn {
     let tempNode = parser.current().unwrap();
     let base_node = tempNode.get_base_node();
 
-    base_node.children.unwrap().push(TemplateNode::Text((node)));
+    base_node.children.as_mut().unwrap().push(TemplateNode::Text((node)));
 
     StateReturn::None
 }

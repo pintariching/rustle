@@ -30,7 +30,7 @@ impl BaseNode {
 
 impl TmpNode for BaseNode {
     fn get_base_node(&mut self) -> &mut BaseNode {
-        &mut self
+        self
     }
 }
 
@@ -435,7 +435,7 @@ impl TemplateNode {
         }
     }
 
-    pub fn unwrap(&self) -> &dyn TmpNode {
+    pub fn unwrap(&mut self) -> &mut dyn TmpNode {
         match self {
             TemplateNode::Text(Text) => Text,
             TemplateNode::ConstTag(ConstTag) => ConstTag,

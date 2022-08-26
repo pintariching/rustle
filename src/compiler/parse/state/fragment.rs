@@ -4,11 +4,13 @@ use crate::compiler::parse::state::{mustache, tag, text::text};
 
 pub fn fragment(parser: &mut Parser) -> StateReturn  {
     if parser.match_str("<") {
-        return StateReturn::Ok(tag)
+        //TODO implement tag.rs
+        // return StateReturn::Ok(tag)
     }
 
     if parser.match_str("{") {
-        return StateReturn::Ok(mustache)
+        //TODO implement mustache.rs
+        // return StateReturn::Ok(mustache)
     }
 
     return StateReturn::Ok(text)
