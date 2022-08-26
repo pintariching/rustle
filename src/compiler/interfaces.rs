@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::any::Any;
 
 use magic_string::SourceMap;
 use strum_macros::Display;
@@ -27,6 +28,12 @@ impl BaseNode {
     }
 }
 
+impl TmpNode for BaseNode {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        self
+    }
+}
+
 #[derive(Clone)]
 pub struct Fragment {
     pub base_node: BaseNode,
@@ -38,6 +45,12 @@ impl Fragment {
             base_node: BaseNode::new("Fragment".to_string()),
         }
     }
+}
+
+
+//This trait allows for different concreate types when matching a TemplateNode enum
+pub trait TmpNode {
+    fn get_base_node(&mut self) -> &mut BaseNode;
 }
 
 #[derive(Clone)]
@@ -52,6 +65,12 @@ impl Text {
             base_node: BaseNode::new("Text".to_string()),
             data,
         }
+    }
+}
+
+impl TmpNode for Text {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
     }
 }
 
@@ -77,6 +96,12 @@ impl MustacheTag {
     }
 }
 
+impl TmpNode for MustacheTag {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
+    }
+}
+
 #[derive(Clone)]
 pub struct Comment {
     pub base_node: BaseNode,
@@ -91,6 +116,12 @@ impl Comment {
             data,
             ignores,
         }
+    }
+}
+
+impl TmpNode for Comment {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
     }
 }
 
@@ -109,6 +140,12 @@ impl ConstTag {
     }
 }
 
+impl TmpNode for ConstTag {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
+    }
+}
+
 #[derive(Clone)]
 pub struct DebugTag {
     pub base_node: BaseNode,
@@ -123,6 +160,13 @@ impl DebugTag {
         }
     }
 }
+
+impl TmpNode for DebugTag {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
+    }
+}
+
 
 #[derive(Display)]
 pub enum DirectiveType {
@@ -149,6 +193,12 @@ impl BaseDirective {
             base_node: BaseNode::new(directive_type.to_string()),
             name,
         }
+    }
+}
+
+impl TmpNode for BaseDirective {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
     }
 }
 
@@ -217,6 +267,12 @@ impl Element {
     }
 }
 
+impl TmpNode for Element {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
+    } 
+}
+
 #[derive(Clone)]
 pub struct Attribute {
     pub base_node: BaseNode,
@@ -234,6 +290,12 @@ impl Attribute {
     }
 }
 
+impl TmpNode for Attribute {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
+    }
+}
+
 #[derive(Clone)]
 pub struct SpreadAttribute {
     pub base_node: BaseNode,
@@ -246,6 +308,12 @@ impl SpreadAttribute {
             base_node: BaseNode::new("Spread".to_string()),
             expression,
         }
+    }
+}
+
+impl TmpNode for SpreadAttribute {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
     }
 }
 
@@ -271,11 +339,33 @@ impl Transition {
     }
 }
 
+impl TmpNode for Transition {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_expression_directive.base_directive.base_node
+    }
+}
+
 #[derive(Clone)]
 pub enum Directive {
     BaseDirective(BaseDirective),
     BaseExpressionDirective(BaseExpressionDirective),
     Transition(Transition),
+}
+
+impl TmpNode for Directive {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        match self {
+            Directive::BaseDirective(bd) => {
+                bd.get_base_node()
+            },
+            Directive::BaseExpressionDirective(bed) => {
+                bed.base_directive.get_base_node()
+            },
+            Directive::Transition(t ) => {
+                t.get_base_node()
+            }
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -344,6 +434,22 @@ impl TemplateNode {
             TemplateNode::Comment(c) => c.base_node.node_type.clone(),
         }
     }
+
+    pub fn unwrap(&mut self) -> &mut dyn TmpNode {
+        match self {
+            TemplateNode::Text(Text) => Text,
+            TemplateNode::ConstTag(ConstTag) => ConstTag,
+            TemplateNode::DebugTag(DebugTag) => DebugTag,
+            TemplateNode::MustacheTag(MustacheTag) => MustacheTag,
+            TemplateNode::BaseNode(BaseNode) => BaseNode,
+            TemplateNode::Element(Element) => Element,
+            TemplateNode::Attribute(Attribute) => Attribute,
+            TemplateNode::SpreadAttribute(SpreadAttribute) => SpreadAttribute,
+            TemplateNode::Directive(Directive) => Directive,
+            TemplateNode::Transition(Transition) => Transition,
+            TemplateNode::Comment(Comment) => Comment,
+        }
+    }   
 }
 
 // We don't have interfaces in Rust
