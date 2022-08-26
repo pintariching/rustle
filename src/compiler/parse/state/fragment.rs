@@ -1,13 +1,15 @@
 use crate::compiler::parse::index::Parser;
+use crate::compiler::parse::index::StateReturn;
+use crate::compiler::parse::state::{mustache, tag, text::text};
 
-pub fn fragment(parser: Parser) {
+pub fn fragment(parser: &mut Parser) -> StateReturn  {
     if parser.match_str("<") {
-        //return tag;
+        return StateReturn::Ok(tag)
     }
 
     if parser.match_str("{") {
-        //return mustache;
+        return StateReturn::Ok(mustache)
     }
 
-    //text
+    return StateReturn::Ok(text)
 }
