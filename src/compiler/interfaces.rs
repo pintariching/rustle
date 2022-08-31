@@ -11,8 +11,6 @@ use swc_estree_ast::{AssignmentExpression, Program};
 
 use super::node::Node;
 
-pub type Children = Rc<RefCell<Vec<Rc<RefCell<TemplateNode>>>>>;
-
 #[derive(Clone, Debug)]
 pub struct BaseNode {
     pub start: usize,
@@ -44,10 +42,6 @@ impl TmpNode for BaseNode {
     fn get_base_node(&mut self) -> &mut BaseNode {
         self
     }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.children
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -66,7 +60,9 @@ impl Fragment {
 //This trait allows for different concreate types when matching a TemplateNode enum
 pub trait TmpNode {
     fn get_base_node(&mut self) -> &mut BaseNode;
-    fn get_children(&self) -> &Vec<TemplateNode>;
+    fn get_children(&mut self) -> &mut Vec<TemplateNode> {
+        &mut self.get_base_node().children
+    }
     fn shift_children(&mut self) {
         self.get_base_node().children.remove(0);
     }
@@ -93,10 +89,6 @@ impl Text {
 impl TmpNode for Text {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
-    }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.get_base_node().children
     }
 }
 
@@ -126,10 +118,6 @@ impl TmpNode for MustacheTag {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
     }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.base_node.children
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -153,10 +141,6 @@ impl TmpNode for Comment {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
     }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.base_node.children
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -178,10 +162,6 @@ impl TmpNode for ConstTag {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
     }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.base_node.children
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -202,10 +182,6 @@ impl DebugTag {
 impl TmpNode for DebugTag {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
-    }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.base_node.children
     }
 }
 
@@ -256,10 +232,6 @@ impl BaseDirective {
 impl TmpNode for BaseDirective {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
-    }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.base_node.children
     }
 }
 
@@ -348,10 +320,6 @@ impl TmpNode for Element {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
     }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.base_node.children
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -375,10 +343,6 @@ impl TmpNode for Attribute {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
     }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.base_node.children
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -399,10 +363,6 @@ impl SpreadAttribute {
 impl TmpNode for SpreadAttribute {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
-    }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.base_node.children
     }
 }
 
@@ -432,10 +392,6 @@ impl TmpNode for Transition {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_expression_directive.base_directive.base_node
     }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.get_base_node().children
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -452,10 +408,6 @@ impl TmpNode for Directive {
             Directive::BaseExpressionDirective(bed) => bed.base_directive.get_base_node(),
             Directive::Transition(t) => t.get_base_node(),
         }
-    }
-
-    fn get_children(&self) -> &Vec<TemplateNode> {
-        &self.get_base_node().children
     }
 }
 
@@ -528,8 +480,8 @@ impl TemplateNode {
 
     pub fn get_data(&self) -> String {
         match self {
-            TemplateNode::Text(el) => el.data,
-            TemplateNode::Comment(el) => el.data,
+            TemplateNode::Text(el) => el.data.clone(),
+            TemplateNode::Comment(el) => el.data.clone(),
             _ => panic!("unsupported this type"),
         }
     }
@@ -552,7 +504,7 @@ impl TemplateNode {
         }
     }
 
-    pub fn get_children(&self) -> &Vec<TemplateNode> {
+    pub fn get_children(&mut self) -> &mut Vec<TemplateNode> {
         match self {
             TemplateNode::Text(el) => el.get_children(),
             TemplateNode::ConstTag(el) => el.get_children(),
@@ -566,14 +518,6 @@ impl TemplateNode {
             TemplateNode::Transition(el) => el.get_children(),
             TemplateNode::Comment(el) => el.get_children(),
         }
-    }
-
-    pub fn shift_children(&mut self) {
-        self.shift_children();
-    }
-
-    pub fn pop_children(&mut self) {
-        self.pop_children();
     }
 }
 // We don't have interfaces in Rust

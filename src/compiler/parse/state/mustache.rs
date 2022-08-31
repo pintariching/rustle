@@ -1,37 +1,30 @@
-use crate::compiler::interfaces::{Children, TemplateNode, Text, TmpNode};
-use std::cell::{Cell, RefCell};
-use std::rc::Rc;
+use crate::compiler::interfaces::{TemplateNode, TmpNode};
 
-pub fn trim_whitespace(
-    block: &mut TemplateNode,
-    trim_before: bool,
-    trim_after: bool,
-) -> Option<()> {
+pub fn trim_whitespace(block: &mut TemplateNode, trim_before: bool, trim_after: bool) {
     let children = block.get_children();
 
     if children.is_empty() {
-        return None;
+        return;
     }
 
-    let mut is_data_empty = false;
-    if let Some(child) = children.first() {
+    if let Some(child) = children.first_mut() {
         match child {
             TemplateNode::Text(t) if trim_before => {
                 t.data = t.data.trim_start().to_string();
                 if t.data.is_empty() {
-                    block.shift_children();
+                    children.remove(0);
                 }
             }
             _ => (),
         }
     }
 
-    if let Some(child) = children.last() {
+    if let Some(child) = children.last_mut() {
         match child {
             TemplateNode::Text(t) if trim_after => {
                 t.data = t.data.trim_end().to_string();
                 if t.data.is_empty() {
-                    block.pop_children();
+                    children.pop();
                 }
             }
             _ => (),
@@ -55,44 +48,32 @@ pub fn trim_whitespace(
         }
         _ => (),
     }
-
-    None
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::compiler::interfaces::{BaseNode, Text};
-    use std::borrow::Borrow;
-    use std::rc::Rc;
+    use std::collections::HashMap;
 
     #[test]
     fn test_trim_whitespace() {
-        let sample = Rc::new(RefCell::new(TemplateNode::Text(Text {
+        let mut sample = TemplateNode::Text(Text {
             base_node: BaseNode {
                 start: 0,
                 end: 0,
                 node_type: "Text".to_string(),
-                children: Rc::new(RefCell::new(vec![Rc::new(RefCell::new(
-                    TemplateNode::Text(Text::new("   Hello ".to_string())),
-                ))])),
+                children: vec![TemplateNode::Text(Text::new("   Hello ".to_string()))],
                 prop_name: Default::default(),
                 else_if: false,
                 expression: None,
+                props: HashMap::new(),
             },
-            data: Rc::new(RefCell::new(" Hello ".to_string())),
-        })));
-        trim_whitespace(sample.clone(), true, false);
-        let node = sample.borrow_mut();
-        let children = node.children();
-        let data = children
-            .borrow_mut()
-            .first()
-            .unwrap()
-            .borrow_mut()
-            .get_data()
-            .borrow_mut()
-            .to_string();
-        assert_eq!(data, "Hello ")
+            data: " Hello ".to_string(),
+        });
+
+        trim_whitespace(&mut sample, true, false);
+        let result = sample.get_children().first().unwrap().get_data();
+        assert_eq!(result, "Hello ")
     }
 }

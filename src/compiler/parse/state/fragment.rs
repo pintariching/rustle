@@ -2,7 +2,7 @@ use crate::compiler::parse::index::Parser;
 use crate::compiler::parse::index::StateReturn;
 use crate::compiler::parse::state::{mustache, tag, text::text};
 
-pub fn fragment(parser: &mut Parser) -> StateReturn  {
+pub fn fragment(parser: &mut Parser) -> StateReturn {
     if parser.match_str("<") {
         //TODO implement tag.rs
         // return StateReturn::Ok(tag)
@@ -13,5 +13,5 @@ pub fn fragment(parser: &mut Parser) -> StateReturn  {
         // return StateReturn::Ok(mustache)
     }
 
-    return StateReturn::Ok(text)
+    return text(parser);
 }

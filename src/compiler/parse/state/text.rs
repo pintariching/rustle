@@ -1,9 +1,7 @@
-use crate::compiler::interfaces::{BaseNode, Text, TemplateNode};
+use crate::compiler::interfaces::{BaseNode, TemplateNode, Text};
 use crate::compiler::parse::index::{Parser, StateReturn};
 use crate::compiler::parse::utils::decode_character_references;
-use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
-use std::rc::Rc;
 
 pub fn text(parser: &mut Parser) -> StateReturn {
     let start = parser.index;
@@ -18,19 +16,20 @@ pub fn text(parser: &mut Parser) -> StateReturn {
             start,
             end: parser.index,
             node_type: "Text".to_string(),
-            children: Rc::new(RefCell::new(Vec::new())),
+            children: Vec::new(),
             prop_name: HashMap::new(),
             else_if: false,
             expression: None,
+            props: HashMap::new(),
         },
         // raw: data
-        data: Rc::new(RefCell::new(decode_character_references(data))),
+        data: decode_character_references(data),
     };
 
-    let tempNode = parser.current().unwrap();
-    let base_node = tempNode.get_base_node();
-
-    base_node.children.as_mut().unwrap().push(TemplateNode::Text((node)));
+    parser
+        .current()
+        .get_children()
+        .push(TemplateNode::Text(node));
 
     StateReturn::None
 }
