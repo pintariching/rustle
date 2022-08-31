@@ -1,4 +1,7 @@
+use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
 use std::ops::Index;
+use std::rc::Rc;
 
 use crate::compiler::interfaces::{
     Ast, BaseNode, Fragment, ParserOptions, Script, Style, TemplateNode,
@@ -50,8 +53,10 @@ impl Parser {
                     start: 0,
                     end: 0,
                     node_type: "Fragment".to_string(),
-                    children: Some(Vec::new()),
-                    prop_name: Vec::new(),
+                    children: Rc::new(RefCell::new(Vec::new())),
+                    prop_name: HashMap::new(),
+                    else_if: false,
+                    expression: None,
                 },
             },
             css: Vec::new(),
@@ -101,12 +106,10 @@ impl Parser {
         // 	});
         // }
 
-        if let Some(children) = &parser.html.base_node.children {
-            if children.len() > 0 {
-                // TODO: impl BaseNodeTrait to get values from common base node?
-                //let start = children[0].start;
-            }
-        }
+        // if parser.html.base_node.children.len() > 0 {
+        // TODO: impl BaseNodeTrait to get values from common base node?
+        //let start = children[0].start;
+        // }
 
         parser
     }

@@ -1,6 +1,9 @@
 use crate::compiler::interfaces::{BaseNode, Text};
 use crate::compiler::parse::index::Parser;
 use crate::compiler::parse::utils::decode_character_references;
+use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
+use std::rc::Rc;
 
 pub fn text(parser: Parser) {
     let start = parser.index;
@@ -15,11 +18,13 @@ pub fn text(parser: Parser) {
             start,
             end: parser.index,
             node_type: "Text".to_string(),
-            children: None,
-            prop_name: Vec::new(),
+            children: Rc::new(RefCell::new(Vec::new())),
+            prop_name: HashMap::new(),
+            else_if: false,
+            expression: None,
         },
         // raw: data
-        data: decode_character_references(data),
+        data: Rc::new(RefCell::new(decode_character_references(data))),
     };
 
     //parser.current().children.push(node);
