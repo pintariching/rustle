@@ -1,8 +1,8 @@
+use std::any::Any;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
-use std::any::Any;
 
 use magic_string::SourceMap;
 use strum_macros::Display;
@@ -13,19 +13,16 @@ use super::node::Node;
 
 pub type Children = Rc<RefCell<Vec<Rc<RefCell<TemplateNode>>>>>;
 
-pub trait GetChildren {
-    fn children(&self) -> Children;
-}
-
 #[derive(Clone, Debug)]
 pub struct BaseNode {
     pub start: usize,
     pub end: usize,
     pub node_type: String,
-    pub children: Children,
+    pub children: Vec<TemplateNode>,
     pub prop_name: HashMap<String, Node>,
     pub else_if: bool,
     pub expression: Option<Node>,
+    pub props: HashMap<String, TemplateNode>,
 }
 
 impl BaseNode {
@@ -34,23 +31,22 @@ impl BaseNode {
             start: 0,
             end: 0,
             node_type,
-            children: Rc::new(RefCell::new(Vec::new())),
+            children: Vec::new(),
             prop_name: HashMap::new(),
             else_if: false,
             expression: None,
+            props: HashMap::new(),
         }
-    }
-}
-
-impl GetChildren for BaseNode {
-    fn children(&self) -> Children {
-        self.children.clone()
     }
 }
 
 impl TmpNode for BaseNode {
     fn get_base_node(&mut self) -> &mut BaseNode {
         self
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.children
     }
 }
 
@@ -67,42 +63,40 @@ impl Fragment {
     }
 }
 
-impl GetChildren for Fragment {
-    fn children(&self) -> Children {
-        self.base_node.children()
-    }
-}
-
 //This trait allows for different concreate types when matching a TemplateNode enum
 pub trait TmpNode {
     fn get_base_node(&mut self) -> &mut BaseNode;
+    fn get_children(&self) -> &Vec<TemplateNode>;
+    fn shift_children(&mut self) {
+        self.get_base_node().children.remove(0);
+    }
+    fn pop_children(&mut self) {
+        self.get_base_node().children.pop();
+    }
 }
-
 
 #[derive(Clone, Debug)]
 pub struct Text {
     pub base_node: BaseNode,
-    pub data: Rc<RefCell<String>>,
+    pub data: String,
 }
 
 impl Text {
     pub fn new(data: String) -> Text {
         Text {
             base_node: BaseNode::new("Text".to_string()),
-            data: Rc::new(RefCell::new(data)),
+            data: data,
         }
-    }
-}
-
-impl GetChildren for Text {
-    fn children(&self) -> Children {
-        self.base_node.children()
     }
 }
 
 impl TmpNode for Text {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.get_base_node().children
     }
 }
 
@@ -128,22 +122,20 @@ impl MustacheTag {
     }
 }
 
-impl GetChildren for MustacheTag {
-    fn children(&self) -> Children {
-        self.base_node.children()
-    }
-}
-
 impl TmpNode for MustacheTag {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.base_node.children
     }
 }
 
 #[derive(Clone, Debug)]
 pub struct Comment {
     pub base_node: BaseNode,
-    pub data: Rc<RefCell<String>>,
+    pub data: String,
     pub ignores: Vec<String>,
 }
 
@@ -151,21 +143,19 @@ impl Comment {
     pub fn new(data: String, ignores: Vec<String>) -> Comment {
         Comment {
             base_node: BaseNode::new("Comment".to_string()),
-            data: Rc::new(RefCell::new(data)),
+            data: data,
             ignores,
         }
-    }
-}
-
-impl GetChildren for Comment {
-    fn children(&self) -> Children {
-        self.base_node.children()
     }
 }
 
 impl TmpNode for Comment {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.base_node.children
     }
 }
 
@@ -184,15 +174,13 @@ impl ConstTag {
     }
 }
 
-impl GetChildren for ConstTag {
-    fn children(&self) -> Children {
-        self.base_node.children()
-    }
-}
-
 impl TmpNode for ConstTag {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.base_node.children
     }
 }
 
@@ -211,15 +199,13 @@ impl DebugTag {
     }
 }
 
-impl GetChildren for DebugTag {
-    fn children(&self) -> Children {
-        self.base_node.children()
-    }
-}
-
 impl TmpNode for DebugTag {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.base_node.children
     }
 }
 
@@ -267,15 +253,13 @@ impl BaseDirective {
     }
 }
 
-impl GetChildren for BaseDirective {
-    fn children(&self) -> Children {
-        self.base_node.children()
-    }
-}
-
 impl TmpNode for BaseDirective {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.base_node.children
     }
 }
 
@@ -300,12 +284,6 @@ impl BaseExpressionDirective {
             name,
             modifiers,
         }
-    }
-}
-
-impl GetChildren for BaseExpressionDirective {
-    fn children(&self) -> Children {
-        self.base_directive.children()
     }
 }
 
@@ -345,16 +323,6 @@ pub enum ElementAttributes {
     SpreadAttribute(SpreadAttribute),
 }
 
-impl GetChildren for ElementAttributes {
-    fn children(&self) -> Children {
-        match self {
-            ElementAttributes::BaseDirective(el) => el.children(),
-            ElementAttributes::Attribute(el) => el.children(),
-            ElementAttributes::SpreadAttribute(el) => el.children(),
-        }
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct Element {
     pub base_node: BaseNode,
@@ -375,16 +343,15 @@ impl Element {
         }
     }
 }
-impl GetChildren for Element {
-    fn children(&self) -> Children {
-        self.base_node.children()
-    }
-}
 
 impl TmpNode for Element {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
-    } 
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.base_node.children
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -404,15 +371,13 @@ impl Attribute {
     }
 }
 
-impl GetChildren for Attribute {
-    fn children(&self) -> Children {
-        self.base_node.children()
-    }
-}
-
 impl TmpNode for Attribute {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.base_node.children
     }
 }
 
@@ -431,15 +396,13 @@ impl SpreadAttribute {
     }
 }
 
-impl GetChildren for SpreadAttribute {
-    fn children(&self) -> Children {
-        self.base_node.children()
-    }
-}
-
 impl TmpNode for SpreadAttribute {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.base_node.children
     }
 }
 
@@ -465,15 +428,13 @@ impl Transition {
     }
 }
 
-impl GetChildren for Transition {
-    fn children(&self) -> Children {
-        self.base_expression_directive.children()
-    }
-}
-
 impl TmpNode for Transition {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_expression_directive.base_directive.base_node
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.get_base_node().children
     }
 }
 
@@ -484,29 +445,17 @@ pub enum Directive {
     Transition(Transition),
 }
 
-impl GetChildren for Directive {
-    fn children(&self) -> Children {
-        match self {
-            Directive::BaseDirective(el) => el.children(),
-            Directive::BaseExpressionDirective(el) => el.children(),
-            Directive::Transition(el) => el.children(),
-        }
-    }
-}
-
 impl TmpNode for Directive {
     fn get_base_node(&mut self) -> &mut BaseNode {
         match self {
-            Directive::BaseDirective(bd) => {
-                bd.get_base_node()
-            },
-            Directive::BaseExpressionDirective(bed) => {
-                bed.base_directive.get_base_node()
-            },
-            Directive::Transition(t ) => {
-                t.get_base_node()
-            }
+            Directive::BaseDirective(bd) => bd.get_base_node(),
+            Directive::BaseExpressionDirective(bed) => bed.base_directive.get_base_node(),
+            Directive::Transition(t) => t.get_base_node(),
         }
+    }
+
+    fn get_children(&self) -> &Vec<TemplateNode> {
+        &self.get_base_node().children
     }
 }
 
@@ -577,16 +526,16 @@ impl TemplateNode {
         }
     }
 
-    pub fn get_data(&self) -> Rc<RefCell<String>> {
+    pub fn get_data(&self) -> String {
         match self {
-            TemplateNode::Text(el) => el.data.clone(),
-            TemplateNode::Comment(el) => el.data.clone(),
+            TemplateNode::Text(el) => el.data,
+            TemplateNode::Comment(el) => el.data,
             _ => panic!("unsupported this type"),
         }
     }
 
     pub fn get_prop(&self, name: &str) {}
-    
+
     pub fn unwrap(&mut self) -> &mut dyn TmpNode {
         match self {
             TemplateNode::Text(Text) => Text,
@@ -602,26 +551,31 @@ impl TemplateNode {
             TemplateNode::Comment(Comment) => Comment,
         }
     }
-}
 
-impl GetChildren for TemplateNode {
-    fn children(&self) -> Children {
+    pub fn get_children(&self) -> &Vec<TemplateNode> {
         match self {
-            TemplateNode::Text(el) => el.children(),
-            TemplateNode::ConstTag(el) => el.children(),
-            TemplateNode::DebugTag(el) => el.children(),
-            TemplateNode::MustacheTag(el) => el.children(),
-            TemplateNode::BaseNode(el) => el.children(),
-            TemplateNode::Element(el) => el.children(),
-            TemplateNode::Attribute(el) => el.children(),
-            TemplateNode::SpreadAttribute(el) => el.children(),
-            TemplateNode::Directive(el) => el.children(),
-            TemplateNode::Transition(el) => el.children(),
-            TemplateNode::Comment(el) => el.children(),
+            TemplateNode::Text(el) => el.get_children(),
+            TemplateNode::ConstTag(el) => el.get_children(),
+            TemplateNode::DebugTag(el) => el.get_children(),
+            TemplateNode::MustacheTag(el) => el.get_children(),
+            TemplateNode::BaseNode(el) => el.get_children(),
+            TemplateNode::Element(el) => el.get_children(),
+            TemplateNode::Attribute(el) => el.get_children(),
+            TemplateNode::SpreadAttribute(el) => el.get_children(),
+            TemplateNode::Directive(el) => el.get_children(),
+            TemplateNode::Transition(el) => el.get_children(),
+            TemplateNode::Comment(el) => el.get_children(),
         }
     }
-}
 
+    pub fn shift_children(&mut self) {
+        self.shift_children();
+    }
+
+    pub fn pop_children(&mut self) {
+        self.pop_children();
+    }
+}
 // We don't have interfaces in Rust
 // So I guess we don't need this here?
 // pub struct Parser {
