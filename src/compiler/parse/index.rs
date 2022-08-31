@@ -13,11 +13,6 @@ use swc_ecma_ast::Ident;
 
 use super::errors::Error;
 
-enum ParserState {
-    Parser(Parser),
-    Void,
-}
-
 pub struct LastAutoClosedTag {
     pub tag: String,
     pub reason: String,
@@ -36,6 +31,16 @@ pub struct Parser {
     pub meta_tags: Vec<String>,
     pub last_auto_closed_tag: Option<LastAutoClosedTag>,
 }
+
+
+//Return type of tag, mustache and text function corresponds to (ParserState | void) in svelte/src/compiler/parse/index.ts
+pub enum StateReturn {
+    Ok(ParserState),
+    None
+}
+
+//A function pointer for state
+pub type ParserState = fn(&mut Parser) -> StateReturn;
 
 impl Parser {
     fn new(template: String, options: ParserOptions) -> Parser {
@@ -65,6 +70,8 @@ impl Parser {
             last_auto_closed_tag: None,
         };
 
+        parser.stack.push(TemplateNode::BaseNode(parser.html.base_node.clone()));
+
         // Html is a Fragment but gets pushed to
         // parser.stack which is a Vec<TemplateNode> ??
         //parser.stack.push(parser.html);
@@ -72,6 +79,10 @@ impl Parser {
         // fragment is a function
         // defined in src/compiler/parse/state/fragment.ts
         // let state: ParserState = fragment;
+
+
+        
+        // let state: ParserState = fragment
 
         // while parser.index < parser.template.len() {
         //     state = state(parser) || fragment;
@@ -106,19 +117,23 @@ impl Parser {
         // 	});
         // }
 
-        // if parser.html.base_node.children.len() > 0 {
-        // TODO: impl BaseNodeTrait to get values from common base node?
-        //let start = children[0].start;
+
+        // if let Some(children) = &parser.html.base_node.children {
+        //     if children.len() > 0 {
+        //         // TODO: impl BaseNodeTrait to get values from common base node?
+        //         //let start = children[0].start;
+        //     }
         // }
 
         parser
     }
 
-    fn current(&self) -> &TemplateNode {
-        &self.stack[self.stack.len() - 1]
+    pub fn current(&mut self) -> &mut TemplateNode {
+        let length = self.stack.len() - 1;
+        &mut self.stack[length]
     }
 
-    fn error(&self, code: &str, message: &str) {
+    pub fn error(&self, code: &str, message: &str) {
         let error = NewErrorProps {
             name: "ParseError",
             code,
@@ -132,7 +147,7 @@ impl Parser {
         panic!("{:#?}", compile_error);
     }
 
-    fn eat(&mut self, str: &str, required: bool, error: Option<Error>) -> bool {
+    pub fn eat(&mut self, str: &str, required: bool, error: Option<Error>) -> bool {
         if self.match_str(str) {
             self.index += str.len();
             return true;

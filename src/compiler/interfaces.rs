@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
+use std::any::Any;
 
 use magic_string::SourceMap;
 use strum_macros::Display;
@@ -47,6 +48,12 @@ impl GetChildren for BaseNode {
     }
 }
 
+impl TmpNode for BaseNode {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        self
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Fragment {
     pub base_node: BaseNode,
@@ -66,6 +73,12 @@ impl GetChildren for Fragment {
     }
 }
 
+//This trait allows for different concreate types when matching a TemplateNode enum
+pub trait TmpNode {
+    fn get_base_node(&mut self) -> &mut BaseNode;
+}
+
+
 #[derive(Clone, Debug)]
 pub struct Text {
     pub base_node: BaseNode,
@@ -84,6 +97,12 @@ impl Text {
 impl GetChildren for Text {
     fn children(&self) -> Children {
         self.base_node.children()
+    }
+}
+
+impl TmpNode for Text {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
     }
 }
 
@@ -115,6 +134,12 @@ impl GetChildren for MustacheTag {
     }
 }
 
+impl TmpNode for MustacheTag {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Comment {
     pub base_node: BaseNode,
@@ -135,6 +160,12 @@ impl Comment {
 impl GetChildren for Comment {
     fn children(&self) -> Children {
         self.base_node.children()
+    }
+}
+
+impl TmpNode for Comment {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
     }
 }
 
@@ -159,6 +190,12 @@ impl GetChildren for ConstTag {
     }
 }
 
+impl TmpNode for ConstTag {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct DebugTag {
     pub base_node: BaseNode,
@@ -177,6 +214,12 @@ impl DebugTag {
 impl GetChildren for DebugTag {
     fn children(&self) -> Children {
         self.base_node.children()
+    }
+}
+
+impl TmpNode for DebugTag {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
     }
 }
 
@@ -227,6 +270,12 @@ impl BaseDirective {
 impl GetChildren for BaseDirective {
     fn children(&self) -> Children {
         self.base_node.children()
+    }
+}
+
+impl TmpNode for BaseDirective {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
     }
 }
 
@@ -326,11 +375,16 @@ impl Element {
         }
     }
 }
-
 impl GetChildren for Element {
     fn children(&self) -> Children {
         self.base_node.children()
     }
+}
+
+impl TmpNode for Element {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
+    } 
 }
 
 #[derive(Clone, Debug)]
@@ -356,6 +410,12 @@ impl GetChildren for Attribute {
     }
 }
 
+impl TmpNode for Attribute {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct SpreadAttribute {
     pub base_node: BaseNode,
@@ -374,6 +434,12 @@ impl SpreadAttribute {
 impl GetChildren for SpreadAttribute {
     fn children(&self) -> Children {
         self.base_node.children()
+    }
+}
+
+impl TmpNode for SpreadAttribute {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_node
     }
 }
 
@@ -405,6 +471,12 @@ impl GetChildren for Transition {
     }
 }
 
+impl TmpNode for Transition {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        &mut self.base_expression_directive.base_directive.base_node
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum Directive {
     BaseDirective(BaseDirective),
@@ -418,6 +490,22 @@ impl GetChildren for Directive {
             Directive::BaseDirective(el) => el.children(),
             Directive::BaseExpressionDirective(el) => el.children(),
             Directive::Transition(el) => el.children(),
+        }
+    }
+}
+
+impl TmpNode for Directive {
+    fn get_base_node(&mut self) -> &mut BaseNode {
+        match self {
+            Directive::BaseDirective(bd) => {
+                bd.get_base_node()
+            },
+            Directive::BaseExpressionDirective(bed) => {
+                bed.base_directive.get_base_node()
+            },
+            Directive::Transition(t ) => {
+                t.get_base_node()
+            }
         }
     }
 }
@@ -498,6 +586,22 @@ impl TemplateNode {
     }
 
     pub fn get_prop(&self, name: &str) {}
+    
+    pub fn unwrap(&mut self) -> &mut dyn TmpNode {
+        match self {
+            TemplateNode::Text(Text) => Text,
+            TemplateNode::ConstTag(ConstTag) => ConstTag,
+            TemplateNode::DebugTag(DebugTag) => DebugTag,
+            TemplateNode::MustacheTag(MustacheTag) => MustacheTag,
+            TemplateNode::BaseNode(BaseNode) => BaseNode,
+            TemplateNode::Element(Element) => Element,
+            TemplateNode::Attribute(Attribute) => Attribute,
+            TemplateNode::SpreadAttribute(SpreadAttribute) => SpreadAttribute,
+            TemplateNode::Directive(Directive) => Directive,
+            TemplateNode::Transition(Transition) => Transition,
+            TemplateNode::Comment(Comment) => Comment,
+        }
+    }
 }
 
 impl GetChildren for TemplateNode {
