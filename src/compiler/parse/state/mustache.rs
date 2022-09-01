@@ -31,7 +31,6 @@ pub fn trim_whitespace(block: &mut TemplateNode, trim_before: bool, trim_after: 
         }
     }
 
-    // TODO: implement check else and elseif here
     // Only a mustache tag can contain an else and elseif statement?
     // {#if}
     // {#elseif}
@@ -52,12 +51,14 @@ pub fn trim_whitespace(block: &mut TemplateNode, trim_before: bool, trim_after: 
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::compiler::interfaces::{BaseNode, Text};
     use std::collections::HashMap;
 
+    use crate::compiler::interfaces::{BaseNode, Text};
+
+    use super::*;
+
     #[test]
-    fn test_trim_whitespace() {
+    fn test_trim_whitespace_trim_before() {
         let mut sample = TemplateNode::Text(Text {
             base_node: BaseNode {
                 start: 0,
@@ -75,5 +76,105 @@ mod tests {
         trim_whitespace(&mut sample, true, false);
         let result = sample.get_children().first().unwrap().get_data();
         assert_eq!(result, "Hello ")
+    }
+
+    #[test]
+    fn test_trim_whitespace_trim_after() {
+        let mut sample = TemplateNode::Text(Text {
+            base_node: BaseNode {
+                start: 0,
+                end: 0,
+                node_type: "Text".to_string(),
+                children: vec![TemplateNode::Text(Text::new("   Hello   ".to_string()))],
+                prop_name: Default::default(),
+                else_if: false,
+                expression: None,
+                props: HashMap::new(),
+            },
+            data: " Hello ".to_string(),
+        });
+
+        trim_whitespace(&mut sample, false, true);
+        let result = sample.get_children().first().unwrap().get_data();
+        assert_eq!(result, "   Hello")
+    }
+
+    #[test]
+    fn test_trim_whitespace_trim_both() {
+        let mut sample = TemplateNode::Text(Text {
+            base_node: BaseNode {
+                start: 0,
+                end: 0,
+                node_type: "Text".to_string(),
+                children: vec![TemplateNode::Text(Text::new("    Hello    ".to_string()))],
+                prop_name: Default::default(),
+                else_if: false,
+                expression: None,
+                props: HashMap::new(),
+            },
+            data: " Hello ".to_string(),
+        });
+
+        trim_whitespace(&mut sample, true, true);
+        let result = sample.get_children().first().unwrap().get_data();
+        assert_eq!(result, "Hello")
+    }
+
+    #[test]
+    fn test_trim_whitespace_shift_first_child() {
+        let mut sample = TemplateNode::Text(Text {
+            base_node: BaseNode {
+                start: 0,
+                end: 0,
+                node_type: "Text".to_string(),
+                children: vec![
+                    TemplateNode::Text(Text::new("    ".to_string())),
+                    TemplateNode::Text(Text::new("Test".to_string())),
+                ],
+                prop_name: Default::default(),
+                else_if: false,
+                expression: None,
+                props: HashMap::new(),
+            },
+            data: " Hello ".to_string(),
+        });
+
+        trim_whitespace(&mut sample, true, true);
+        let result = sample.get_children().len();
+        assert_eq!(result, 1)
+    }
+
+    #[test]
+    fn test_trim_whitespace_pop_last_child() {
+        let mut sample = TemplateNode::Text(Text {
+            base_node: BaseNode {
+                start: 0,
+                end: 0,
+                node_type: "Text".to_string(),
+                children: vec![
+                    TemplateNode::Text(Text::new("Test".to_string())),
+                    TemplateNode::Text(Text::new("  ".to_string())),
+                ],
+                prop_name: Default::default(),
+                else_if: false,
+                expression: None,
+                props: HashMap::new(),
+            },
+            data: " Hello ".to_string(),
+        });
+
+        trim_whitespace(&mut sample, true, true);
+        let result = sample.get_children().len();
+        assert_eq!(result, 1)
+    }
+
+    #[test]
+    fn test_trim_whitespace_else_stm() {
+        // TODO: write test later, still don't know how to write
+    }
+
+    #[test]
+    fn test_trim_whitespace_else_if_stm() {
+        // TODO: write test later, still don't know how to write
     }
 }

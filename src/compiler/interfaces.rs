@@ -1,12 +1,9 @@
 use std::any::Any;
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::fmt::{Display, Formatter};
-use std::rc::Rc;
+use std::fmt::Display;
 
 use magic_string::SourceMap;
 use strum_macros::Display;
-use swc_ecma_ast::Str;
 use swc_estree_ast::{AssignmentExpression, Program};
 
 use super::node::Node;
@@ -17,7 +14,7 @@ pub struct BaseNode {
     pub end: usize,
     pub node_type: String,
     pub children: Vec<TemplateNode>,
-    pub prop_name: HashMap<String, Node>,
+    pub prop_name: HashMap<String, TemplateNode>,
     pub else_if: bool,
     pub expression: Option<Node>,
     pub props: HashMap<String, TemplateNode>,
@@ -57,7 +54,7 @@ impl Fragment {
     }
 }
 
-//This trait allows for different concreate types when matching a TemplateNode enum
+// This trait allows for different concrete types when matching a TemplateNode enum
 pub trait TmpNode {
     fn get_base_node(&mut self) -> &mut BaseNode;
     fn get_children(&mut self) -> &mut Vec<TemplateNode> {
@@ -81,7 +78,7 @@ impl Text {
     pub fn new(data: String) -> Text {
         Text {
             base_node: BaseNode::new("Text".to_string()),
-            data: data,
+            data,
         }
     }
 }
@@ -131,7 +128,7 @@ impl Comment {
     pub fn new(data: String, ignores: Vec<String>) -> Comment {
         Comment {
             base_node: BaseNode::new("Comment".to_string()),
-            data: data,
+            data,
             ignores,
         }
     }
@@ -486,7 +483,9 @@ impl TemplateNode {
         }
     }
 
-    pub fn get_prop(&self, name: &str) {}
+    pub fn get_prop(&self, _name: &str) {
+        unimplemented!()
+    }
 
     pub fn unwrap(&mut self) -> &mut dyn TmpNode {
         match self {
@@ -767,8 +766,6 @@ impl CssResult {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_simple() {
         assert_eq!(1, 1)
