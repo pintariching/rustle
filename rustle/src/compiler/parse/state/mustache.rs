@@ -1,6 +1,9 @@
-use crate::compiler::interfaces::{TemplateNode, TmpNode};
+use crate::compiler::{
+    interfaces::{TemplateNode, TmpNode},
+    parse::index::{Parser, StateReturn},
+};
 
-pub fn trim_whitespace(block: &mut TemplateNode, trim_before: bool, trim_after: bool) {
+fn trim_whitespace(block: &mut TemplateNode, trim_before: bool, trim_after: bool) {
     let children = block.get_children();
 
     if children.is_empty() {
@@ -47,6 +50,10 @@ pub fn trim_whitespace(block: &mut TemplateNode, trim_before: bool, trim_after: 
         }
         _ => (),
     }
+}
+
+pub fn mustache(parser: &mut Parser) -> StateReturn {
+    todo!()
 }
 
 #[cfg(test)]
