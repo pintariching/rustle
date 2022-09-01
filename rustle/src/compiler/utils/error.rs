@@ -1,5 +1,5 @@
 use crate::compiler::utils::get_code_frame;
-use locate_character::{locate, Options, Search};
+use rustle_locate_character::{locate, Options, Search};
 
 #[derive(Default, PartialEq, Debug, Copy, Clone)]
 pub struct Location {

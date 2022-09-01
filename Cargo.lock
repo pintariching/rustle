@@ -308,10 +308,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8371e4e5341c3a96db127eb2465ac681ced4c433e01dd0e938adbef26ba93ba5"
 
 [[package]]
-name = "locate_character"
-version = "0.1.0"
-
-[[package]]
 name = "lock_api"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -557,16 +553,20 @@ name = "rustle"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
- "locate_character",
  "magic_string",
  "map-macro",
  "regex",
+ "rustle_locate_character",
  "strum",
  "strum_macros",
  "swc_ecma_ast",
  "swc_ecma_parser",
  "swc_estree_ast",
 ]
+
+[[package]]
+name = "rustle_locate_character"
+version = "0.1.0"
 
 [[package]]
 name = "rustversion"

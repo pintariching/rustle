@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-locate_character = { path = "../locate_character", version = "0.1.0" }
+rustle_locate_character = { path = "../rustle_locate_character", version = "0.1.0" }
 
 lazy_static = "1.4.0"
 regex = "1.6.0"
