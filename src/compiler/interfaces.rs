@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::any::Any;
 
 use magic_string::SourceMap;
 use strum_macros::Display;
@@ -7,13 +6,16 @@ use swc_estree_ast::{AssignmentExpression, Program};
 
 use super::node::Node;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BaseNode {
     pub start: usize,
     pub end: usize,
     pub node_type: String,
-    pub children: Option<Vec<TemplateNode>>,
-    pub prop_name: Vec<String>,
+    pub children: Vec<TemplateNode>,
+    pub prop_name: HashMap<String, TemplateNode>,
+    pub else_if: bool,
+    pub expression: Option<Node>,
+    pub props: HashMap<String, TemplateNode>,
 }
 
 impl BaseNode {
@@ -22,8 +24,11 @@ impl BaseNode {
             start: 0,
             end: 0,
             node_type,
-            children: Some(Vec::new()),
-            prop_name: Vec::new(),
+            children: Vec::new(),
+            prop_name: HashMap::new(),
+            else_if: false,
+            expression: None,
+            props: HashMap::new(),
         }
     }
 }
@@ -34,7 +39,7 @@ impl TmpNode for BaseNode {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Fragment {
     pub base_node: BaseNode,
 }
@@ -47,13 +52,21 @@ impl Fragment {
     }
 }
 
-
-//This trait allows for different concreate types when matching a TemplateNode enum
+// This trait allows for different concrete types when matching a TemplateNode enum
 pub trait TmpNode {
     fn get_base_node(&mut self) -> &mut BaseNode;
+    fn get_children(&mut self) -> &mut Vec<TemplateNode> {
+        &mut self.get_base_node().children
+    }
+    fn shift_children(&mut self) {
+        self.get_base_node().children.remove(0);
+    }
+    fn pop_children(&mut self) {
+        self.get_base_node().children.pop();
+    }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Text {
     pub base_node: BaseNode,
     pub data: String,
@@ -74,14 +87,14 @@ impl TmpNode for Text {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct MustacheTag {
     pub base_node: BaseNode,
     expression: Node,
 }
 
 impl MustacheTag {
-    pub fn new(raw_mustache_tag: bool, expression: Node) -> MustacheTag {
+    pub fn new(raw_mustache_tag: bool, expression: Node) -> Self {
         if raw_mustache_tag {
             MustacheTag {
                 base_node: BaseNode::new("RawMustacheTag".to_string()),
@@ -94,6 +107,13 @@ impl MustacheTag {
             }
         }
     }
+
+    pub fn new_with_base_node(base_node: BaseNode, expression: Node) -> Self {
+        Self {
+            base_node,
+            expression,
+        }
+    }
 }
 
 impl TmpNode for MustacheTag {
@@ -102,7 +122,7 @@ impl TmpNode for MustacheTag {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Comment {
     pub base_node: BaseNode,
     pub data: String,
@@ -125,7 +145,7 @@ impl TmpNode for Comment {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ConstTag {
     pub base_node: BaseNode,
     pub expression: AssignmentExpression,
@@ -146,7 +166,7 @@ impl TmpNode for ConstTag {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DebugTag {
     pub base_node: BaseNode,
     pub identifiers: Vec<Node>,
@@ -167,7 +187,6 @@ impl TmpNode for DebugTag {
     }
 }
 
-
 #[derive(Display)]
 pub enum DirectiveType {
     Action,
@@ -181,7 +200,23 @@ pub enum DirectiveType {
     Transition,
 }
 
-#[derive(Clone)]
+impl From<DirectiveType> for &'static str {
+    fn from(value: DirectiveType) -> Self {
+        match value {
+            DirectiveType::Action => "Action",
+            DirectiveType::Animation => "Animation",
+            DirectiveType::Binding => "Binding",
+            DirectiveType::Class => "Class",
+            DirectiveType::StyleDirective => "StyleDirective",
+            DirectiveType::EventHandler => "EventHandler",
+            DirectiveType::Let => "Let",
+            DirectiveType::Ref => "Ref",
+            DirectiveType::Transition => "Transition",
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct BaseDirective {
     pub base_node: BaseNode,
     pub name: String,
@@ -202,7 +237,7 @@ impl TmpNode for BaseDirective {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BaseExpressionDirective {
     pub base_directive: BaseDirective,
     pub expression: Option<Node>,
@@ -239,14 +274,30 @@ pub enum ElementType {
     Body,
 }
 
-#[derive(Clone)]
+impl From<ElementType> for &'static str {
+    fn from(value: ElementType) -> Self {
+        match value {
+            ElementType::InlineComponent => "InlineComponent",
+            ElementType::SlotTemplate => "SlotTemplate",
+            ElementType::Title => "Title",
+            ElementType::Slot => "Slot",
+            ElementType::Element => "Element",
+            ElementType::Head => "Head",
+            ElementType::Options => "Options",
+            ElementType::Window => "Window",
+            ElementType::Body => "Body",
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub enum ElementAttributes {
     BaseDirective(BaseDirective),
     Attribute(Attribute),
     SpreadAttribute(SpreadAttribute),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Element {
     pub base_node: BaseNode,
     pub name: String,
@@ -270,10 +321,10 @@ impl Element {
 impl TmpNode for Element {
     fn get_base_node(&mut self) -> &mut BaseNode {
         &mut self.base_node
-    } 
+    }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Attribute {
     pub base_node: BaseNode,
     pub name: String,
@@ -296,7 +347,7 @@ impl TmpNode for Attribute {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SpreadAttribute {
     pub base_node: BaseNode,
     pub expression: Node,
@@ -317,7 +368,7 @@ impl TmpNode for SpreadAttribute {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Transition {
     pub base_expression_directive: BaseExpressionDirective,
     pub intro: bool,
@@ -345,7 +396,7 @@ impl TmpNode for Transition {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Directive {
     BaseDirective(BaseDirective),
     BaseExpressionDirective(BaseExpressionDirective),
@@ -355,20 +406,14 @@ pub enum Directive {
 impl TmpNode for Directive {
     fn get_base_node(&mut self) -> &mut BaseNode {
         match self {
-            Directive::BaseDirective(bd) => {
-                bd.get_base_node()
-            },
-            Directive::BaseExpressionDirective(bed) => {
-                bed.base_directive.get_base_node()
-            },
-            Directive::Transition(t ) => {
-                t.get_base_node()
-            }
+            Directive::BaseDirective(bd) => bd.get_base_node(),
+            Directive::BaseExpressionDirective(bed) => bed.base_directive.get_base_node(),
+            Directive::Transition(t) => t.get_base_node(),
         }
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TemplateNode {
     Text(Text),
     ConstTag(ConstTag),
@@ -435,6 +480,23 @@ impl TemplateNode {
         }
     }
 
+    pub fn get_data(&self) -> String {
+        match self {
+            TemplateNode::Text(el) => el.data.clone(),
+            TemplateNode::Comment(el) => el.data.clone(),
+            _ => panic!("unsupported this type"),
+        }
+    }
+
+    pub fn get_prop(&self, name: &str) -> Option<TemplateNode> {
+        match self {
+            TemplateNode::Text(el) => el.base_node.props.get(name).cloned(),
+            TemplateNode::Comment(el) => el.base_node.props.get(name).cloned(),
+            TemplateNode::MustacheTag(el) => el.base_node.props.get(name).cloned(),
+            _ => panic!("unsupported this type"),
+        }
+    }
+
     pub fn unwrap(&mut self) -> &mut dyn TmpNode {
         match self {
             TemplateNode::Text(Text) => Text,
@@ -449,9 +511,24 @@ impl TemplateNode {
             TemplateNode::Transition(Transition) => Transition,
             TemplateNode::Comment(Comment) => Comment,
         }
-    }   
-}
+    }
 
+    pub fn get_children(&mut self) -> &mut Vec<TemplateNode> {
+        match self {
+            TemplateNode::Text(el) => el.get_children(),
+            TemplateNode::ConstTag(el) => el.get_children(),
+            TemplateNode::DebugTag(el) => el.get_children(),
+            TemplateNode::MustacheTag(el) => el.get_children(),
+            TemplateNode::BaseNode(el) => el.get_children(),
+            TemplateNode::Element(el) => el.get_children(),
+            TemplateNode::Attribute(el) => el.get_children(),
+            TemplateNode::SpreadAttribute(el) => el.get_children(),
+            TemplateNode::Directive(el) => el.get_children(),
+            TemplateNode::Transition(el) => el.get_children(),
+            TemplateNode::Comment(el) => el.get_children(),
+        }
+    }
+}
 // We don't have interfaces in Rust
 // So I guess we don't need this here?
 // pub struct Parser {
@@ -465,7 +542,7 @@ impl TemplateNode {
 //     pub meta_tags: Vec<String>,
 // }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Script {
     pub base_node: BaseNode,
     pub context: String,
@@ -482,7 +559,7 @@ impl Script {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Style {
     pub base_node: BaseNode,
     // pub attributes: Vec<String>, // TODO - from svelte
@@ -499,7 +576,7 @@ impl Style {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct StyleContent {
     pub start: i32,
     pub end: i32,
@@ -694,5 +771,13 @@ pub struct CssResult {
 impl CssResult {
     pub fn new(code: String, map: SourceMap) -> CssResult {
         CssResult { code, map }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_simple() {
+        assert_eq!(1, 1)
     }
 }

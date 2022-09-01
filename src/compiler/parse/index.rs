@@ -1,4 +1,7 @@
+use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
 use std::ops::Index;
+use std::rc::Rc;
 
 use crate::compiler::interfaces::{
     Ast, BaseNode, Fragment, ParserOptions, Script, Style, TemplateNode,
@@ -29,11 +32,10 @@ pub struct Parser {
     pub last_auto_closed_tag: Option<LastAutoClosedTag>,
 }
 
-
 //Return type of tag, mustache and text function corresponds to (ParserState | void) in svelte/src/compiler/parse/index.ts
 pub enum StateReturn {
     Ok(ParserState),
-    None
+    None,
 }
 
 //A function pointer for state
@@ -54,9 +56,12 @@ impl Parser {
                 base_node: BaseNode {
                     start: 0,
                     end: 0,
-                    node_type: String::from("Fragment"),
-                    children: Some(Vec::new()),
-                    prop_name: Vec::new(),
+                    node_type: "Fragment".to_string(),
+                    children: Vec::new(),
+                    prop_name: HashMap::new(),
+                    else_if: false,
+                    expression: None,
+                    props: HashMap::new(),
                 },
             },
             css: Vec::new(),
@@ -65,7 +70,9 @@ impl Parser {
             last_auto_closed_tag: None,
         };
 
-        parser.stack.push(TemplateNode::BaseNode(parser.html.base_node.clone()));
+        parser
+            .stack
+            .push(TemplateNode::BaseNode(parser.html.base_node.clone()));
 
         // Html is a Fragment but gets pushed to
         // parser.stack which is a Vec<TemplateNode> ??
@@ -75,8 +82,6 @@ impl Parser {
         // defined in src/compiler/parse/state/fragment.ts
         // let state: ParserState = fragment;
 
-
-        
         // let state: ParserState = fragment
 
         // while parser.index < parser.template.len() {
