@@ -53,7 +53,10 @@ pub fn trim_whitespace(block: &mut TemplateNode, trim_before: bool, trim_after: 
 mod tests {
     use std::collections::HashMap;
 
-    use crate::compiler::interfaces::{BaseNode, Text};
+    use map_macro::map;
+
+    use crate::compiler::interfaces::{BaseNode, MustacheTag, Text};
+    use crate::compiler::node::Node;
 
     use super::*;
 
@@ -169,12 +172,170 @@ mod tests {
     }
 
     #[test]
-    fn test_trim_whitespace_else_stm() {
-        // TODO: write test later, still don't know how to write
+    fn test_trim_whitespace_else_node_shift_child() {
+        let else_node = TemplateNode::Text(Text {
+            base_node: BaseNode {
+                start: 0,
+                end: 0,
+                node_type: "Text".to_string(),
+                children: vec![
+                    TemplateNode::Text(Text::new("  ".to_string())),
+                    TemplateNode::Text(Text::new("222".to_string())),
+                ],
+                prop_name: Default::default(),
+                else_if: false,
+                expression: None,
+                props: HashMap::new(),
+            },
+            data: " Hello ".to_string(),
+        });
+        let base_node = BaseNode {
+            start: 0,
+            end: 0,
+            node_type: "MustacheTag".to_string(),
+            children: vec![
+                TemplateNode::Text(Text::new("  ".to_string())),
+                TemplateNode::Text(Text::new("111".to_string())),
+            ],
+            prop_name: Default::default(),
+            else_if: false,
+            expression: None,
+            props: map! {
+                "else".to_string() => else_node
+            },
+        };
+        let mut sample =
+            TemplateNode::MustacheTag(MustacheTag::new_with_base_node(base_node, Node::Empty));
+        trim_whitespace(&mut sample, true, true);
+        let result = sample.get_children().len();
+        assert_eq!(result, 1);
+        let result = sample.get_prop("else").unwrap().get_children().len();
+        assert_eq!(result, 1)
     }
 
     #[test]
-    fn test_trim_whitespace_else_if_stm() {
-        // TODO: write test later, still don't know how to write
+    fn test_trim_whitespace_else_node_pop_child() {
+        let else_node = TemplateNode::Text(Text {
+            base_node: BaseNode {
+                start: 0,
+                end: 0,
+                node_type: "Text".to_string(),
+                children: vec![
+                    TemplateNode::Text(Text::new("222".to_string())),
+                    TemplateNode::Text(Text::new("  ".to_string())),
+                ],
+                prop_name: Default::default(),
+                else_if: false,
+                expression: None,
+                props: HashMap::new(),
+            },
+            data: " Hello ".to_string(),
+        });
+        let base_node = BaseNode {
+            start: 0,
+            end: 0,
+            node_type: "MustacheTag".to_string(),
+            children: vec![
+                TemplateNode::Text(Text::new("111".to_string())),
+                TemplateNode::Text(Text::new("  ".to_string())),
+            ],
+            prop_name: Default::default(),
+            else_if: false,
+            expression: None,
+            props: map! {
+                "else".to_string() => else_node
+            },
+        };
+        let mut sample =
+            TemplateNode::MustacheTag(MustacheTag::new_with_base_node(base_node, Node::Empty));
+        trim_whitespace(&mut sample, true, true);
+        let result = sample.get_children().len();
+        assert_eq!(result, 1);
+        let result = sample.get_prop("else").unwrap().get_children().len();
+        assert_eq!(result, 1)
+    }
+
+    #[test]
+    fn test_trim_whitespace_elseif_node_shift_child() {
+        let else_node = TemplateNode::Text(Text {
+            base_node: BaseNode {
+                start: 0,
+                end: 0,
+                node_type: "Text".to_string(),
+                children: vec![
+                    TemplateNode::Text(Text::new("   ".to_string())),
+                    TemplateNode::Text(Text::new("222".to_string())),
+                ],
+                prop_name: Default::default(),
+                else_if: false,
+                expression: None,
+                props: HashMap::new(),
+            },
+            data: " Hello ".to_string(),
+        });
+        let base_node = BaseNode {
+            start: 0,
+            end: 0,
+            node_type: "MustacheTag".to_string(),
+            children: vec![
+                TemplateNode::Text(Text::new("   ".to_string())),
+                TemplateNode::Text(Text::new("111".to_string())),
+            ],
+            prop_name: Default::default(),
+            else_if: false,
+            expression: None,
+            props: map! {
+                "elseif".to_string() => else_node
+            },
+        };
+        let mut sample =
+            TemplateNode::MustacheTag(MustacheTag::new_with_base_node(base_node, Node::Empty));
+        trim_whitespace(&mut sample, true, true);
+        let result = sample.get_children().len();
+        assert_eq!(result, 1);
+        let result = sample.get_prop("elseif").unwrap().get_children().len();
+        assert_eq!(result, 1)
+    }
+
+    #[test]
+    fn test_trim_whitespace_elseif_node_pop_child() {
+        let else_node = TemplateNode::Text(Text {
+            base_node: BaseNode {
+                start: 0,
+                end: 0,
+                node_type: "Text".to_string(),
+                children: vec![
+                    TemplateNode::Text(Text::new("222".to_string())),
+                    TemplateNode::Text(Text::new("   ".to_string())),
+                ],
+                prop_name: Default::default(),
+                else_if: false,
+                expression: None,
+                props: HashMap::new(),
+            },
+            data: " Hello ".to_string(),
+        });
+        let base_node = BaseNode {
+            start: 0,
+            end: 0,
+            node_type: "MustacheTag".to_string(),
+            children: vec![
+                TemplateNode::Text(Text::new("111".to_string())),
+                TemplateNode::Text(Text::new("   ".to_string())),
+            ],
+            prop_name: Default::default(),
+            else_if: false,
+            expression: None,
+            props: map! {
+                "elseif".to_string() => else_node
+            },
+        };
+        let mut sample =
+            TemplateNode::MustacheTag(MustacheTag::new_with_base_node(base_node, Node::Empty));
+        trim_whitespace(&mut sample, true, true);
+        let result = sample.get_children().len();
+        assert_eq!(result, 1);
+        let result = sample.get_prop("elseif").unwrap().get_children().len();
+        assert_eq!(result, 1)
     }
 }

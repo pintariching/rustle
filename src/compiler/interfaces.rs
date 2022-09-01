@@ -1,6 +1,4 @@
-use std::any::Any;
 use std::collections::HashMap;
-use std::fmt::Display;
 
 use magic_string::SourceMap;
 use strum_macros::Display;
@@ -96,7 +94,7 @@ pub struct MustacheTag {
 }
 
 impl MustacheTag {
-    pub fn new(raw_mustache_tag: bool, expression: Node) -> MustacheTag {
+    pub fn new(raw_mustache_tag: bool, expression: Node) -> Self {
         if raw_mustache_tag {
             MustacheTag {
                 base_node: BaseNode::new("RawMustacheTag".to_string()),
@@ -107,6 +105,13 @@ impl MustacheTag {
                 base_node: BaseNode::new("MustacheTag".to_string()),
                 expression,
             }
+        }
+    }
+
+    pub fn new_with_base_node(base_node: BaseNode, expression: Node) -> Self {
+        Self {
+            base_node,
+            expression,
         }
     }
 }
@@ -483,8 +488,13 @@ impl TemplateNode {
         }
     }
 
-    pub fn get_prop(&self, _name: &str) {
-        unimplemented!()
+    pub fn get_prop(&self, name: &str) -> Option<TemplateNode> {
+        match self {
+            TemplateNode::Text(el) => el.base_node.props.get(name).cloned(),
+            TemplateNode::Comment(el) => el.base_node.props.get(name).cloned(),
+            TemplateNode::MustacheTag(el) => el.base_node.props.get(name).cloned(),
+            _ => panic!("unsupported this type"),
+        }
     }
 
     pub fn unwrap(&mut self) -> &mut dyn TmpNode {

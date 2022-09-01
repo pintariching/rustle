@@ -30,4 +30,6 @@ pub enum Node {
     SwitchCase(SwitchCase),
     TemplateElement(TemplateElement),
     VariableDeclarator(VariableDeclarator),
+    //Testing purpose
+    Empty,
 }

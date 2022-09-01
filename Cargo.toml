@@ -16,6 +16,7 @@ regex = "1.6.0"
 strum = "0.24.1"
 strum_macros = "0.24.3"
 magic_string = "0.3.4"
+map-macro = "0.2.3"
 
 swc_ecma_ast = "0.90.7"
 swc_ecma_parser = "0.117.0"
