@@ -8,8 +8,8 @@ use super::node::Node;
 
 #[derive(Clone, Debug)]
 pub struct BaseNode {
-    pub start: usize,
-    pub end: usize,
+    pub start: Option<usize>,
+    pub end: Option<usize>,
     pub node_type: String,
     pub children: Vec<TemplateNode>,
     pub prop_name: HashMap<String, TemplateNode>,
@@ -21,8 +21,8 @@ pub struct BaseNode {
 impl BaseNode {
     fn new(node_type: String) -> BaseNode {
         BaseNode {
-            start: 0,
-            end: 0,
+            start: Some(0),
+            end: Some(0),
             node_type,
             children: Vec::new(),
             prop_name: HashMap::new(),

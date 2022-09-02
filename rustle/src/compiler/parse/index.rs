@@ -2,10 +2,12 @@ use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::ops::Index;
 use std::rc::Rc;
+use std::str::from_utf8;
 
 use crate::compiler::interfaces::{
-    Ast, BaseNode, Fragment, ParserOptions, Script, Style, TemplateNode,
+    Ast, BaseNode, Fragment, ParserOptions, Script, Style, TemplateNode, TmpNode,
 };
+use crate::compiler::parse::state::fragment;
 use crate::compiler::utils::{full_char_at, WHITESPACE};
 use crate::compiler::utils::{CompileError, NewErrorProps};
 use regex::Regex;
@@ -38,6 +40,7 @@ pub enum StateReturn {
     None,
 }
 
+
 //A function pointer for state
 pub type ParserState = fn(&mut Parser) -> StateReturn;
 
@@ -51,11 +54,11 @@ impl Parser {
             filename: options.filename,
             custom_element: options.custom_element,
             index: 0,
-            stack: Vec::new(), // TODO: push html to stack
+            stack: Vec::new(),
             html: Fragment {
                 base_node: BaseNode {
-                    start: 0,
-                    end: 0,
+                    start: Some(0),
+                    end: Some(0),
                     node_type: "Fragment".to_string(),
                     children: Vec::new(),
                     prop_name: HashMap::new(),
@@ -80,13 +83,18 @@ impl Parser {
 
         // fragment is a function
         // defined in src/compiler/parse/state/fragment.ts
-        // let state: ParserState = fragment;
+        let mut state: ParserState = fragment;
 
-        // let state: ParserState = fragment
-
-        // while parser.index < parser.template.len() {
-        //     state = state(parser) || fragment;
-        // }
+        while parser.index < parser.template.len() {
+            state = match state(&mut parser) {
+                StateReturn::Ok(s) => {
+                    s
+                },
+                StateReturn::None => {
+                    fragment
+                }
+            };
+        }
 
         if parser.stack.len() > 1 {
             let current = parser.current();
@@ -109,20 +117,35 @@ impl Parser {
             );
         }
 
-        // TODO: rewrite this to rust
-        // if (state !== fragment) {
-        // 	this.error({
-        // 		code: 'unexpected-eof',
-        // 		message: 'Unexpected end of input'
-        // 	});
-        // }
+        
+        //If the functions are identical their addresses should be too
+        if state as usize != fragment as usize {
+            parser.error(
+                "unexpected-eof",
+                "Unexpected end of input"
+            )
+        }
 
-        // if let Some(children) = &parser.html.base_node.children {
-        //     if children.len() > 0 {
-        //         // TODO: impl BaseNodeTrait to get values from common base node?
-        //         //let start = children[0].start;
-        //     }
-        // }
+        if parser.html.base_node.children.len() > 0 {
+            let mut start = parser.html.base_node.get_children()[0].unwrap().get_base_node().start.unwrap();
+
+            while WHITESPACE.is_match(from_utf8(&[template.as_bytes()[start]]).unwrap()) {
+                start += 1;
+            }
+
+            let last = parser.html.base_node.get_children().len() - 1;
+            let mut end = parser.html.base_node.get_children()[last].unwrap().get_base_node().end.unwrap();
+
+            while WHITESPACE.is_match(from_utf8(&[template.as_bytes()[end - 1]]).unwrap()) {
+                end -= 1;
+            }
+
+            parser.html.base_node.start = Some(start);
+            parser.html.base_node.end = Some(end);
+        } else {
+            parser.html.base_node.start =  None;
+            parser.html.base_node.end = None;
+        }
 
         parser
     }
@@ -256,7 +279,7 @@ pub fn parse(template: String, options: ParserOptions) -> Ast {
     if parser.css.len() > 1 {
         parser.error(
             "Duplicate style",
-            &parser.css[1].base_node.start.to_string(),
+            &parser.css[1].base_node.start.unwrap().to_string(),
         );
     }
 
@@ -275,14 +298,14 @@ pub fn parse(template: String, options: ParserOptions) -> Ast {
     if instance_scripts.len() > 1 {
         parser.error(
             "Duplicate script",
-            &instance_scripts[1].base_node.start.to_string(),
+            &instance_scripts[1].base_node.start.unwrap().to_string(),
         )
     }
 
     if module_scripts.len() > 1 {
         parser.error(
             "Duplicate module script",
-            &module_scripts[1].base_node.start.to_string(),
+            &module_scripts[1].base_node.start.unwrap().to_string(),
         )
     }
 

@@ -13,8 +13,8 @@ pub fn text(parser: &mut Parser) -> StateReturn {
 
     let node: Text = Text {
         base_node: BaseNode {
-            start,
-            end: parser.index,
+            start: Some(start),
+            end: Some(parser.index),
             node_type: "Text".to_string(),
             children: Vec::new(),
             prop_name: HashMap::new(),
