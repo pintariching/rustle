@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, f32::consts::E};
 
 use magic_string::SourceMap;
 use strum_macros::Display;
@@ -13,9 +13,7 @@ pub struct BaseNode {
     pub node_type: String,
     pub children: Vec<TemplateNode>,
     pub prop_name: HashMap<String, TemplateNode>,
-    pub else_if: bool,
     pub expression: Option<Node>,
-    pub props: HashMap<String, TemplateNode>,
 }
 
 impl BaseNode {
@@ -26,9 +24,7 @@ impl BaseNode {
             node_type,
             children: Vec::new(),
             prop_name: HashMap::new(),
-            else_if: false,
             expression: None,
-            props: HashMap::new(),
         }
     }
 }
@@ -490,10 +486,15 @@ impl TemplateNode {
 
     pub fn get_prop(&self, name: &str) -> Option<TemplateNode> {
         match self {
-            TemplateNode::Text(el) => el.base_node.props.get(name).cloned(),
-            TemplateNode::Comment(el) => el.base_node.props.get(name).cloned(),
-            TemplateNode::MustacheTag(el) => el.base_node.props.get(name).cloned(),
-            _ => panic!("unsupported this type"),
+            TemplateNode::Text(el) => el.base_node.prop_name.get(name).cloned(),
+            TemplateNode::Comment(el) => el.base_node.prop_name.get(name).cloned(),
+            TemplateNode::MustacheTag(el) => el.base_node.prop_name.get(name).cloned(),
+            TemplateNode::ConstTag(el) => el.base_node.prop_name.get(name).cloned(),
+            TemplateNode::DebugTag(el) => el.base_node.prop_name.get(name).cloned(),
+            TemplateNode::Element(el) => el.base_node.prop_name.get(name).cloned(),
+            TemplateNode::Attribute(el) => el.base_node.prop_name.get(name).cloned(),
+            TemplateNode::SpreadAttribute(el) => el.base_node.prop_name.get(name).cloned(),
+            _ => panic!("get_prop called on unsupported type"),
         }
     }
 
@@ -526,6 +527,35 @@ impl TemplateNode {
             TemplateNode::Directive(el) => el.get_children(),
             TemplateNode::Transition(el) => el.get_children(),
             TemplateNode::Comment(el) => el.get_children(),
+        }
+    }
+
+    pub fn get_base_node(&mut self) -> &mut BaseNode {
+        match self {
+            TemplateNode::Text(e) => e.get_base_node(),
+            TemplateNode::ConstTag(e) => e.get_base_node(),
+            TemplateNode::DebugTag(e) => e.get_base_node(),
+            TemplateNode::MustacheTag(e) => e.get_base_node(),
+            TemplateNode::BaseNode(e) => e.get_base_node(),
+            TemplateNode::Element(e) => e.get_base_node(),
+            TemplateNode::Attribute(e) => e.get_base_node(),
+            TemplateNode::SpreadAttribute(e) => e.get_base_node(),
+            TemplateNode::Directive(e) => e.get_base_node(),
+            TemplateNode::Transition(e) => e.get_base_node(),
+            TemplateNode::Comment(e) => e.get_base_node(),
+        }
+    }
+
+    pub fn get_name(&self) -> Option<String> {
+        match self {
+            TemplateNode::Element(e) => Some(e.name.clone()),
+            TemplateNode::Attribute(a) => Some(a.name.clone()),
+            TemplateNode::Directive(d) => match d {
+                Directive::BaseDirective(b) => Some(b.name.clone()),
+                Directive::BaseExpressionDirective(b) => Some(b.name.clone()),
+                Directive::Transition(t) => None,
+            },
+            _ => None,
         }
     }
 }

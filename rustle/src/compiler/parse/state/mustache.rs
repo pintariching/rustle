@@ -1,6 +1,13 @@
+use std::borrow::Borrow;
+
 use crate::compiler::{
     interfaces::{TemplateNode, TmpNode},
-    parse::index::{Parser, StateReturn},
+    parse::{
+        errors::{self, Error},
+        index::{Parser, StateReturn},
+        utils::closing_tag_ommited,
+    },
+    utils::WHITESPACE,
 };
 
 fn trim_whitespace(block: &mut TemplateNode, trim_before: bool, trim_after: bool) {
@@ -40,11 +47,11 @@ fn trim_whitespace(block: &mut TemplateNode, trim_before: bool, trim_after: bool
     // {#else}
     match block {
         TemplateNode::MustacheTag(m) => {
-            if let Some(b) = m.get_base_node().props.get_mut("else") {
+            if let Some(b) = m.get_base_node().prop_name.get_mut("else") {
                 trim_whitespace(b, trim_before, trim_after);
             }
 
-            if let Some(b) = m.get_base_node().props.get_mut("elseif") {
+            if let Some(b) = m.get_base_node().prop_name.get_mut("elseif") {
                 trim_whitespace(b, trim_before, trim_after);
             }
         }
@@ -53,6 +60,82 @@ fn trim_whitespace(block: &mut TemplateNode, trim_before: bool, trim_after: bool
 }
 
 pub fn mustache(parser: &mut Parser) -> StateReturn {
+    let start = parser.index;
+    parser.index += 1;
+
+    parser.allow_whitespace();
+
+    // {/if}, {/each}, {/await} or {/key}
+    if parser.eat("/", false, None) {
+        let mut block = parser.current().clone();
+        let mut expected: &str = "";
+
+        if closing_tag_ommited(&block.get_name().unwrap(), None) {
+            block.get_base_node().end = Some(start);
+            parser.stack.pop();
+            block = parser.current().clone();
+        }
+
+        if block.get_type() == "ElseBlock"
+            || block.get_type() == "PendingBlock"
+            || block.get_type() == "ThenBlock"
+            || block.get_type() == "CatchBlock"
+        {
+            block.get_base_node().end = Some(start);
+            parser.stack.pop();
+            block = parser.current().clone();
+
+            expected = "await";
+        }
+
+        match block.get_type().as_str() {
+            "IfBlock" => expected = "if",
+            "EachBlock" => expected = "each",
+            "AwaitBlock" => expected = "await",
+            "KeyBlock" => expected = "key",
+            _ => {
+                let error = Error::unexpected_block_close();
+                parser.error(&error.code, &error.message);
+            }
+        }
+
+        parser.eat(expected, true, None);
+        parser.allow_whitespace();
+        parser.eat("}", true, None);
+
+        while let Some(_) = block.get_prop("elseif") {
+            block.get_base_node().end = Some(parser.index);
+            parser.stack.pop();
+            block = parser.current().clone();
+
+            if let Some(mut b) = block.get_prop("else") {
+                b.get_base_node().end = Some(start);
+            }
+        }
+
+        // strip leading/trailing whitespace as necessary
+        let char_before =
+            &parser.template[block.get_base_node().start.unwrap() - 1..parser.template.len()];
+        let char_after = &parser.template[parser.index..parser.template.len()];
+        let trim_before = char_before.is_empty() || WHITESPACE.is_match(char_before);
+        let trim_after = char_after.is_empty() || WHITESPACE.is_match(char_after);
+
+        trim_whitespace(&mut block, trim_before, trim_after);
+
+        block.get_base_node().end = Some(parser.index);
+        parser.stack.pop();
+    } else if parser.eat(":else", false, None) {
+        if parser.eat("if", false, None) {
+            let error = Error::invalid_elseif();
+            parser.error(&error.code, &error.message)
+        }
+
+        parser.allow_whitespace();
+
+        // :else if
+        todo!()
+    }
+
     todo!()
 }
 
@@ -76,9 +159,8 @@ mod tests {
                 node_type: "Text".to_string(),
                 children: vec![TemplateNode::Text(Text::new("   Hello ".to_string()))],
                 prop_name: Default::default(),
-                else_if: false,
                 expression: None,
-                props: HashMap::new(),
+                prop_name: HashMap::new(),
             },
             data: " Hello ".to_string(),
         });
@@ -97,9 +179,8 @@ mod tests {
                 node_type: "Text".to_string(),
                 children: vec![TemplateNode::Text(Text::new("   Hello   ".to_string()))],
                 prop_name: Default::default(),
-                else_if: false,
                 expression: None,
-                props: HashMap::new(),
+                prop_name: HashMap::new(),
             },
             data: " Hello ".to_string(),
         });
@@ -118,9 +199,8 @@ mod tests {
                 node_type: "Text".to_string(),
                 children: vec![TemplateNode::Text(Text::new("    Hello    ".to_string()))],
                 prop_name: Default::default(),
-                else_if: false,
                 expression: None,
-                props: HashMap::new(),
+                prop_name: HashMap::new(),
             },
             data: " Hello ".to_string(),
         });
@@ -142,9 +222,8 @@ mod tests {
                     TemplateNode::Text(Text::new("Test".to_string())),
                 ],
                 prop_name: Default::default(),
-                else_if: false,
                 expression: None,
-                props: HashMap::new(),
+                prop_name: HashMap::new(),
             },
             data: " Hello ".to_string(),
         });
@@ -166,9 +245,8 @@ mod tests {
                     TemplateNode::Text(Text::new("  ".to_string())),
                 ],
                 prop_name: Default::default(),
-                else_if: false,
                 expression: None,
-                props: HashMap::new(),
+                prop_name: HashMap::new(),
             },
             data: " Hello ".to_string(),
         });
@@ -190,9 +268,8 @@ mod tests {
                     TemplateNode::Text(Text::new("222".to_string())),
                 ],
                 prop_name: Default::default(),
-                else_if: false,
                 expression: None,
-                props: HashMap::new(),
+                prop_name: HashMap::new(),
             },
             data: " Hello ".to_string(),
         });
@@ -205,9 +282,8 @@ mod tests {
                 TemplateNode::Text(Text::new("111".to_string())),
             ],
             prop_name: Default::default(),
-            else_if: false,
             expression: None,
-            props: map! {
+            prop_name: map! {
                 "else".to_string() => else_node
             },
         };
@@ -232,9 +308,8 @@ mod tests {
                     TemplateNode::Text(Text::new("  ".to_string())),
                 ],
                 prop_name: Default::default(),
-                else_if: false,
                 expression: None,
-                props: HashMap::new(),
+                prop_name: HashMap::new(),
             },
             data: " Hello ".to_string(),
         });
@@ -247,9 +322,8 @@ mod tests {
                 TemplateNode::Text(Text::new("  ".to_string())),
             ],
             prop_name: Default::default(),
-            else_if: false,
             expression: None,
-            props: map! {
+            prop_name: map! {
                 "else".to_string() => else_node
             },
         };
@@ -274,9 +348,8 @@ mod tests {
                     TemplateNode::Text(Text::new("222".to_string())),
                 ],
                 prop_name: Default::default(),
-                else_if: false,
                 expression: None,
-                props: HashMap::new(),
+                prop_name: HashMap::new(),
             },
             data: " Hello ".to_string(),
         });
@@ -289,9 +362,8 @@ mod tests {
                 TemplateNode::Text(Text::new("111".to_string())),
             ],
             prop_name: Default::default(),
-            else_if: false,
             expression: None,
-            props: map! {
+            prop_name: map! {
                 "elseif".to_string() => else_node
             },
         };
@@ -316,9 +388,8 @@ mod tests {
                     TemplateNode::Text(Text::new("   ".to_string())),
                 ],
                 prop_name: Default::default(),
-                else_if: false,
                 expression: None,
-                props: HashMap::new(),
+                prop_name: HashMap::new(),
             },
             data: " Hello ".to_string(),
         });
@@ -331,9 +402,8 @@ mod tests {
                 TemplateNode::Text(Text::new("   ".to_string())),
             ],
             prop_name: Default::default(),
-            else_if: false,
             expression: None,
-            props: map! {
+            prop_name: map! {
                 "elseif".to_string() => else_node
             },
         };
