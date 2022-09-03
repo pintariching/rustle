@@ -71,8 +71,8 @@ mod tests {
     fn test_trim_whitespace_trim_before() {
         let mut sample = TemplateNode::Text(Text {
             base_node: BaseNode {
-                start: 0,
-                end: 0,
+                start: Some(0),
+                end: Some(0),
                 node_type: "Text".to_string(),
                 children: vec![TemplateNode::Text(Text::new("   Hello ".to_string()))],
                 prop_name: Default::default(),
@@ -92,8 +92,8 @@ mod tests {
     fn test_trim_whitespace_trim_after() {
         let mut sample = TemplateNode::Text(Text {
             base_node: BaseNode {
-                start: 0,
-                end: 0,
+                start: Some(0),
+                end: Some(0),
                 node_type: "Text".to_string(),
                 children: vec![TemplateNode::Text(Text::new("   Hello   ".to_string()))],
                 prop_name: Default::default(),
@@ -113,8 +113,8 @@ mod tests {
     fn test_trim_whitespace_trim_both() {
         let mut sample = TemplateNode::Text(Text {
             base_node: BaseNode {
-                start: 0,
-                end: 0,
+                start: Some(0),
+                end: Some(0),
                 node_type: "Text".to_string(),
                 children: vec![TemplateNode::Text(Text::new("    Hello    ".to_string()))],
                 prop_name: Default::default(),
@@ -134,8 +134,8 @@ mod tests {
     fn test_trim_whitespace_shift_first_child() {
         let mut sample = TemplateNode::Text(Text {
             base_node: BaseNode {
-                start: 0,
-                end: 0,
+                start: Some(0),
+                end: Some(0),
                 node_type: "Text".to_string(),
                 children: vec![
                     TemplateNode::Text(Text::new("    ".to_string())),
@@ -158,8 +158,8 @@ mod tests {
     fn test_trim_whitespace_pop_last_child() {
         let mut sample = TemplateNode::Text(Text {
             base_node: BaseNode {
-                start: 0,
-                end: 0,
+                start: Some(0),
+                end: Some(0),
                 node_type: "Text".to_string(),
                 children: vec![
                     TemplateNode::Text(Text::new("Test".to_string())),
@@ -182,8 +182,8 @@ mod tests {
     fn test_trim_whitespace_else_node_shift_child() {
         let else_node = TemplateNode::Text(Text {
             base_node: BaseNode {
-                start: 0,
-                end: 0,
+                start: Some(0),
+                end: Some(0),
                 node_type: "Text".to_string(),
                 children: vec![
                     TemplateNode::Text(Text::new("  ".to_string())),
@@ -197,8 +197,8 @@ mod tests {
             data: " Hello ".to_string(),
         });
         let base_node = BaseNode {
-            start: 0,
-            end: 0,
+            start: Some(0),
+            end: Some(0) ,
             node_type: "MustacheTag".to_string(),
             children: vec![
                 TemplateNode::Text(Text::new("  ".to_string())),
@@ -224,8 +224,8 @@ mod tests {
     fn test_trim_whitespace_else_node_pop_child() {
         let else_node = TemplateNode::Text(Text {
             base_node: BaseNode {
-                start: 0,
-                end: 0,
+                start: Some(0),
+                end: Some(0),
                 node_type: "Text".to_string(),
                 children: vec![
                     TemplateNode::Text(Text::new("222".to_string())),
@@ -239,8 +239,8 @@ mod tests {
             data: " Hello ".to_string(),
         });
         let base_node = BaseNode {
-            start: 0,
-            end: 0,
+            start: Some(0),
+            end: Some(0),
             node_type: "MustacheTag".to_string(),
             children: vec![
                 TemplateNode::Text(Text::new("111".to_string())),
@@ -266,8 +266,8 @@ mod tests {
     fn test_trim_whitespace_elseif_node_shift_child() {
         let else_node = TemplateNode::Text(Text {
             base_node: BaseNode {
-                start: 0,
-                end: 0,
+                start: Some(0),
+                end: Some(0),
                 node_type: "Text".to_string(),
                 children: vec![
                     TemplateNode::Text(Text::new("   ".to_string())),
@@ -281,8 +281,8 @@ mod tests {
             data: " Hello ".to_string(),
         });
         let base_node = BaseNode {
-            start: 0,
-            end: 0,
+            start: Some(0),
+            end: Some(0),
             node_type: "MustacheTag".to_string(),
             children: vec![
                 TemplateNode::Text(Text::new("   ".to_string())),
@@ -308,8 +308,8 @@ mod tests {
     fn test_trim_whitespace_elseif_node_pop_child() {
         let else_node = TemplateNode::Text(Text {
             base_node: BaseNode {
-                start: 0,
-                end: 0,
+                start: Some(0),
+                end: Some(0),
                 node_type: "Text".to_string(),
                 children: vec![
                     TemplateNode::Text(Text::new("222".to_string())),
@@ -323,8 +323,8 @@ mod tests {
             data: " Hello ".to_string(),
         });
         let base_node = BaseNode {
-            start: 0,
-            end: 0,
+            start: Some(0),
+            end: Some(0),
             node_type: "MustacheTag".to_string(),
             children: vec![
                 TemplateNode::Text(Text::new("111".to_string())),

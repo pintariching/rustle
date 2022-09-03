@@ -13,5 +13,5 @@ pub fn fragment(parser: &mut Parser) -> StateReturn {
         // return StateReturn::Ok(mustache)
     }
 
-    return text(parser);
+    return StateReturn::Ok(text);
 }
