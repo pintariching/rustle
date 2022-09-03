@@ -198,7 +198,7 @@ mod tests {
         });
         let base_node = BaseNode {
             start: Some(0),
-            end: Some(0) ,
+            end: Some(0),
             node_type: "MustacheTag".to_string(),
             children: vec![
                 TemplateNode::Text(Text::new("  ".to_string())),

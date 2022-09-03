@@ -23,7 +23,9 @@ pub fn get_code_frame(source: String, line: usize, column: usize) -> String {
             let line_num = format!("{:digits$}", t.0 + frame_start + 1);
 
             if frame_start + t.0 == line {
-                let indicator = " ".repeat(digits + 2 + tabs_to_spaces(&t.1[0..column.try_into().unwrap()]).len()) + "^";
+                let indicator = " "
+                    .repeat(digits + 2 + tabs_to_spaces(&t.1[0..column.try_into().unwrap()]).len())
+                    + "^";
                 return format!("{line_num}: {}\n{indicator}", tabs_to_spaces(*t.1));
             }
 
@@ -34,7 +36,6 @@ pub fn get_code_frame(source: String, line: usize, column: usize) -> String {
 
     joined.to_owned()
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -49,8 +50,13 @@ mod tests {
 
     #[test]
     fn get_code_frame_with_line_1() {
-        let actual = get_code_frame("we has a long error\nwe has a long error\nwe has a long error".to_string(), 1, 3);
-        let expected = "1: we has a long error\n2: we has a long error\n      ^\n3: we has a long error";
+        let actual = get_code_frame(
+            "we has a long error\nwe has a long error\nwe has a long error".to_string(),
+            1,
+            3,
+        );
+        let expected =
+            "1: we has a long error\n2: we has a long error\n      ^\n3: we has a long error";
         assert_eq!(actual, expected)
     }
 }

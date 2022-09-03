@@ -40,7 +40,6 @@ pub enum StateReturn {
     None,
 }
 
-
 //A function pointer for state
 pub type ParserState = fn(&mut Parser) -> StateReturn;
 
@@ -87,12 +86,8 @@ impl Parser {
 
         while parser.index < parser.template.len() {
             state = match state(&mut parser) {
-                StateReturn::Ok(s) => {
-                    s
-                },
-                StateReturn::None => {
-                    fragment
-                }
+                StateReturn::Ok(s) => s,
+                StateReturn::None => fragment,
             };
         }
 
@@ -117,24 +112,28 @@ impl Parser {
             );
         }
 
-        
         //If the functions are identical their addresses should be too
         if state as usize != fragment as usize {
-            parser.error(
-                "unexpected-eof",
-                "Unexpected end of input"
-            )
+            parser.error("unexpected-eof", "Unexpected end of input")
         }
 
         if parser.html.base_node.children.len() > 0 {
-            let mut start = parser.html.base_node.get_children()[0].unwrap().get_base_node().start.unwrap();
+            let mut start = parser.html.base_node.get_children()[0]
+                .unwrap()
+                .get_base_node()
+                .start
+                .unwrap();
 
             while WHITESPACE.is_match(from_utf8(&[template.as_bytes()[start]]).unwrap()) {
                 start += 1;
             }
 
             let last = parser.html.base_node.get_children().len() - 1;
-            let mut end = parser.html.base_node.get_children()[last].unwrap().get_base_node().end.unwrap();
+            let mut end = parser.html.base_node.get_children()[last]
+                .unwrap()
+                .get_base_node()
+                .end
+                .unwrap();
 
             while WHITESPACE.is_match(from_utf8(&[template.as_bytes()[end - 1]]).unwrap()) {
                 end -= 1;
@@ -143,7 +142,7 @@ impl Parser {
             parser.html.base_node.start = Some(start);
             parser.html.base_node.end = Some(end);
         } else {
-            parser.html.base_node.start =  None;
+            parser.html.base_node.start = None;
             parser.html.base_node.end = None;
         }
 

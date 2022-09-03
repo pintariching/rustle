@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use crate::compiler::parse::index::{Parser, StateReturn};
+use std::collections::HashMap;
 
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -24,7 +24,6 @@ pub const VALID_META_TAGS: [&'static str; 4] = [
     "svelte:fragment",
     "svelte:element",
 ];
-
 
 pub fn tag(parser: &mut Parser) -> StateReturn {
     todo!()
