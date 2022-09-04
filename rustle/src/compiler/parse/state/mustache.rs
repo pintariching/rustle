@@ -114,11 +114,22 @@ pub fn mustache(parser: &mut Parser) -> StateReturn {
         }
 
         // strip leading/trailing whitespace as necessary
-        let char_before =
-            &parser.template[block.get_base_node().start.unwrap() - 1..parser.template.len()];
-        let char_after = &parser.template[parser.index..parser.template.len()];
-        let trim_before = char_before.is_empty() || WHITESPACE.is_match(char_before);
-        let trim_after = char_after.is_empty() || WHITESPACE.is_match(char_after);
+        let char_before = parser
+            .template
+            .chars()
+            .nth(block.get_base_node().start.unwrap() - 1)
+            .unwrap()
+            .to_string();
+
+        let char_after = parser
+            .template
+            .chars()
+            .nth(parser.index)
+            .unwrap()
+            .to_string();
+
+        let trim_before = !char_before.is_empty() || WHITESPACE.is_match(&char_before);
+        let trim_after = !char_after.is_empty() || WHITESPACE.is_match(&char_after);
 
         trim_whitespace(&mut block, trim_before, trim_after);
 
