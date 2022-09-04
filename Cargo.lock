@@ -568,6 +568,7 @@ dependencies = [
 name = "rustle_code_red"
 version = "0.1.0"
 dependencies = [
+ "lazy_static",
  "swc_estree_ast",
 ]
 

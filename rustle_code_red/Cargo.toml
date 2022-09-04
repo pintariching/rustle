@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 swc_estree_ast = "0.17.4"
+lazy_static = "1.4.0"
