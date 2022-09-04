@@ -62,6 +62,8 @@ impl Parser {
                     children: Vec::new(),
                     prop_name: HashMap::new(),
                     expression: None,
+                    elseif: false,
+                    _else: false,
                 },
             },
             css: Vec::new(),
@@ -213,6 +215,15 @@ impl Parser {
         {
             self.index += 1
         }
+    }
+
+    pub fn require_whitespace(&mut self) {
+        let c = self.template.chars().nth(self.index).unwrap().to_string();
+        if WHITESPACE.is_match(&c) {
+            self.error("missing-whitespace", "Expected whitespace");
+        }
+
+        self.allow_whitespace();
     }
 
     pub fn read(&mut self, pattern: Regex) -> Option<String> {

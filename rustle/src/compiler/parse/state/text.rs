@@ -19,6 +19,8 @@ pub fn text(parser: &mut Parser) -> StateReturn {
             children: Vec::new(),
             prop_name: HashMap::new(),
             expression: None,
+            elseif: false,
+            _else: false,
         },
         // raw: data
         data: decode_character_references(data),

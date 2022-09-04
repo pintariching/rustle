@@ -1,7 +1,9 @@
-use std::borrow::Borrow;
+use std::{borrow::Borrow, collections::HashMap};
+
+use map_macro::map;
 
 use crate::compiler::{
-    interfaces::{TemplateNode, TmpNode},
+    interfaces::{BaseNode, TemplateNode, TmpNode},
     parse::{
         errors::{self, Error},
         index::{Parser, StateReturn},
@@ -144,6 +146,70 @@ pub fn mustache(parser: &mut Parser) -> StateReturn {
         parser.allow_whitespace();
 
         // :else if
+        if parser.eat("if", false, None) {
+            let mut block = parser.current().clone();
+            if block.get_type() != "IfBlock" {
+                if parser
+                    .stack
+                    .iter()
+                    .filter(|block| block.get_type() == "IfBlock")
+                    .count()
+                    > 0
+                {
+                    let error = Error::invalid_elseif_placement_unclosed_block(&block.to_string());
+                    parser.error(&error.code, &error.message);
+                } else {
+                    let error = Error::invalid_elseif_placement_outside_if();
+                    parser.error(&error.code, &error.message);
+                }
+            }
+
+            parser.require_whitespace();
+
+            // TODO
+            // requires src::compiler::parse:read::expression to be written
+            // let expression = read_expression(parser);
+
+            parser.allow_whitespace();
+            parser.eat("}", true, None);
+
+            block.get_base_node().prop_name.insert(
+                "else".to_string(),
+                TemplateNode::BaseNode(BaseNode {
+                    start: Some(parser.index),
+                    end: None,
+                    node_type: "ElseBlock".to_string(),
+                    children: vec![TemplateNode::BaseNode(BaseNode {
+                        start: Some(parser.index),
+                        end: None,
+                        node_type: "IfBlock".to_string(),
+                        // TODO: the expression above is passed in here
+                        expression: None,
+                        children: Vec::new(),
+                        elseif: true,
+                        _else: false,
+                        prop_name: HashMap::new(),
+                    })],
+                    prop_name: HashMap::new(),
+                    expression: None,
+                    elseif: false,
+                    _else: false,
+                }),
+            );
+
+            parser.stack.push(
+                block
+                    .get_base_node()
+                    .prop_name
+                    .get("else")
+                    .unwrap()
+                    .clone()
+                    .get_children()
+                    .first()
+                    .unwrap()
+                    .clone(),
+            )
+        }
         todo!()
     }
 
@@ -172,6 +238,8 @@ mod tests {
                 prop_name: Default::default(),
                 expression: None,
                 prop_name: HashMap::new(),
+                elseif: false,
+                _else: false,
             },
             data: " Hello ".to_string(),
         });
@@ -192,6 +260,8 @@ mod tests {
                 prop_name: Default::default(),
                 expression: None,
                 prop_name: HashMap::new(),
+                elseif: false,
+                _else: false,
             },
             data: " Hello ".to_string(),
         });
@@ -212,6 +282,8 @@ mod tests {
                 prop_name: Default::default(),
                 expression: None,
                 prop_name: HashMap::new(),
+                elseif: false,
+                _else: false,
             },
             data: " Hello ".to_string(),
         });
@@ -235,6 +307,8 @@ mod tests {
                 prop_name: Default::default(),
                 expression: None,
                 prop_name: HashMap::new(),
+                elseif: false,
+                _else: false,
             },
             data: " Hello ".to_string(),
         });
@@ -258,6 +332,8 @@ mod tests {
                 prop_name: Default::default(),
                 expression: None,
                 prop_name: HashMap::new(),
+                elseif: false,
+                _else: false,
             },
             data: " Hello ".to_string(),
         });
@@ -281,6 +357,8 @@ mod tests {
                 prop_name: Default::default(),
                 expression: None,
                 prop_name: HashMap::new(),
+                elseif: false,
+                _else: false,
             },
             data: " Hello ".to_string(),
         });
@@ -297,6 +375,8 @@ mod tests {
             prop_name: map! {
                 "else".to_string() => else_node
             },
+            elseif: false,
+            _else: false,
         };
         let mut sample =
             TemplateNode::MustacheTag(MustacheTag::new_with_base_node(base_node, Node::Empty));
@@ -321,6 +401,8 @@ mod tests {
                 prop_name: Default::default(),
                 expression: None,
                 prop_name: HashMap::new(),
+                elseif: false,
+                _else: false,
             },
             data: " Hello ".to_string(),
         });
@@ -337,6 +419,8 @@ mod tests {
             prop_name: map! {
                 "else".to_string() => else_node
             },
+            elseif: false,
+            _else: false,
         };
         let mut sample =
             TemplateNode::MustacheTag(MustacheTag::new_with_base_node(base_node, Node::Empty));
@@ -361,6 +445,8 @@ mod tests {
                 prop_name: Default::default(),
                 expression: None,
                 prop_name: HashMap::new(),
+                elseif: false,
+                _else: false,
             },
             data: " Hello ".to_string(),
         });
@@ -377,6 +463,8 @@ mod tests {
             prop_name: map! {
                 "elseif".to_string() => else_node
             },
+            elseif: false,
+            _else: false,
         };
         let mut sample =
             TemplateNode::MustacheTag(MustacheTag::new_with_base_node(base_node, Node::Empty));
@@ -401,6 +489,8 @@ mod tests {
                 prop_name: Default::default(),
                 expression: None,
                 prop_name: HashMap::new(),
+                elseif: false,
+                _else: false,
             },
             data: " Hello ".to_string(),
         });
@@ -417,6 +507,8 @@ mod tests {
             prop_name: map! {
                 "elseif".to_string() => else_node
             },
+            elseif: false,
+            _else: false,
         };
         let mut sample =
             TemplateNode::MustacheTag(MustacheTag::new_with_base_node(base_node, Node::Empty));

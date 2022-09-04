@@ -565,6 +565,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustle_code_red"
+version = "0.1.0"
+
+[[package]]
 name = "rustle_locate_character"
 version = "0.1.0"
 

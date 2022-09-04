@@ -1,3 +1,4 @@
+mod acorn;
 mod errors;
 mod index;
 mod read;

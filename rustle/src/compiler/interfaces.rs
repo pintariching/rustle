@@ -14,6 +14,8 @@ pub struct BaseNode {
     pub children: Vec<TemplateNode>,
     pub prop_name: HashMap<String, TemplateNode>,
     pub expression: Option<Node>,
+    pub elseif: bool,
+    pub _else: bool,
 }
 
 impl BaseNode {
@@ -25,6 +27,8 @@ impl BaseNode {
             children: Vec::new(),
             prop_name: HashMap::new(),
             expression: None,
+            elseif: false,
+            _else: false,
         }
     }
 }
