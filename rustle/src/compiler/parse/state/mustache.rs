@@ -237,7 +237,6 @@ mod tests {
                 children: vec![TemplateNode::Text(Text::new("   Hello ".to_string()))],
                 prop_name: Default::default(),
                 expression: None,
-                prop_name: HashMap::new(),
                 elseif: false,
                 _else: false,
             },
@@ -259,7 +258,6 @@ mod tests {
                 children: vec![TemplateNode::Text(Text::new("   Hello   ".to_string()))],
                 prop_name: Default::default(),
                 expression: None,
-                prop_name: HashMap::new(),
                 elseif: false,
                 _else: false,
             },
@@ -281,7 +279,6 @@ mod tests {
                 children: vec![TemplateNode::Text(Text::new("    Hello    ".to_string()))],
                 prop_name: Default::default(),
                 expression: None,
-                prop_name: HashMap::new(),
                 elseif: false,
                 _else: false,
             },
@@ -306,7 +303,6 @@ mod tests {
                 ],
                 prop_name: Default::default(),
                 expression: None,
-                prop_name: HashMap::new(),
                 elseif: false,
                 _else: false,
             },
@@ -331,7 +327,6 @@ mod tests {
                 ],
                 prop_name: Default::default(),
                 expression: None,
-                prop_name: HashMap::new(),
                 elseif: false,
                 _else: false,
             },
@@ -356,7 +351,6 @@ mod tests {
                 ],
                 prop_name: Default::default(),
                 expression: None,
-                prop_name: HashMap::new(),
                 elseif: false,
                 _else: false,
             },
@@ -370,7 +364,6 @@ mod tests {
                 TemplateNode::Text(Text::new("  ".to_string())),
                 TemplateNode::Text(Text::new("111".to_string())),
             ],
-            prop_name: Default::default(),
             expression: None,
             prop_name: map! {
                 "else".to_string() => else_node
@@ -400,7 +393,6 @@ mod tests {
                 ],
                 prop_name: Default::default(),
                 expression: None,
-                prop_name: HashMap::new(),
                 elseif: false,
                 _else: false,
             },
@@ -414,7 +406,6 @@ mod tests {
                 TemplateNode::Text(Text::new("111".to_string())),
                 TemplateNode::Text(Text::new("  ".to_string())),
             ],
-            prop_name: Default::default(),
             expression: None,
             prop_name: map! {
                 "else".to_string() => else_node
@@ -444,7 +435,6 @@ mod tests {
                 ],
                 prop_name: Default::default(),
                 expression: None,
-                prop_name: HashMap::new(),
                 elseif: false,
                 _else: false,
             },
@@ -458,7 +448,6 @@ mod tests {
                 TemplateNode::Text(Text::new("   ".to_string())),
                 TemplateNode::Text(Text::new("111".to_string())),
             ],
-            prop_name: Default::default(),
             expression: None,
             prop_name: map! {
                 "elseif".to_string() => else_node
@@ -488,7 +477,6 @@ mod tests {
                 ],
                 prop_name: Default::default(),
                 expression: None,
-                prop_name: HashMap::new(),
                 elseif: false,
                 _else: false,
             },
@@ -502,7 +490,6 @@ mod tests {
                 TemplateNode::Text(Text::new("111".to_string())),
                 TemplateNode::Text(Text::new("   ".to_string())),
             ],
-            prop_name: Default::default(),
             expression: None,
             prop_name: map! {
                 "elseif".to_string() => else_node
