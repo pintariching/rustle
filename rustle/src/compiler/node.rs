@@ -1,14 +1,12 @@
 use swc_estree_ast::{
-    CatchClause, Class, ClassBody, Expression, Function, Identifier, Literal, ModuleDeclaration,
-    ModuleSpecifier, Pattern, Program, Property, SpreadElement, Statement, Super, SwitchCase,
-    TemplateElement, VariableDeclarator,
+    BaseNode, CatchClause, Class, ClassBody, Expression, Function, FunctionExpression, Identifier,
+    Literal, ModuleDeclaration, ModuleSpecifier, Pattern, Program, Property, SpreadElement,
+    Statement, Super, SwitchCase, TemplateElement, VariableDeclarator,
 };
 
-// The commented out enums are missing from swc_estree_ast
-// I'm not sure if they're used and where to find them
 #[derive(Clone, Debug)]
 pub enum Node {
-    //AssignmentProperty(AssignmentProperty),
+    AssignmentProperty(AssignmentProperty),
     CatchClause(CatchClause),
     Class(Class),
     ClassBody(ClassBody),
@@ -16,14 +14,14 @@ pub enum Node {
     Function(Function),
     Identifier(Identifier),
     Literal(Literal),
-    //MethodDefinition(MethodDefinition),
+    MethodDefinition(MethodDefinition),
     ModuleDeclaration(ModuleDeclaration),
     ModuleSpecifier(ModuleSpecifier),
     Pattern(Pattern),
-    //PrivateIdentifier(PrivateIdentifier),
+    PrivateIdentifier(PrivateIdentifier),
     Program(Program),
     Property(Property),
-    //PropertyDefinition(PropertyDefinition),
+    PropertyDefinition(PropertyDefinition),
     SpreadElement(SpreadElement),
     Statement(Statement),
     Super(Super),
@@ -192,6 +190,14 @@ impl Node {
             Node::SwitchCase(node) => node.base.start,
             Node::TemplateElement(node) => node.base.start,
             Node::VariableDeclarator(node) => node.base.start,
+            Node::AssignmentProperty(node) => match &node.property {
+                Property::ObjectProp(prop) => prop.base.start,
+                Property::ClassProp(prop) => prop.base.start,
+                Property::ClassPrivateProp(prop) => prop.base.start,
+            },
+            Node::MethodDefinition(node) => node.base.start,
+            Node::PrivateIdentifier(node) => node.base.start,
+            Node::PropertyDefinition(node) => node.base.start,
             Node::Empty => panic!("only for testing"),
         }
     }
@@ -353,7 +359,87 @@ impl Node {
             Node::SwitchCase(node) => node.base.end,
             Node::TemplateElement(node) => node.base.end,
             Node::VariableDeclarator(node) => node.base.end,
+            Node::AssignmentProperty(node) => match &node.property {
+                Property::ObjectProp(prop) => prop.base.end,
+                Property::ClassProp(prop) => prop.base.end,
+                Property::ClassPrivateProp(prop) => prop.base.end,
+            },
+            Node::MethodDefinition(node) => node.base.end,
+            Node::PrivateIdentifier(node) => node.base.end,
+            Node::PropertyDefinition(node) => node.base.end,
             Node::Empty => panic!("only for testing"),
         }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum Kind {
+    Init,
+    Constructor,
+    Method,
+    Get,
+    Set,
+}
+
+#[derive(Clone, Debug)]
+pub struct AssignmentProperty {
+    property: Property,
+    value: Pattern,
+    method: bool,
+    kind: Kind, // "init"
+}
+
+impl AssignmentProperty {
+    pub fn kind() -> Kind {
+        Kind::Init
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct MethodDefinition {
+    base: BaseNode,
+    key: Key,
+    value: FunctionExpression,
+    kind: Kind, // "constructor" | "method" | "get" | "set"
+    computed: bool,
+    is_static: bool,
+}
+
+impl MethodDefinition {
+    pub fn get_type() -> String {
+        "MethodDefinition".to_string()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum Key {
+    Expression(Expression),
+    PrivateIdentifier(PrivateIdentifier),
+}
+
+#[derive(Clone, Debug)]
+pub struct PrivateIdentifier {
+    base: BaseNode,
+    name: String,
+}
+
+impl PrivateIdentifier {
+    pub fn get_type() -> String {
+        "PrivateIdentifier".to_string()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct PropertyDefinition {
+    base: BaseNode,
+    key: Key,
+    value: Option<Expression>,
+    computed: bool,
+    is_static: bool,
+}
+
+impl PropertyDefinition {
+    pub fn get_type() -> String {
+        "PropertyDefinition".to_string()
     }
 }
