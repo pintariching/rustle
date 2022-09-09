@@ -1,4 +1,4 @@
-pub static boolean_attributes: [&str; 24] = [
+pub static BOOLEAN_ATTRIBUTES: [&str; 24] = [
     "allowfullscreen",
     "allowpaymentrequest",
     "async",

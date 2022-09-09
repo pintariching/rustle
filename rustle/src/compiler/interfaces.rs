@@ -504,17 +504,17 @@ impl TemplateNode {
 
     pub fn unwrap(&mut self) -> &mut dyn TmpNode {
         match self {
-            TemplateNode::Text(Text) => Text,
-            TemplateNode::ConstTag(ConstTag) => ConstTag,
-            TemplateNode::DebugTag(DebugTag) => DebugTag,
-            TemplateNode::MustacheTag(MustacheTag) => MustacheTag,
-            TemplateNode::BaseNode(BaseNode) => BaseNode,
-            TemplateNode::Element(Element) => Element,
-            TemplateNode::Attribute(Attribute) => Attribute,
-            TemplateNode::SpreadAttribute(SpreadAttribute) => SpreadAttribute,
-            TemplateNode::Directive(Directive) => Directive,
-            TemplateNode::Transition(Transition) => Transition,
-            TemplateNode::Comment(Comment) => Comment,
+            TemplateNode::Text(t) => t,
+            TemplateNode::ConstTag(t) => t,
+            TemplateNode::DebugTag(t) => t,
+            TemplateNode::MustacheTag(t) => t,
+            TemplateNode::BaseNode(t) => t,
+            TemplateNode::Element(t) => t,
+            TemplateNode::Attribute(t) => t,
+            TemplateNode::SpreadAttribute(t) => t,
+            TemplateNode::Directive(t) => t,
+            TemplateNode::Transition(t) => t,
+            TemplateNode::Comment(t) => t,
         }
     }
 

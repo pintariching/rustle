@@ -561,7 +561,7 @@ dependencies = [
  "strum_macros",
  "swc_ecma_ast",
  "swc_ecma_parser",
- "swc_estree_ast",
+ "swc_estree_ast 0.18.0",
 ]
 
 [[package]]
@@ -569,7 +569,7 @@ name = "rustle_code_red"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
- "swc_estree_ast",
+ "swc_estree_ast 0.17.7",
 ]
 
 [[package]]
@@ -754,10 +754,37 @@ dependencies = [
 ]
 
 [[package]]
-name = "swc_ecma_ast"
-version = "0.90.20"
+name = "swc_common"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f712949db06518bec7b7e050aa3bcde749a74fbf79f4f520ab179d0445b63593"
+checksum = "edff0b912141ad8ea2e88547ca9f5c0b3e98236570776c96ea133f8f3b1a1108"
+dependencies = [
+ "ahash",
+ "ast_node",
+ "better_scoped_tls",
+ "cfg-if",
+ "debug_unreachable",
+ "either",
+ "from_variant",
+ "num-bigint",
+ "once_cell",
+ "rustc-hash",
+ "serde",
+ "siphasher",
+ "string_cache",
+ "swc_atoms",
+ "swc_eq_ignore_macros",
+ "swc_visit",
+ "tracing",
+ "unicode-width",
+ "url",
+]
+
+[[package]]
+name = "swc_ecma_ast"
+version = "0.91.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b4685a1a3da866f37616067c097276af9d53fc46269b83656f3736983510a3a"
 dependencies = [
  "bitflags",
  "is-macro",
@@ -766,15 +793,15 @@ dependencies = [
  "serde",
  "string_enum",
  "swc_atoms",
- "swc_common",
+ "swc_common 0.28.0",
  "unicode-id",
 ]
 
 [[package]]
 name = "swc_ecma_parser"
-version = "0.118.10"
+version = "0.119.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8386fa4a8f0cd9dbdcb27e2e1c286a3eec238dd86229cbc7cbc68f95e709d989"
+checksum = "00e4dfd30206132cb1e66a4a98182b2ae2480ac6407418fba98d2f80e60c53bd"
 dependencies = [
  "either",
  "enum_kind",
@@ -783,7 +810,7 @@ dependencies = [
  "serde",
  "smallvec",
  "swc_atoms",
- "swc_common",
+ "swc_common 0.28.0",
  "swc_ecma_ast",
  "tracing",
  "typed-arena",
@@ -811,7 +838,20 @@ dependencies = [
  "serde",
  "serde_json",
  "swc_atoms",
- "swc_common",
+ "swc_common 0.27.16",
+]
+
+[[package]]
+name = "swc_estree_ast"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2ce60ba0cfcabad7034564e709aac1fc2d531a76b492dcbe2b551442ec4d24e"
+dependencies = [
+ "better_scoped_tls",
+ "serde",
+ "serde_json",
+ "swc_atoms",
+ "swc_common 0.28.0",
 ]
 
 [[package]]
