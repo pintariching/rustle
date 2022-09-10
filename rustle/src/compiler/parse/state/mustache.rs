@@ -97,7 +97,7 @@ pub fn mustache(parser: &mut Parser) -> StateReturn {
             "KeyBlock" => expected = "key",
             _ => {
                 let error = Error::unexpected_block_close();
-                parser.error(&error.code, &error.message);
+                parser.error(&error.code, &error.message, None);
             }
         }
 
@@ -140,7 +140,7 @@ pub fn mustache(parser: &mut Parser) -> StateReturn {
     } else if parser.eat(":else", false, None) {
         if parser.eat("if", false, None) {
             let error = Error::invalid_elseif();
-            parser.error(&error.code, &error.message)
+            parser.error(&error.code, &error.message, None)
         }
 
         parser.allow_whitespace();
@@ -157,10 +157,10 @@ pub fn mustache(parser: &mut Parser) -> StateReturn {
                     > 0
                 {
                     let error = Error::invalid_elseif_placement_unclosed_block(&block.to_string());
-                    parser.error(&error.code, &error.message);
+                    parser.error(&error.code, &error.message, None);
                 } else {
                     let error = Error::invalid_elseif_placement_outside_if();
-                    parser.error(&error.code, &error.message);
+                    parser.error(&error.code, &error.message, None);
                 }
             }
 

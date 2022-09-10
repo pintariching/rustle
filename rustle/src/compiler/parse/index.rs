@@ -76,12 +76,6 @@ impl Parser {
             .stack
             .push(TemplateNode::BaseNode(parser.html.base_node.clone()));
 
-        // Html is a Fragment but gets pushed to
-        // parser.stack which is a Vec<TemplateNode> ??
-        //parser.stack.push(parser.html);
-
-        // fragment is a function
-        // defined in src/compiler/parse/state/fragment.ts
         let mut state: ParserState = fragment;
 
         while parser.index < parser.template.len() {
@@ -99,43 +93,57 @@ impl Parser {
 
             match current {
                 TemplateNode::Element(e) => {
-                    current_type = e.name.clone();
+                    current_type = format!("<{}>", e.name.clone());
                     current_slug = "element".to_string();
                 }
-                _ => current_slug = "block".to_string(),
+                _ => {
+                    current_type = "Block".to_string();
+                    current_slug = "block".to_string();
+                }
             }
 
             // panics
             parser.error(
                 &format!("unclosed-{}", current_slug),
                 &format!("{} was left open", current_type),
+                None,
             );
         }
 
         //If the functions are identical their addresses should be too
         if state as usize != fragment as usize {
-            parser.error("unexpected-eof", "Unexpected end of input")
+            parser.error("unexpected-eof", "Unexpected end of input", None)
         }
 
         if parser.html.base_node.children.len() > 0 {
-            let mut start = parser.html.base_node.get_children()[0]
+            let mut start = parser
+                .html
+                .base_node
+                .get_children()
+                .iter_mut()
+                .nth(0)
                 .unwrap()
                 .get_base_node()
                 .start
                 .unwrap();
 
-            while WHITESPACE.is_match(from_utf8(&[template.as_bytes()[start]]).unwrap()) {
+            while WHITESPACE.is_match(template.chars().nth(start).unwrap().to_string().as_str()) {
                 start += 1;
             }
 
-            let last = parser.html.base_node.get_children().len() - 1;
-            let mut end = parser.html.base_node.get_children()[last]
+            let last_index = parser.html.base_node.get_children().len() - 1;
+            let mut end = parser
+                .html
+                .base_node
+                .get_children()
+                .iter_mut()
+                .nth(last_index)
                 .unwrap()
                 .get_base_node()
                 .end
                 .unwrap();
 
-            while WHITESPACE.is_match(from_utf8(&[template.as_bytes()[end - 1]]).unwrap()) {
+            while WHITESPACE.is_match(template.chars().nth(end - 1).unwrap().to_string().as_str()) {
                 end -= 1;
             }
 
@@ -151,15 +159,20 @@ impl Parser {
 
     pub fn current(&mut self) -> &mut TemplateNode {
         let length = self.stack.len() - 1;
-        &mut self.stack[length]
+        self.stack.iter_mut().nth(length).unwrap()
     }
 
-    pub fn error(&self, code: &str, message: &str) {
+    pub fn error(&self, code: &str, message: &str, index: Option<usize>) {
+        let i = match index {
+            Some(i) => i,
+            None => self.index,
+        };
+
         let error = NewErrorProps {
             name: "ParseError",
             code,
             source: &self.template,
-            start: self.index,
+            start: i,
             end: None,
             filename: &self.filename.clone().unwrap(),
         };
@@ -185,7 +198,7 @@ impl Parser {
                     e = Error::unexpected_token(str)
                 }
             }
-            self.error(&e.code, &e.message)
+            self.error(&e.code, &e.message, None)
         }
 
         false
@@ -220,7 +233,7 @@ impl Parser {
     pub fn require_whitespace(&mut self) {
         let c = self.template.chars().nth(self.index).unwrap().to_string();
         if WHITESPACE.is_match(&c) {
-            self.error("missing-whitespace", "Expected whitespace");
+            self.error("missing-whitespace", "Expected whitespace", None);
         }
 
         self.allow_whitespace();
@@ -288,6 +301,7 @@ pub fn parse(template: String, options: ParserOptions) -> Ast {
         parser.error(
             "Duplicate style",
             &parser.css[1].base_node.start.unwrap().to_string(),
+            None,
         );
     }
 
@@ -307,6 +321,7 @@ pub fn parse(template: String, options: ParserOptions) -> Ast {
         parser.error(
             "Duplicate script",
             &instance_scripts[1].base_node.start.unwrap().to_string(),
+            None,
         )
     }
 
@@ -314,6 +329,7 @@ pub fn parse(template: String, options: ParserOptions) -> Ast {
         parser.error(
             "Duplicate module script",
             &module_scripts[1].base_node.start.unwrap().to_string(),
+            None,
         )
     }
 

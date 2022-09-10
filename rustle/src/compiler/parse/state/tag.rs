@@ -1,4 +1,7 @@
-use crate::compiler::parse::index::{Parser, StateReturn};
+use crate::compiler::{
+    interfaces::TemplateNode,
+    parse::index::{Parser, StateReturn},
+};
 use std::collections::HashMap;
 
 use lazy_static::lazy_static;
@@ -25,6 +28,30 @@ pub const VALID_META_TAGS: [&'static str; 4] = [
     "svelte:element",
 ];
 
+pub fn parent_is_head(stack: Vec<TemplateNode>) -> bool {
+    for i in (0..stack.len()).rev() {
+        if let Some(temp) = stack.iter().nth(i) {
+            let temp_type = &temp.get_type();
+
+            if temp_type == "Head" {
+                return true;
+            }
+            if temp_type == "Element" || temp_type == "InlineComponent" {
+                return false;
+            }
+        }
+    }
+
+    false
+}
+
 pub fn tag(parser: &mut Parser) -> StateReturn {
+    let start = parser.index + 1;
+    let parent = parser.current();
+
+    if parser.eat("!--", false, None) {
+        //let data = parser.read_until("-->");
+    }
+
     todo!()
 }
