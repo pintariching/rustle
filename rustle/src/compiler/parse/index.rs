@@ -206,7 +206,7 @@ impl Parser {
 
     // called "match" in the svelte parser
     pub fn match_str(&self, str: &str) -> bool {
-        &self.template[self.index as usize..self.index as usize + str.len()] == str
+        &self.template[self.index..self.index + str.len()] == str
     }
 
     pub fn match_regex(&self, pattern: Regex) -> Option<String> {
@@ -224,19 +224,17 @@ impl Parser {
 
     pub fn allow_whitespace(&mut self) {
         while self.index < self.template.len()
-            && WHITESPACE.is_match(&self.template[self.index..self.template.len()])
+            && WHITESPACE.is_match(
+                self.template
+                    .chars()
+                    .nth(self.index)
+                    .unwrap()
+                    .to_string()
+                    .as_str(),
+            )
         {
             self.index += 1
         }
-    }
-
-    pub fn require_whitespace(&mut self) {
-        let c = self.template.chars().nth(self.index).unwrap().to_string();
-        if WHITESPACE.is_match(&c) {
-            self.error("missing-whitespace", "Expected whitespace", None);
-        }
-
-        self.allow_whitespace();
     }
 
     pub fn read(&mut self, pattern: Regex) -> Option<String> {
@@ -251,7 +249,7 @@ impl Parser {
 
     pub fn read_identifier(&self, allow_reserved: Option<bool>) -> Option<String> {
         let start = self.index;
-        let i = self.index;
+        let mut i = self.index;
 
         let code = full_char_at(&self.template, i);
 
@@ -259,22 +257,31 @@ impl Parser {
             return None;
         }
 
-        // Javascript magic?
-        // i += code <= 0xffff ? 1 : 2;
+        // 0xffff = 65535 == u16::MAX
+        if code as u16 <= u16::MAX {
+            i += 1;
+        } else {
+            i += 2;
+        }
 
         while i < self.template.len() {
             let code = full_char_at(&self.template, i);
 
-            // TODO: find replacement for acorn/isIdentifierChar
-            //if (!isIdentifierChar(code, true)) break;
+            if Ident::is_valid_continue(code) {
+                break;
+            }
 
-            // More magic?
-            // i += code <= 0xffff ? 1 : 2;
+            // 0xffff = 65535 == u16::MAX
+            if code as u16 <= u16::MAX {
+                i += 1;
+            } else {
+                i += 2;
+            }
         }
 
         // what does (this.index = i) mean?
         // const identifier = this.template.slice(this.index, (this.index = i));
-        // let identifier = self.template[self.index, ?];
+        //let identifier = self.template[self.index..self.index = i];
 
         // if (!allow_reserved && reserved.has(identifier)) {
         // 	this.error(
@@ -290,6 +297,36 @@ impl Parser {
 
         todo!()
     }
+
+    pub fn read_until(&mut self, pattern: Regex, error: Option<Error>) -> String {
+        if self.index >= self.template.len() {
+            if let Some(error) = error {
+                self.error(&error.code, &error.message, None);
+            } else {
+                self.error("unexpected-eof", "Unexpected end of input", None);
+            }
+        }
+
+        let start = self.index;
+        let matches = pattern.find(&self.template[start..]);
+
+        if let Some(m) = matches {
+            self.index = start + m.start();
+            return self.template[start..self.index].to_string();
+        }
+
+        self.index = self.template.len();
+        return self.template[start..].to_string();
+    }
+
+    pub fn require_whitespace(&mut self) {
+        let c = self.template.chars().nth(self.index).unwrap().to_string();
+        if WHITESPACE.is_match(&c) {
+            self.error("missing-whitespace", "Expected whitespace", None);
+        }
+
+        self.allow_whitespace();
+    }
 }
 
 pub fn parse(template: String, options: ParserOptions) -> Ast {
@@ -298,10 +335,11 @@ pub fn parse(template: String, options: ParserOptions) -> Ast {
     // TODO we may want to allow multiple <style> tags —
     // one scoped, one global. for now, only allow one
     if parser.css.len() > 1 {
+        let error = Error::duplicate_style();
         parser.error(
-            "Duplicate style",
-            &parser.css[1].base_node.start.unwrap().to_string(),
-            None,
+            &error.code,
+            &error.message,
+            parser.css.iter().nth(1).unwrap().base_node.start,
         );
     }
 
@@ -318,18 +356,20 @@ pub fn parse(template: String, options: ParserOptions) -> Ast {
         .collect::<Vec<&Script>>();
 
     if instance_scripts.len() > 1 {
+        let error = Error::invalid_script_instance();
         parser.error(
-            "Duplicate script",
-            &instance_scripts[1].base_node.start.unwrap().to_string(),
-            None,
+            &error.code,
+            &error.message,
+            instance_scripts.iter().nth(1).unwrap().base_node.start,
         )
     }
 
     if module_scripts.len() > 1 {
+        let error = Error::invalid_script_module();
         parser.error(
-            "Duplicate module script",
-            &module_scripts[1].base_node.start.unwrap().to_string(),
-            None,
+            &error.code,
+            &error.message,
+            module_scripts.iter().nth(1).unwrap().base_node.start,
         )
     }
 
