@@ -30,7 +30,7 @@ pub struct Parser {
     pub html: Fragment,
     pub css: Vec<Style>,
     pub js: Vec<Script>,
-    pub meta_tags: Vec<String>,
+    pub meta_tags: HashMap<String, bool>,
     pub last_auto_closed_tag: Option<LastAutoClosedTag>,
 }
 
@@ -68,7 +68,7 @@ impl Parser {
             },
             css: Vec::new(),
             js: Vec::new(),
-            meta_tags: Vec::new(),
+            meta_tags: HashMap::new(),
             last_auto_closed_tag: None,
         };
 

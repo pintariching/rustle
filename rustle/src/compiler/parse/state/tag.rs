@@ -1,6 +1,10 @@
 use crate::compiler::{
-    interfaces::TemplateNode,
-    parse::index::{Parser, StateReturn},
+    compile::utils::extract_svelte_ignore::extract_svelte_ignore,
+    interfaces::{BaseNode, Comment, TemplateNode},
+    parse::{
+        errors::Error,
+        index::{Parser, StateReturn},
+    },
 };
 use std::collections::HashMap;
 
@@ -50,8 +54,70 @@ pub fn tag(parser: &mut Parser) -> StateReturn {
     let parent = parser.current();
 
     if parser.eat("!--", false, None) {
-        //let data = parser.read_until("-->");
+        let data = parser.read_until(Regex::new("-->").unwrap(), None);
+        parser.eat("-->", true, Some(Error::unclosed_comment()));
+
+        let index = parser.index;
+        parser
+            .current()
+            .get_children()
+            .push(TemplateNode::Comment(Comment {
+                base_node: BaseNode {
+                    start: Some(start),
+                    end: Some(index),
+                    node_type: "Comment".to_string(),
+                    children: Vec::new(),
+                    prop_name: HashMap::new(),
+                    expression: None,
+                    elseif: false,
+                    _else: false,
+                },
+                data: data.clone(),
+                ignores: extract_svelte_ignore(&data),
+            }));
+
+        return StateReturn::None;
     }
 
+    let is_closing_tag = parser.eat("/", false, None);
+    let name = read_tag_name(parser);
+
+    if META_TAGS.contains_key(name.as_str()) {
+        let slug = META_TAGS.get(name.as_str()).unwrap().to_lowercase();
+        if is_closing_tag {
+            if (name == "svelte:window" || name == "svelte:body")
+                && parser.current().get_children().len() > 0
+            {
+                let error = Error::invalid_element_content(&slug, &name);
+                let index = parser
+                    .current()
+                    .get_children()
+                    .first_mut()
+                    .unwrap()
+                    .get_base_node()
+                    .start;
+                parser.error(&error.code, &error.message, index);
+            } else {
+                if parser.meta_tags.contains_key(&name) {
+                    let error = Error::duplicate_element(&slug, &name);
+                    parser.error(&error.code, &error.message, Some(start));
+                }
+
+                if parser.stack.len() > 1 {
+                    let error = Error::invalid_element_placement(&slug, &name);
+                    parser.error(&error.code, &error.message, Some(start));
+                }
+
+                parser.meta_tags.insert(name, true);
+            }
+        }
+    }
+
+    // continues at line 105
+
+    todo!()
+}
+
+pub fn read_tag_name(parser: &mut Parser) -> String {
     todo!()
 }
