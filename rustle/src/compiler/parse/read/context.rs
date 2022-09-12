@@ -1,30 +1,49 @@
 use crate::compiler::parse::index::Parser;
-use crate::compiler::parse::utils::{is_bracket_close, is_bracket_open, is_bracket_pair};
-use crate::compiler::utils::full_char_at;
+use crate::compiler::parse::utils::{is_bracket_close, is_bracket_open, is_bracket_pair, get_bracket_close};
+use crate::compiler::utils::{full_char_at, full_char_code_at};
+use crate::compiler::parse::errors::Error;
 
 use regex::Regex;
 use swc_ecma_ast::Ident;
-use swc_estree_ast::Pattern;
+use swc_estree_ast::{PatternLike, Identifier, BaseNode};
 
-pub fn read_context(mut parser: Parser) -> (Pattern, i32, i32) {
+pub fn read_context(mut parser: Parser) -> (PatternLike, u32, u32) {
     let start = parser.index;
-    let i = parser.index as usize;
+    let mut i = parser.index as usize;
 
     let code = full_char_at(&parser.template, i);
 
+    //Why is code a char above?
+    let otherCode = full_char_code_at(&parser.template, i);
+
     if Ident::is_valid_start(code) {
-        // TODO
+        let base = BaseNode { leading_comments: Vec::new(), inner_comments: Vec::new(), trailing_comments: Vec::new(), start: Some(start as u32), end: Some(parser.index as u32), range: None, loc: None };
+        let id = Identifier {
+            base,
+            name: parser.read_identifier(Some(false)).unwrap().into(),
+            decorators: None,
+            optional: None,
+            type_annotation: None
+
+        };
+        return (PatternLike::Id(id), start as u32, parser.index as u32)
     }
 
     // use is_bracked_close?
     if !is_bracket_open(code) {
-        // TODO
+        let error = Error::unexpected_token_destructure();
+        parser.error(&error.code, &error.message, None);
     }
 
     let mut bracket_stack: Vec<char> = Vec::new();
     bracket_stack.push(code);
-    // javascript black magic?
+    // Looks like this in javascript:
     // i += code <= 0xffff ? 1 : 2;
+    if otherCode <= 0xffff {
+        i += 1;
+    } else {
+        i += 2;
+    }
 
     while i < parser.template.len() {
         let code = full_char_at(&parser.template, i);
@@ -32,21 +51,30 @@ pub fn read_context(mut parser: Parser) -> (Pattern, i32, i32) {
             bracket_stack.push(code);
         } else if is_bracket_close(code) {
             if !is_bracket_pair(bracket_stack[bracket_stack.len() - 1], code) {
-                // TODO: throw error
-                // parser.error(
-                // parser_errors.unexpected_token(
-                // 	String.fromCharCode(get_bracket_close(bracket_stack[bracket_stack.length - 1]))
-                // )
+                let close_bracket = get_bracket_close(bracket_stack[bracket_stack.len() - 1]) as u16;
+                let error = Error::unexpected_token(
+                    &String::from_utf16(&[close_bracket]).unwrap()
+                );
+                parser.error(&error.code, &error.message, None);
             }
             bracket_stack.pop();
             if bracket_stack.is_empty() {
                 // javascript black magic?
                 // i += code <= 0xffff ? 1 : 2;
-                // break;
+                if otherCode <= 0xffff {
+                    i += 1;
+                } else {
+                    i += 2;
+                }
+                break;
             }
         }
 
-        //i += code <= 0xffff ? 1 : 2;
+        if otherCode <= 0xffff {
+            i += 1;
+        } else {
+            i += 2;
+        }
     }
 
     parser.index = i;
@@ -71,7 +99,7 @@ pub fn read_context(mut parser: Parser) -> (Pattern, i32, i32) {
         &space_with_newline[first_space + 1..space_with_newline.len()]
     );
 
-    // TODO
+    // TODO - Waiting for rustle-code-red to me implemented
     // return (parse_expression_at(
     // 		`${space_with_newline}(${pattern_string} = 1)`,
     // 		start - 1
