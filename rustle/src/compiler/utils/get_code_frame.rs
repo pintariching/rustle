@@ -2,7 +2,7 @@ use regex::{Captures, Regex};
 use std::cmp::{max, min};
 
 fn tabs_to_spaces(str: &str) -> String {
-    let re = Regex::new(r"^\t+").unwrap();
+    let re = Regex::new("^\t+").unwrap();
     re.replace_all(str, |caps: &Captures| {
         let matched = &caps[0];
         matched.split('\t').collect::<Vec<&str>>().join("  ")
