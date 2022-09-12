@@ -241,6 +241,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
 
         trim_whitespace(&mut sample, true, false);
@@ -262,6 +263,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
 
         trim_whitespace(&mut sample, false, true);
@@ -283,6 +285,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
 
         trim_whitespace(&mut sample, true, true);
@@ -307,6 +310,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
 
         trim_whitespace(&mut sample, true, true);
@@ -331,6 +335,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
 
         trim_whitespace(&mut sample, true, true);
@@ -355,6 +360,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
         let base_node = BaseNode {
             start: Some(0),
@@ -397,6 +403,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
         let base_node = BaseNode {
             start: Some(0),
@@ -439,6 +446,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
         let base_node = BaseNode {
             start: Some(0),
@@ -481,6 +489,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
         let base_node = BaseNode {
             start: Some(0),

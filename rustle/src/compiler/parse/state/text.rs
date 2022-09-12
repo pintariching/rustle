@@ -8,7 +8,12 @@ pub fn text(parser: &mut Parser) -> StateReturn {
     let mut data = String::new();
 
     while parser.index < parser.template.len() && !parser.match_str("<") && !parser.match_str("{") {
-        data += &parser.template[parser.index + 1..parser.template.len()];
+        data += &parser
+            .template
+            .chars()
+            .nth(parser.index + 1)
+            .unwrap()
+            .to_string();
     }
 
     let node: Text = Text {
@@ -22,7 +27,7 @@ pub fn text(parser: &mut Parser) -> StateReturn {
             elseif: false,
             _else: false,
         },
-        // raw: data
+        raw: data.clone(),
         data: decode_character_references(&data),
     };
 

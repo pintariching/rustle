@@ -1,7 +1,6 @@
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::ops::Index;
-use std::rc::Rc;
 use std::str::from_utf8;
 
 use crate::compiler::interfaces::{

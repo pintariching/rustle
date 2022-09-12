@@ -38,6 +38,21 @@ static WINDOWS_1252: [u32; 32] = [
     8216, 8217, 8220, 8221, 8226, 8211, 8212, 732, 8482, 353, 8250, 339, 157, 382, 376,
 ];
 
+/// Takes a character in a hex code, html code or as a html entity,
+/// replace illegal code points with alternatives in some cases
+/// and returns the character as a symbol in string form.
+///
+/// # Arguments
+///
+/// * `html` - The character as a hex code, html code or as a html entity
+///
+/// # Examples
+/// ```
+/// assert_eq!(decode_character_references("&#x40;"), "@");
+/// assert_eq!(decode_character_references("&#64;"), "@");
+/// assert_eq!(decode_character_references("&commat;"), "@");
+/// ```
+///
 pub fn decode_character_references(html: &str) -> String {
     let s = ENTITY_PATTERN.replace_all(&html, |cap: &Captures| {
         let mut code: Option<u32> = None;

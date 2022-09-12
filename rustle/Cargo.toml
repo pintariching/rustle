@@ -15,6 +15,8 @@ strum_macros = "0.24.3"
 magic_string = "0.3.4"
 map-macro = "0.2.4"
 
-swc_ecma_ast = "0.91.0"
-swc_ecma_parser = "0.119.0"
-swc_estree_ast = "0.18.0"
+swc_ecma_ast = "0.91.2"
+swc_ecma_parser = "0.119.5"
+swc_estree_ast = "0.18.2"
+swc_css = "0.125.3"
+swc_common = { version = "0.28.2", features = [ "tty-emitter" ] }

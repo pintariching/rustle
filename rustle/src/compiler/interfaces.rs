@@ -2,7 +2,9 @@ use std::collections::HashMap;
 
 use magic_string::SourceMap;
 use strum_macros::Display;
-use swc_estree_ast::{AssignmentExpression, Program};
+use swc_css::ast::Rule;
+use swc_ecma_ast::Program;
+use swc_estree_ast::AssignmentExpression;
 
 use super::node::Node;
 
@@ -70,13 +72,15 @@ pub trait TmpNode {
 pub struct Text {
     pub base_node: BaseNode,
     pub data: String,
+    pub raw: String,
 }
 
 impl Text {
     pub fn new(data: String) -> Text {
         Text {
             base_node: BaseNode::new("Text".to_string()),
-            data,
+            raw: data.clone(),
+            data: data,
         }
     }
 }
@@ -596,29 +600,20 @@ impl Script {
 #[derive(Clone, Debug)]
 pub struct Style {
     pub base_node: BaseNode,
-    // pub attributes: Vec<String>, // TODO - from svelte
-    // pub children: Vec<String>,   // TODO add CSS node types - from svelte
+    pub attributes: Vec<Node>,
+    pub children: Vec<Rule>,
     pub content: StyleContent,
-}
-
-impl Style {
-    pub fn new(content: StyleContent) -> Style {
-        Style {
-            base_node: BaseNode::new("style".to_string()),
-            content,
-        }
-    }
 }
 
 #[derive(Clone, Debug)]
 pub struct StyleContent {
-    pub start: i32,
-    pub end: i32,
+    pub start: usize,
+    pub end: usize,
     pub styles: String,
 }
 
 impl StyleContent {
-    pub fn new(start: i32, end: i32, styles: String) -> StyleContent {
+    pub fn new(start: usize, end: usize, styles: String) -> StyleContent {
         StyleContent { start, end, styles }
     }
 }
