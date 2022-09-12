@@ -23,7 +23,7 @@ pub fn text(parser: &mut Parser) -> StateReturn {
             _else: false,
         },
         // raw: data
-        data: decode_character_references(data),
+        data: decode_character_references(&data),
     };
 
     parser

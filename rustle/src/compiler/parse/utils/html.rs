@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use lazy_static::lazy_static;
-use regex::Regex;
+use regex::{Captures, Regex};
 
-use crate::compiler::parse::utils::entities::ENTITY;
+use crate::compiler::parse::utils::entities::{self, ENTITY};
 
 lazy_static! {
     static ref ENTITY_PATTERN: Regex = Regex::new(
@@ -38,17 +38,30 @@ static WINDOWS_1252: [u32; 32] = [
     8216, 8217, 8220, 8221, 8226, 8211, 8212, 732, 8482, 353, 8250, 339, 157, 382, 376,
 ];
 
-// TODO: fix this
-pub fn decode_character_references(html: String) -> String {
-    let matches = ENTITY_PATTERN
-        .find_iter(&html)
-        .map(|m| m.as_str())
-        .collect::<Vec<&str>>();
+pub fn decode_character_references(html: &str) -> String {
+    let s = ENTITY_PATTERN.replace_all(&html, |cap: &Captures| {
+        let mut code: Option<u32> = None;
+        let mat = cap.get(0).unwrap().as_str();
+        let entity = cap.get(1).unwrap().as_str();
 
-    let code: &str;
-    if matches[0] != "#" {}
+        if entity.chars().nth(0).unwrap() != '#' {
+            code = Some(ENTITY.get(entity).unwrap().clone());
+        } else if entity.chars().nth(1).unwrap() == 'x' {
+            code = Some(u32::from_str_radix(&entity[2..], 16).unwrap());
+        } else {
+            code = Some(u32::from_str_radix(&entity[1..], 10).unwrap());
+        }
 
-    todo!()
+        if let Some(c) = code {
+            return char::from_u32(validate_code(c).unwrap())
+                .unwrap()
+                .to_string();
+        } else {
+            return mat.to_string();
+        }
+    });
+
+    s.into_owned()
 }
 
 // some code points are verboten. If we were inserting HTML, the browser would replace the illegal
@@ -101,8 +114,6 @@ pub fn validate_code(code: u32) -> Option<u32> {
     None
 }
 
-// can this be a child of the parent element, or does it implicitly
-// close it, like `<li>one<li>two`?
 pub fn closing_tag_omitted(current: &str, next: Option<&str>) -> bool {
     if DISSALOWED_CONTENTS.contains_key(current) {
         if let Some(next) = next {
@@ -120,6 +131,7 @@ pub fn closing_tag_omitted(current: &str, next: Option<&str>) -> bool {
 #[cfg(test)]
 mod tests {
     use super::closing_tag_omitted;
+    use super::decode_character_references;
     use super::ENTITY_PATTERN;
 
     #[test]
@@ -142,10 +154,17 @@ mod tests {
 
     #[test]
     fn test_entity_pattern_regex() {
-        let samples = vec!["&CounterClockwiseContourIntegral;", "&eDDot;", "&#duhar;"];
+        let samples = vec!["&CounterClockwiseContourIntegral;", "&eDDot;", "&duhar;"];
 
         for s in samples {
             assert!(ENTITY_PATTERN.is_match(s));
         }
+    }
+
+    #[test]
+    fn test_decode_character_references() {
+        assert_eq!(decode_character_references("&#10607;"), "⥯");
+        assert_eq!(decode_character_references("&bigodot;"), "⨀");
+        assert_eq!(decode_character_references("&#xb6;"), "¶");
     }
 }
