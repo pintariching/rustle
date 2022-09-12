@@ -1,3 +1,4 @@
+use lazy_static::lazy_static;
 use regex::Regex;
 
 pub const GLOBALS: [&str; 62] = [
@@ -127,14 +128,32 @@ pub fn is_valid(str: &str) -> bool {
     todo!()
 }
 
-pub fn sanitize(name: &str) -> String {
-    let letters_and_numbers = Regex::new("/[^a-zA-Z0-9_]+/g").unwrap();
-    let starts_with_underscore = Regex::new("/^_/").unwrap();
-    let ends_with_underscore = Regex::new("/_$/").unwrap();
-    let starts_with_number = Regex::new("/^[0-9]/").unwrap();
+lazy_static! {
+    static ref LETTERS_AND_NUMBERS: Regex = Regex::new("[^a-zA-Z0-9_]").unwrap();
+    static ref STARTS_WITH_UNDERSCORE: Regex = Regex::new("^_").unwrap();
+    static ref ENDS_WITH_UNDERSCORE: Regex = Regex::new("_$").unwrap();
+    static ref STARTS_WITH_NUMBER: Regex = Regex::new("^[0-9]").unwrap();
+}
 
-    letters_and_numbers.replace(name, "_");
-    starts_with_underscore.replace(name, "");
-    ends_with_underscore.replace(name, "");
-    starts_with_number.replace(name, "_$&").into_owned()
+pub fn sanitize(name: &str) -> String {
+    LETTERS_AND_NUMBERS.replace(name, "_");
+    STARTS_WITH_UNDERSCORE.replace(name, "");
+    ENDS_WITH_UNDERSCORE.replace(name, "");
+    STARTS_WITH_NUMBER.replace(name, "_$&").into_owned()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        ENDS_WITH_UNDERSCORE, LETTERS_AND_NUMBERS, STARTS_WITH_NUMBER, STARTS_WITH_UNDERSCORE,
+    };
+
+    #[test]
+    fn test_leters_and_numbers_regex() {
+        let samples = vec!["%", "#", "ž", " "];
+
+        for s in samples {
+            assert!(LETTERS_AND_NUMBERS.is_match(s));
+        }
+    }
 }

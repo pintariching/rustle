@@ -2042,7 +2042,7 @@ impl ENTITY {
     pub fn aggregate_to_string() -> String {
         ENTITY
             .iter()
-            .map(|e| e.1.to_string())
+            .map(|e| e.0.to_string())
             .collect::<Vec<String>>()
             .join("|")
     }

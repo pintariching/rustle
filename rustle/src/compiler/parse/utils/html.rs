@@ -8,7 +8,7 @@ use crate::compiler::parse::utils::entities::ENTITY;
 lazy_static! {
     static ref ENTITY_PATTERN: Regex = Regex::new(
         format!(
-            "&(#?(?:x[\\w\\d]+|\\d+|{}))(?:;|\\b)",
+            "&(#?(?:x[\\w\\d]+|\\d+|{}))(?:;|b)",
             ENTITY::aggregate_to_string()
         )
         .as_str()
@@ -115,4 +115,18 @@ pub fn closing_tag_ommited(current: &str, next: Option<&str>) -> bool {
     }
 
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ENTITY_PATTERN;
+
+    #[test]
+    fn test_entity_pattern_regex() {
+        let samples = vec!["&CounterClockwiseContourIntegral;", "&eDDot;", "&#duhar;"];
+
+        for s in samples {
+            assert!(ENTITY_PATTERN.is_match(s));
+        }
+    }
 }
