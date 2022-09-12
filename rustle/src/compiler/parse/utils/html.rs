@@ -106,18 +106,19 @@ pub fn validate_code(code: u32) -> Option<u32> {
 pub fn closing_tag_omitted(current: &str, next: Option<&str>) -> bool {
     if DISSALOWED_CONTENTS.contains_key(current) {
         if let Some(next) = next {
-            if DISSALOWED_CONTENTS.get(current).unwrap().contains(&next) {
-                return true;
-            }
+            if DISSALOWED_CONTENTS.get(current).unwrap().contains(&next) {}
         } else {
             return true;
         }
     }
 
+    false
+}
+
 #[cfg(test)]
 mod tests {
     use super::closing_tag_omitted;
-	use super::ENTITY_PATTERN;
+    use super::ENTITY_PATTERN;
 
     #[test]
     fn test_closing_tag_omitted() {
@@ -135,8 +136,8 @@ mod tests {
 
         let current = "tr";
         assert!(closing_tag_omitted(current, None));
-	}
-    
+    }
+
     #[test]
     fn test_entity_pattern_regex() {
         let samples = vec!["&CounterClockwiseContourIntegral;", "&eDDot;", "&#duhar;"];
