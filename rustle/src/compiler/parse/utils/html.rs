@@ -103,16 +103,39 @@ pub fn validate_code(code: u32) -> Option<u32> {
 
 // can this be a child of the parent element, or does it implicitly
 // close it, like `<li>one<li>two`?
-pub fn closing_tag_ommited(current: &str, next: Option<&str>) -> bool {
+pub fn closing_tag_omitted(current: &str, next: Option<&str>) -> bool {
     if DISSALOWED_CONTENTS.contains_key(current) {
         if let Some(next) = next {
-            if let Some(contents) = DISSALOWED_CONTENTS.get(current) {
-                if contents.contains(&next) {
-                    return true;
-                }
+            if DISSALOWED_CONTENTS.get(current).unwrap().contains(&next) {
+                return true;
             }
+        } else {
+            return true;
         }
     }
 
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::closing_tag_omitted;
+
+    #[test]
+    fn test_closing_tag_omitted() {
+        let current = "li";
+        let next = "li";
+        assert!(closing_tag_omitted(current, Some(next)));
+
+        let current = "li";
+        let next = "p";
+        assert!(!closing_tag_omitted(current, Some(next)));
+
+        let current = "p";
+        let next = "address";
+        assert!(closing_tag_omitted(current, Some(next)));
+
+        let current = "tr";
+        assert!(closing_tag_omitted(current, None));
+    }
 }
