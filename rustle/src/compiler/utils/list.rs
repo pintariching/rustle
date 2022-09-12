@@ -17,3 +17,21 @@ macro_rules! list {
         }
     }};
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_list_macro() {
+        let list = list!(vec!["one", "two"]);
+        assert_eq!(list, String::from("one or two"));
+
+        let list = list!(vec!["one", "two", "three", "four"]);
+        assert_eq!(list, String::from("one, two, three or four"));
+
+        let list = list!(vec!["one", "two"], "and");
+        assert_eq!(list, String::from("one and two"));
+
+        let list = list!(vec!["one", "two", "three", "four"], "and");
+        assert_eq!(list, String::from("one, two, three and four"));
+    }
+}
