@@ -7,7 +7,7 @@ use crate::compiler::{
     parse::{
         errors::{self, Error},
         index::{Parser, StateReturn},
-        utils::closing_tag_ommited,
+        utils::closing_tag_omitted,
     },
     utils::WHITESPACE,
 };
@@ -72,7 +72,7 @@ pub fn mustache(parser: &mut Parser) -> StateReturn {
         let mut block = parser.current().clone();
         let mut expected: &str = "";
 
-        if closing_tag_ommited(&block.get_name().unwrap(), None) {
+        if closing_tag_omitted(&block.get_name().unwrap(), None) {
             block.get_base_node().end = Some(start);
             parser.stack.pop();
             block = parser.current().clone();

@@ -82,7 +82,6 @@ impl CompileError {
 mod tests {
     use super::*;
 
-    // TODO: haven't test yet because compile error.
     #[test]
     fn create_new_error() {
         let actual = CompileError::new(
