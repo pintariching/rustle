@@ -12,17 +12,29 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 lazy_static! {
-    static ref VALID_TAG_NAME: Regex = Regex::new(r"/^\!?[a-zA-Z]{1,}:?[a-zA-Z0-9\-]*/").unwrap();
+    static ref VALID_TAG_NAME: Regex = Regex::new("^!?[a-zA-Z]{1,}:?[a-zA-Z0-9-]*").unwrap();
     static ref META_TAGS: HashMap<&'static str, &'static str> = HashMap::from([
         ("svelte:head", "Head"),
         ("svelte:options", "Options"),
         ("svelte:window", "Window"),
         ("svelte:body", "Body")
     ]);
-    static ref SELF: Regex = Regex::new(r"/^svelte:self(?=[\s/>])/").unwrap();
-    static ref COMPONENT: Regex = Regex::new(r"/^svelte:component(?=[\s/>])/").unwrap();
-    static ref SLOT: Regex = Regex::new(r"/^svelte:fragment(?=[\s/>])/").unwrap();
-    static ref ELEMENT: Regex = Regex::new(r"/^svelte:element(?=[\s/>])/").unwrap();
+
+    /// `regex` doesn't support lookahead so make sure to remove
+    /// the last character
+    static ref SELF: Regex = Regex::new("^svelte:self([\\s/>])").unwrap();
+
+    /// `regex` doesn't support lookahead so make sure to remove
+    /// the last character
+    static ref COMPONENT: Regex = Regex::new("^svelte:component([\\s/>])").unwrap();
+
+    /// `regex` doesn't support lookahead so make sure to remove
+    /// the last character
+    static ref SLOT: Regex = Regex::new("^svelte:fragment([\\s/>])").unwrap();
+
+    /// `regex` doesn't support lookahead so make sure to remove
+    /// the last character
+    static ref ELEMENT: Regex = Regex::new("^svelte:element([\\s/>])").unwrap();
 }
 
 pub const VALID_META_TAGS: [&'static str; 4] = [
@@ -120,4 +132,70 @@ pub fn tag(parser: &mut Parser) -> StateReturn {
 
 pub fn read_tag_name(parser: &mut Parser) -> String {
     todo!()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{COMPONENT, ELEMENT, SELF, SLOT, VALID_TAG_NAME};
+
+    #[test]
+    fn test_valid_tag_name_regex() {
+        let samples = vec![
+            "svelte:options",
+            "svelte:component",
+            "my-element",
+            "svelte:my-element",
+            "!svelte:element",
+            "element-multiple-dashes",
+            "!svelte:multiple-dashes-element",
+        ];
+
+        for s in samples {
+            assert!(VALID_TAG_NAME.is_match(s));
+        }
+    }
+
+    #[test]
+    fn test_self_regex() {
+        let samples = vec!["svelte:self ", "svelte:self/", "svelte:self>"];
+
+        for s in samples {
+            s.ends_with("/>");
+            assert!(SELF.is_match(s));
+        }
+    }
+
+    #[test]
+    fn test_component_regex() {
+        let samples = vec![
+            "svelte:component ",
+            "svelte:component/",
+            "svelte:component>",
+        ];
+
+        for s in samples {
+            s.ends_with("/>");
+            assert!(COMPONENT.is_match(s));
+        }
+    }
+
+    #[test]
+    fn test_slot_regex() {
+        let samples = vec!["svelte:fragment ", "svelte:fragment/", "svelte:fragment>"];
+
+        for s in samples {
+            s.ends_with("/>");
+            assert!(SLOT.is_match(s));
+        }
+    }
+
+    #[test]
+    fn test_element_regex() {
+        let samples = vec!["svelte:element ", "svelte:element/", "svelte:element>"];
+
+        for s in samples {
+            s.ends_with("/>");
+            assert!(ELEMENT.is_match(s));
+        }
+    }
 }

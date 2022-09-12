@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 lazy_static! {
-    static ref PATTERN: Regex = Regex::new(r"?m^\s*svelte-ignore\s+([\s\S]+)\s*").unwrap();
+    static ref PATTERN: Regex = Regex::new(r"(?m)^\s*svelte-ignore\s+([\s\S]+)\s*").unwrap();
 }
 
 pub fn extract_svelte_ignore(text: &str) -> Vec<String> {
@@ -20,4 +20,21 @@ pub fn extract_svelte_ignore(text: &str) -> Vec<String> {
     }
 
     Vec::new()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::PATTERN;
+
+    #[test]
+    fn test_pattern_regex() {
+        let sample = vec![
+            "svelte-ignore a11y-autofocus",
+            "svelte-ignore placeholder\n a11y-autofocus\n",
+        ];
+
+        for s in sample {
+            assert!(PATTERN.is_match(s));
+        }
+    }
 }

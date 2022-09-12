@@ -1,4 +1,4 @@
-use std::{collections::HashMap, f32::consts::E};
+use std::collections::HashMap;
 
 use magic_string::SourceMap;
 use strum_macros::Display;
