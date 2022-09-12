@@ -106,7 +106,9 @@ pub fn validate_code(code: u32) -> Option<u32> {
 pub fn closing_tag_omitted(current: &str, next: Option<&str>) -> bool {
     if DISSALOWED_CONTENTS.contains_key(current) {
         if let Some(next) = next {
-            if DISSALOWED_CONTENTS.get(current).unwrap().contains(&next) {}
+            if DISSALOWED_CONTENTS.get(current).unwrap().contains(&next) {
+                return true;
+            }
         } else {
             return true;
         }
