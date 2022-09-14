@@ -48,6 +48,7 @@ static WINDOWS_1252: [u32; 32] = [
 ///
 /// # Examples
 /// ```
+/// use rustle::compiler::parse::utils::html::decode_character_references;
 /// assert_eq!(decode_character_references("&#x40;"), "@");
 /// assert_eq!(decode_character_references("&#64;"), "@");
 /// assert_eq!(decode_character_references("&commat;"), "@");

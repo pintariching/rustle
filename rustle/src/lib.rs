@@ -6,6 +6,6 @@
     unused_imports
 )]
 
-mod compiler;
-mod runtime;
-mod shared;
+pub mod compiler;
+pub mod runtime;
+pub mod shared;
