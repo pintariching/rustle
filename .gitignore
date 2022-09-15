@@ -3,3 +3,4 @@
 .idea
 .vscode
 .prettierrc
+*.code-workspace

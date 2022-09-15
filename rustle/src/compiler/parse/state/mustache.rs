@@ -7,7 +7,7 @@ use crate::compiler::{
     parse::{
         errors::{self, Error},
         index::{Parser, StateReturn},
-        utils::closing_tag_ommited,
+        utils::closing_tag_omitted,
     },
     utils::WHITESPACE,
 };
@@ -72,7 +72,7 @@ pub fn mustache(parser: &mut Parser) -> StateReturn {
         let mut block = parser.current().clone();
         let mut expected: &str = "";
 
-        if closing_tag_ommited(&block.get_name().unwrap(), None) {
+        if closing_tag_omitted(&block.get_name().unwrap(), None) {
             block.get_base_node().end = Some(start);
             parser.stack.pop();
             block = parser.current().clone();
@@ -97,7 +97,7 @@ pub fn mustache(parser: &mut Parser) -> StateReturn {
             "KeyBlock" => expected = "key",
             _ => {
                 let error = Error::unexpected_block_close();
-                parser.error(&error.code, &error.message);
+                parser.error(&error.code, &error.message, None);
             }
         }
 
@@ -140,7 +140,7 @@ pub fn mustache(parser: &mut Parser) -> StateReturn {
     } else if parser.eat(":else", false, None) {
         if parser.eat("if", false, None) {
             let error = Error::invalid_elseif();
-            parser.error(&error.code, &error.message)
+            parser.error(&error.code, &error.message, None)
         }
 
         parser.allow_whitespace();
@@ -157,10 +157,10 @@ pub fn mustache(parser: &mut Parser) -> StateReturn {
                     > 0
                 {
                     let error = Error::invalid_elseif_placement_unclosed_block(&block.to_string());
-                    parser.error(&error.code, &error.message);
+                    parser.error(&error.code, &error.message, None);
                 } else {
                     let error = Error::invalid_elseif_placement_outside_if();
-                    parser.error(&error.code, &error.message);
+                    parser.error(&error.code, &error.message, None);
                 }
             }
 
@@ -241,6 +241,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
 
         trim_whitespace(&mut sample, true, false);
@@ -262,6 +263,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
 
         trim_whitespace(&mut sample, false, true);
@@ -283,6 +285,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
 
         trim_whitespace(&mut sample, true, true);
@@ -307,6 +310,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
 
         trim_whitespace(&mut sample, true, true);
@@ -331,6 +335,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
 
         trim_whitespace(&mut sample, true, true);
@@ -355,6 +360,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
         let base_node = BaseNode {
             start: Some(0),
@@ -397,6 +403,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
         let base_node = BaseNode {
             start: Some(0),
@@ -439,6 +446,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
         let base_node = BaseNode {
             start: Some(0),
@@ -481,6 +489,7 @@ mod tests {
                 _else: false,
             },
             data: " Hello ".to_string(),
+            raw: String::new(),
         });
         let base_node = BaseNode {
             start: Some(0),
