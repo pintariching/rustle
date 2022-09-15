@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::compiler::{
-    interfaces::{BaseNode, Script},
+    interfaces::{BaseNode, Script, TemplateNode},
     node::Node,
     parse::{errors::Error, index::Parser},
 };
@@ -18,12 +18,38 @@ lazy_static! {
     static ref SCRIPT_REGEX: Regex = Regex::new("</script\\s*>").unwrap();
 }
 
-fn get_context(parser: &mut Parser, attributes: Vec<Node>, start: usize) -> String {
-    //let context = attributes.iter().find(|a| a.get_name() == "context");
+fn get_context(parser: &mut Parser, attributes: Vec<TemplateNode>, start: usize) -> String {
+    let context = attributes
+        .iter()
+        .find(|a| a.get_name().unwrap() == "context");
+
+    if let Some(c) = context {
+        match c {
+            TemplateNode::Attribute(t) => {
+                if t.value.len() != 1 || t.value[0].get_type() != "Text".to_string() {
+                    let error = Error::invalid_script_context_attribute();
+                    parser.error(&error.code, &error.message, Some(start));
+                }
+
+                let value = t.value[0].get_data();
+
+                if value != "module".to_string() {
+                    let error = Error::invalid_script_context_value();
+                    parser.error(&error.code, &error.message, t.base_node.start);
+                }
+
+                return value;
+            }
+            _ => (),
+        }
+    } else {
+        return "default".to_string();
+    }
+
     todo!()
 }
 
-pub fn read_script(parser: &mut Parser, start: usize, attributes: Vec<Node>) -> Script {
+pub fn read_script(parser: &mut Parser, start: usize, attributes: Vec<TemplateNode>) -> Script {
     let script_start = parser.index;
     let data = parser.read_until(SCRIPT_REGEX.clone(), Some(Error::unclosed_script()));
 
@@ -84,6 +110,8 @@ pub fn read_script(parser: &mut Parser, start: usize, attributes: Vec<Node>) -> 
 
 #[cfg(test)]
 mod tests {
+    use crate::compiler::parse::index::Parser;
+
     use super::SCRIPT_REGEX;
 
     #[test]

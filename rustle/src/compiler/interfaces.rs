@@ -332,11 +332,11 @@ impl TmpNode for Element {
 pub struct Attribute {
     pub base_node: BaseNode,
     pub name: String,
-    pub value: Vec<String>,
+    pub value: Vec<TemplateNode>,
 }
 
 impl Attribute {
-    pub fn new(name: String, value: Vec<String>) -> Attribute {
+    pub fn new(name: String, value: Vec<TemplateNode>) -> Attribute {
         Attribute {
             base_node: BaseNode::new("Attribute".to_string()),
             name,
