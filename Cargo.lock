@@ -613,6 +613,8 @@ dependencies = [
  "map-macro",
  "regex",
  "rustle_locate_character",
+ "serde",
+ "serde_json",
  "strum",
  "strum_macros",
  "swc_common 0.28.2",
