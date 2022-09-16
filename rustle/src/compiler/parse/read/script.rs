@@ -61,7 +61,7 @@ pub fn read_script(parser: &mut Parser, start: usize, attributes: Vec<TemplateNo
     let mut source = parser
         .template
         .chars()
-        .take(script_start)
+        .skip(script_start)
         .collect::<String>()
         .replace("\n", " ");
 
