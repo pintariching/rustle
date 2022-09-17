@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::compiler::{
-    interfaces::{BaseNode, Style, StyleContent},
+    interfaces::{BaseNode, Special, Style, StyleContent, TemplateNode},
     node::Node,
     parse::{errors::Error, index::Parser},
 };
@@ -17,7 +17,7 @@ lazy_static! {
     static ref STYLE_REGEX: Regex = Regex::new("</style\\s*>").unwrap();
 }
 
-pub fn read_style(parser: &mut Parser, start: usize, attributes: Vec<Node>) -> Style {
+pub fn read_style(parser: &mut Parser, start: usize, attributes: Vec<TemplateNode>) -> Special {
     let content_start = parser.index;
     let styles = parser.read_until(STYLE_REGEX.clone(), Some(Error::unclosed_style()));
 
@@ -42,7 +42,7 @@ pub fn read_style(parser: &mut Parser, start: usize, attributes: Vec<Node>) -> S
     let _ = parser.read(STYLE_REGEX.clone());
     let end = parser.index;
 
-    return Style {
+    return Special::Style(Style {
         base_node: BaseNode {
             node_type: "Style".to_string(),
             start: Some(start),
@@ -60,7 +60,7 @@ pub fn read_style(parser: &mut Parser, start: usize, attributes: Vec<Node>) -> S
         },
         attributes,
         children: ast.rules,
-    };
+    });
 }
 
 #[cfg(test)]

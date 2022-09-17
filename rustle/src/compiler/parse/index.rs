@@ -17,7 +17,7 @@ use super::errors::Error;
 pub struct LastAutoClosedTag {
     pub tag: String,
     pub reason: String,
-    pub depth: i32,
+    pub depth: usize,
 }
 
 pub struct Parser {

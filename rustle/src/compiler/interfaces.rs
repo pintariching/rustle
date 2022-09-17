@@ -600,9 +600,15 @@ impl Script {
 #[derive(Clone, Debug)]
 pub struct Style {
     pub base_node: BaseNode,
-    pub attributes: Vec<Node>,
+    pub attributes: Vec<TemplateNode>,
     pub children: Vec<Rule>,
     pub content: StyleContent,
+}
+
+#[derive(Clone, Debug)]
+pub enum Special {
+    Script(Script),
+    Style(Style),
 }
 
 #[derive(Clone, Debug)]

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::compiler::{
-    interfaces::{BaseNode, Script, TemplateNode},
+    interfaces::{BaseNode, Script, Special, TemplateNode},
     node::Node,
     parse::{errors::Error, index::Parser},
 };
@@ -49,7 +49,7 @@ fn get_context(parser: &mut Parser, attributes: Vec<TemplateNode>, start: usize)
     todo!()
 }
 
-pub fn read_script(parser: &mut Parser, start: usize, attributes: Vec<TemplateNode>) -> Script {
+pub fn read_script(parser: &mut Parser, start: usize, attributes: Vec<TemplateNode>) -> Special {
     let script_start = parser.index;
     let data = parser.read_until(SCRIPT_REGEX.clone(), Some(Error::unclosed_script()));
 
@@ -92,7 +92,7 @@ pub fn read_script(parser: &mut Parser, start: usize, attributes: Vec<TemplateNo
         .map_err(|e| e.into_diagnostic(&handler).emit())
         .expect("failed to parse module");
 
-    return Script {
+    return Special::Script(Script {
         base_node: BaseNode {
             node_type: "Script".to_string(),
             start: Some(start),
@@ -105,7 +105,7 @@ pub fn read_script(parser: &mut Parser, start: usize, attributes: Vec<TemplateNo
         },
         context: get_context(parser, attributes, start),
         content: program,
-    };
+    });
 }
 
 #[cfg(test)]
