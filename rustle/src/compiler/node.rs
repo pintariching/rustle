@@ -1,8 +1,10 @@
 use swc_estree_ast::{
-    BaseNode, CatchClause, Class, ClassBody, Expression, Function, FunctionExpression, Identifier,
-    Literal, ModuleDeclaration, ModuleSpecifier, Pattern, Program, Property, SpreadElement,
-    Statement, Super, SwitchCase, TemplateElement, VariableDeclarator,
+    BaseNode, CatchClause, Class, ClassBody, Expression, Function, FunctionExpression, Literal,
+    ModuleDeclaration, ModuleSpecifier, Pattern, Program, Property, SpreadElement, Statement,
+    Super, SwitchCase, TemplateElement, VariableDeclarator,
 };
+
+use swc_estree_ast::Identifier;
 
 #[derive(Clone, Debug)]
 pub enum Node {
