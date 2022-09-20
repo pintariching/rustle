@@ -409,6 +409,10 @@ fn read_attribute_value(parser: &mut Parser) -> Vec<Text> {
     todo!()
 }
 
+fn read_sequence(parser: &mut Parser) -> Vec<TemplateNode> {
+    todo!()
+}
+
 #[cfg(test)]
 mod tests {
     use super::{COMPONENT, ELEMENT, SELF, SLOT, VALID_TAG_NAME};
