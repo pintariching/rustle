@@ -1,5 +1,5 @@
 //pub mod acorn;
-mod ast;
+
 //pub mod errors;
 //pub mod index;
 pub mod parser;

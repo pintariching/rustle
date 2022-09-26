@@ -2,6 +2,7 @@ use swc_common::errors::{ColorConfig, Handler};
 use swc_common::sync::Lrc;
 use swc_common::{FileName, SourceMap};
 use swc_ecma_ast::{EsVersion, Expr, Script};
+use swc_ecma_parser::parse_file_as_script;
 use swc_ecma_parser::{lexer::Lexer, Parser as SwcParser, StringInput, Syntax};
 
 use super::parser::Parser;
@@ -19,23 +20,16 @@ pub fn swc_parse(source: &str) -> Script {
 
     let fm = cm.new_source_file(FileName::Anon, source.into());
 
-    let lexer = Lexer::new(
+    let result = parse_file_as_script(
+        &fm,
         Syntax::Es(Default::default()),
         EsVersion::latest(),
-        StringInput::from(&*fm),
         None,
-    );
+        &mut Vec::new(),
+    )
+    .unwrap();
 
-    let mut swc_parser = SwcParser::new_from(lexer);
-
-    for e in swc_parser.take_errors() {
-        e.into_diagnostic(&handler).emit();
-    }
-
-    swc_parser
-        .parse_script()
-        .map_err(|e| e.into_diagnostic(&handler).emit())
-        .expect("failed to parse script")
+    result
 }
 
 /// Parses an expression at the given index

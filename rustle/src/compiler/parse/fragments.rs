@@ -1,4 +1,5 @@
-use super::ast::{Fragment, RustleAttribute, RustleElement};
+use crate::compiler::{Fragment, RustleAttribute, RustleElement};
+
 use super::parser::Parser;
 use super::swc_helpers::{parse_expression_at, swc_parse};
 

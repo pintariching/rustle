@@ -1,7 +1,8 @@
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use super::ast::{Fragment, RustleAst};
+use crate::compiler::{Fragment, RustleAst};
+
 use super::fragments::parse_fragments;
 
 lazy_static! {
