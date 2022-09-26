@@ -3,7 +3,7 @@
     "type": "Script",
     "span": {
       "start": 4,
-      "end": 94,
+      "end": 136,
       "ctxt": 0
     },
     "body": [
@@ -53,7 +53,7 @@
         "type": "VariableDeclaration",
         "span": {
           "start": 23,
-          "end": 57,
+          "end": 78,
           "ctxt": 0
         },
         "kind": "const",
@@ -63,7 +63,7 @@
             "type": "VariableDeclarator",
             "span": {
               "start": 29,
-              "end": 56,
+              "end": 77,
               "ctxt": 0
             },
             "id": {
@@ -81,29 +81,89 @@
               "type": "ArrowFunctionExpression",
               "span": {
                 "start": 41,
-                "end": 56,
+                "end": 77,
                 "ctxt": 0
               },
               "params": [],
               "body": {
-                "type": "UpdateExpression",
+                "type": "BlockStatement",
                 "span": {
                   "start": 47,
-                  "end": 56,
+                  "end": 77,
                   "ctxt": 0
                 },
-                "operator": "++",
-                "prefix": false,
-                "argument": {
-                  "type": "Identifier",
-                  "span": {
-                    "start": 47,
-                    "end": 54,
-                    "ctxt": 0
+                "stmts": [
+                  {
+                    "type": "VariableDeclaration",
+                    "span": {
+                      "start": 49,
+                      "end": 65,
+                      "ctxt": 0
+                    },
+                    "kind": "let",
+                    "declare": false,
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "span": {
+                          "start": 53,
+                          "end": 64,
+                          "ctxt": 0
+                        },
+                        "id": {
+                          "type": "Identifier",
+                          "span": {
+                            "start": 53,
+                            "end": 60,
+                            "ctxt": 0
+                          },
+                          "value": "counter",
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "init": {
+                          "type": "NumericLiteral",
+                          "span": {
+                            "start": 63,
+                            "end": 64,
+                            "ctxt": 0
+                          },
+                          "value": 0.0,
+                          "raw": "0"
+                        },
+                        "definite": false
+                      }
+                    ]
                   },
-                  "value": "counter",
-                  "optional": false
-                }
+                  {
+                    "type": "ExpressionStatement",
+                    "span": {
+                      "start": 66,
+                      "end": 75,
+                      "ctxt": 0
+                    },
+                    "expression": {
+                      "type": "UpdateExpression",
+                      "span": {
+                        "start": 66,
+                        "end": 75,
+                        "ctxt": 0
+                      },
+                      "operator": "++",
+                      "prefix": false,
+                      "argument": {
+                        "type": "Identifier",
+                        "span": {
+                          "start": 66,
+                          "end": 73,
+                          "ctxt": 0
+                        },
+                        "value": "counter",
+                        "optional": false
+                      }
+                    }
+                  }
+                ]
               },
               "async": false,
               "generator": false,
@@ -117,8 +177,8 @@
       {
         "type": "VariableDeclaration",
         "span": {
-          "start": 60,
-          "end": 94,
+          "start": 81,
+          "end": 136,
           "ctxt": 0
         },
         "kind": "const",
@@ -127,15 +187,15 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 66,
-              "end": 93,
+              "start": 87,
+              "end": 135,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 66,
-                "end": 75,
+                "start": 87,
+                "end": 96,
                 "ctxt": 0
               },
               "value": "decrement",
@@ -145,30 +205,90 @@
             "init": {
               "type": "ArrowFunctionExpression",
               "span": {
-                "start": 78,
-                "end": 93,
+                "start": 99,
+                "end": 135,
                 "ctxt": 0
               },
               "params": [],
               "body": {
-                "type": "UpdateExpression",
+                "type": "BlockStatement",
                 "span": {
-                  "start": 84,
-                  "end": 93,
+                  "start": 105,
+                  "end": 135,
                   "ctxt": 0
                 },
-                "operator": "--",
-                "prefix": false,
-                "argument": {
-                  "type": "Identifier",
-                  "span": {
-                    "start": 84,
-                    "end": 91,
-                    "ctxt": 0
+                "stmts": [
+                  {
+                    "type": "VariableDeclaration",
+                    "span": {
+                      "start": 107,
+                      "end": 123,
+                      "ctxt": 0
+                    },
+                    "kind": "let",
+                    "declare": false,
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "span": {
+                          "start": 111,
+                          "end": 122,
+                          "ctxt": 0
+                        },
+                        "id": {
+                          "type": "Identifier",
+                          "span": {
+                            "start": 111,
+                            "end": 118,
+                            "ctxt": 0
+                          },
+                          "value": "counter",
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "init": {
+                          "type": "NumericLiteral",
+                          "span": {
+                            "start": 121,
+                            "end": 122,
+                            "ctxt": 0
+                          },
+                          "value": 0.0,
+                          "raw": "0"
+                        },
+                        "definite": false
+                      }
+                    ]
                   },
-                  "value": "counter",
-                  "optional": false
-                }
+                  {
+                    "type": "ExpressionStatement",
+                    "span": {
+                      "start": 124,
+                      "end": 133,
+                      "ctxt": 0
+                    },
+                    "expression": {
+                      "type": "UpdateExpression",
+                      "span": {
+                        "start": 124,
+                        "end": 133,
+                        "ctxt": 0
+                      },
+                      "operator": "--",
+                      "prefix": false,
+                      "argument": {
+                        "type": "Identifier",
+                        "span": {
+                          "start": 124,
+                          "end": 131,
+                          "ctxt": 0
+                        },
+                        "value": "counter",
+                        "optional": false
+                      }
+                    }
+                  }
+                ]
               },
               "async": false,
               "generator": false,
