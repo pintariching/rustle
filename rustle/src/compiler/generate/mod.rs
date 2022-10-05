@@ -1,7 +1,7 @@
 use super::{analyse::AnalysisResult, Fragment, RustleAst};
-use swc_common::{sync::Lrc, SourceMap};
+use swc::{config::SourceMapsConfig, Compiler};
+use swc_common::collections::AHashMap;
 use swc_ecma_ast::{EsVersion, Expr};
-use swc_ecma_codegen::{text_writer::JsWriter, Config, Emitter};
 
 struct Code {
     counter: usize,
@@ -24,26 +24,24 @@ pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
         traverse(&fragment, "target".into(), &analysis, &mut code)
     }
 
-    let mut buffer = Vec::new();
-    {
-        let cm: Lrc<SourceMap> = Default::default();
-        let writer = JsWriter::new(cm.clone(), "\n", &mut buffer, None);
-        let config = Config {
-            target: EsVersion::latest(),
-            ascii_only: false,
-            minify: false,
-            omit_last_semi: false,
-        };
-        let mut emmiter = Emitter {
-            cfg: config,
-            cm: cm.clone(),
-            comments: None,
-            wr: writer,
-        };
-        emmiter.emit_script(&ast.script).unwrap();
-    }
-
-    let script = String::from_utf8(buffer).unwrap();
+    let compiler = Compiler::new(Default::default());
+    let script = compiler
+        .print(
+            &ast.script,
+            None,
+            None,
+            false,
+            EsVersion::Es2022,
+            SourceMapsConfig::Bool(false),
+            &AHashMap::default(),
+            None,
+            false,
+            None,
+            false,
+            false,
+        )
+        .unwrap()
+        .code;
 
     format!(
         r#"
