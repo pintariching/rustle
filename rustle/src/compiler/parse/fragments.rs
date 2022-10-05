@@ -1,7 +1,6 @@
 use crate::compiler::{Fragment, RustleAttribute, RustleElement};
 
 use super::parser::Parser;
-use super::swc_helpers::{parse_expression_at, swc_parse};
 
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -72,7 +71,7 @@ fn parse_script(parser: &mut Parser) -> Option<Script> {
         let start_index = parser.index;
         let end_index = parser.content.find("</script>").unwrap();
         let code = parser.content.get(start_index..end_index).unwrap();
-        let script = swc_parse(code);
+        let script = todo!();
 
         parser.index = end_index;
         parser.eat("</script>");
@@ -176,5 +175,5 @@ fn parse_attribute(parser: &mut Parser) -> RustleAttribute {
 /// Parses javascript using SWC at the current index.
 /// Probably redundant.
 fn parse_javascript(parser: &mut Parser) -> Expr {
-    parse_expression_at(parser)
+    todo!()
 }
