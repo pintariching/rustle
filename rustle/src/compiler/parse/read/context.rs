@@ -1,10 +1,13 @@
+use std::fmt::format;
+
 use crate::compiler::parse::index::Parser;
 use crate::compiler::parse::utils::{is_bracket_close, is_bracket_open, is_bracket_pair, get_bracket_close};
 use crate::compiler::utils::{full_char_at, full_char_code_at};
 use crate::compiler::parse::errors::Error;
+use crate::compiler::parse::acorn::parse_expression_at;
 
 use regex::Regex;
-use swc_ecma_ast::Ident;
+use swc_ecma_ast::{Ident, Expr};
 use swc_estree_ast::{PatternLike, Identifier, BaseNode};
 
 pub fn read_context(mut parser: Parser) -> (PatternLike, u32, u32) {
@@ -104,5 +107,11 @@ pub fn read_context(mut parser: Parser) -> (PatternLike, u32, u32) {
     // 		`${space_with_newline}(${pattern_string} = 1)`,
     // 		start - 1
     // 	) as any).left;
-    todo!()
+
+    let val = *parse_expression_at(format!("{}({} = 1)", space_with_newline, pattern_string), start - 1);
+
+    if let Expr::Ident(s) = val {
+        todo!()
+    }
+
 }

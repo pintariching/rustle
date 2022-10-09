@@ -6,5 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-swc_estree_ast = "0.17.4"
+swc_ecma_ast = "0.91.1"
 lazy_static = "1.4.0"
+swc_ecma_parser = "0.119.3"
+swc_common = "0.28.1"
+swc_estree_ast = "0.18.8"
