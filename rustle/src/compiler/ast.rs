@@ -1,6 +1,5 @@
 use serde::Serialize;
 use swc_ecma_ast::{Expr, Script};
-use swc_html_ast::Text;
 
 #[derive(Serialize)]
 pub struct RustleAst {
@@ -22,9 +21,14 @@ pub struct RustleElement {
 }
 
 #[derive(Serialize)]
+pub struct RustleText {
+    pub data: String,
+}
+
+#[derive(Serialize)]
 pub enum Fragment {
     Script(Script),
     Element(RustleElement),
     Expression(Expr),
-    Text(Text),
+    Text(RustleText),
 }

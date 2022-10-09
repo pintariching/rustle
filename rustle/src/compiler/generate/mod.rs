@@ -1,7 +1,11 @@
+use self::add_lifecycle_call::add_lifecycle_calls;
+
 use super::{analyse::AnalysisResult, Fragment, RustleAst};
-use swc::{config::SourceMapsConfig, Compiler};
-use swc_common::collections::AHashMap;
-use swc_ecma_ast::{EsVersion, Expr};
+use swc_ecma_ast::Expr;
+
+mod add_lifecycle_call;
+mod print_js;
+use print_js::print_js;
 
 struct Code {
     counter: usize,
@@ -24,24 +28,8 @@ pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
         traverse(&fragment, "target".into(), &analysis, &mut code)
     }
 
-    let compiler = Compiler::new(Default::default());
-    let script = compiler
-        .print(
-            &ast.script,
-            None,
-            None,
-            false,
-            EsVersion::Es2022,
-            SourceMapsConfig::Bool(false),
-            &AHashMap::default(),
-            None,
-            false,
-            None,
-            false,
-            false,
-        )
-        .unwrap()
-        .code;
+    let updated_script = add_lifecycle_calls(ast.script);
+    let script = print_js(updated_script);
 
     format!(
         r#"
@@ -92,17 +80,17 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                     let event_name = attr.name.chars().skip(3).collect::<String>();
                     let event_handler = match &attr.value {
                         Expr::Ident(ident) => ident.sym.to_string(),
-                        _ => panic!(),
+                        _ => panic!("Unhandled event handler name"),
                     };
 
                     code.create.push(format!(
                         "{}.addEventListener('{}', {});",
-                        parent, event_name, event_handler
+                        variable_name, event_name, event_handler
                     ));
 
                     code.destroy.push(format!(
                         "{}.removeEventListener('{}', {});",
-                        parent, event_name, event_handler
+                        variable_name, event_name, event_handler
                     ));
                 }
             }

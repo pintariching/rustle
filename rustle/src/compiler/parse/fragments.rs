@@ -1,12 +1,10 @@
-use crate::compiler::{Fragment, RustleAttribute, RustleElement};
-
-use super::parser::Parser;
-
 use lazy_static::lazy_static;
 use regex::Regex;
-use swc_common::Span;
 use swc_ecma_ast::{Expr, Script};
-use swc_html_ast::Text;
+
+use super::parser::Parser;
+use super::swc_helpers::{parse_expression_at, swc_parse_javascript};
+use crate::compiler::{Fragment, RustleAttribute, RustleElement, RustleText};
 
 lazy_static! {
     static ref ELEMENT_TAG_NAME: Regex = Regex::new("[a-z]").unwrap();
@@ -71,7 +69,7 @@ fn parse_script(parser: &mut Parser) -> Option<Script> {
         let start_index = parser.index;
         let end_index = parser.content.find("</script>").unwrap();
         let code = parser.content.get(start_index..end_index).unwrap();
-        let script = todo!();
+        let script = swc_parse_javascript(code);
 
         parser.index = end_index;
         parser.eat("</script>");
@@ -121,7 +119,7 @@ fn parse_element(parser: &mut Parser) -> Option<RustleElement> {
 fn parse_expression(parser: &mut Parser) -> Option<Expr> {
     if parser.match_str("{") {
         parser.eat("{");
-        let expr = parse_javascript(parser);
+        let expr = parse_expression_at(parser);
         parser.eat("}");
 
         return Some(expr);
@@ -131,15 +129,11 @@ fn parse_expression(parser: &mut Parser) -> Option<Expr> {
 }
 
 /// Parses text between tags for example `<div>some text</div>`
-fn parse_text(parser: &mut Parser) -> Option<Text> {
+fn parse_text(parser: &mut Parser) -> Option<RustleText> {
     let text = parser.read_while_matching(&READ_TEXT);
 
     if text.trim() != "" {
-        return Some(Text {
-            span: Span::default(),
-            data: text.into(),
-            raw: None,
-        });
+        return Some(RustleText { data: text.into() });
     }
     None
 }
@@ -165,15 +159,9 @@ fn parse_attribute(parser: &mut Parser) -> RustleAttribute {
 
     parser.eat("={");
 
-    let value = parse_javascript(parser);
+    let value = parse_expression_at(parser);
 
     parser.eat("}");
 
     return RustleAttribute { name, value };
-}
-
-/// Parses javascript using SWC at the current index.
-/// Probably redundant.
-fn parse_javascript(parser: &mut Parser) -> Expr {
-    todo!()
 }

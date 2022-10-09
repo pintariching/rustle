@@ -1,5 +1,4 @@
 use swc_ecma_ast::Expr;
-use swc_visit::define;
 
 use self::{
     extract_variables::extract_root_variables,
@@ -8,11 +7,6 @@ use self::{
 
 use super::{Fragment, RustleAst};
 use std::collections::HashSet;
-use swc_common::{
-    errors::{ColorConfig, Handler},
-    sync::Lrc,
-    SourceMap,
-};
 
 mod extract_variables;
 mod extract_variables_that_change;

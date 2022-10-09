@@ -1,7 +1,7 @@
 export default function () {
     let counter = 0;
-    const increment = () => counter++;
-    const decrement = () => counter--;
+    const increment = () => (counter++, lifecycle.update(["counter"]));
+    const decrement = () => (counter--, lifecycle.update(["counter"]));
 
     let button_1;
     let txt_2;
@@ -12,8 +12,8 @@ export default function () {
     const lifecycle = {
         create(target) {
             button_1 = document.createElement("button");
-            target.addEventListener("click", decrement);
-            txt_2 = document.createTextNode("Decrement");
+            button_1.addEventListener("click", increment);
+            txt_2 = document.createTextNode("Increment");
             button_1.appendChild(txt_2);
             target.appendChild(button_1);
             div_3 = document.createElement("div");
@@ -21,8 +21,8 @@ export default function () {
             div_3.appendChild(txt_4);
             target.appendChild(div_3);
             button_5 = document.createElement("button");
-            target.addEventListener("click", increment);
-            txt_6 = document.createTextNode("Increment");
+            button_5.addEventListener("click", decrement);
+            txt_6 = document.createTextNode("Decrement");
             button_5.appendChild(txt_6);
             target.appendChild(button_5);
         },
@@ -32,10 +32,10 @@ export default function () {
             }
         },
         destroy() {
-            target.removeEventListener("click", decrement);
+            button_1.removeEventListener("click", increment);
             target.removeChild(button_1);
             target.removeChild(div_3);
-            target.removeEventListener("click", increment);
+            button_5.removeEventListener("click", decrement);
             target.removeChild(button_5);
         },
     };
