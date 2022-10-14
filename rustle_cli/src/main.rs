@@ -1,14 +1,14 @@
 use std::{fs::{self, ReadDir}, path::{Path, PathBuf}, io::ErrorKind, env::current_dir};
 
 
-use rustle::compile_file_to_js;
+use rustle::{compile_file_to_js, parse_file};
 use clap::{Parser, Subcommand};
 use console::style;
 
 
 #[derive(Parser)]
 #[command(name = "Rustle")]
-#[command(version = "0.1.0")]
+#[command(version = "0.0.1")]
 #[command(about = "Svelte compiler rewritten in Rust", long_about = None)]
 struct Cli {
     file: Option<String>,
@@ -26,8 +26,14 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Sub {
-    parse {
-        file: Option<String>
+    Parse {
+        file: Option<String>,
+
+        #[arg(short = 'p', long = "pretty", default_value_t=false)]
+        pretty: bool,
+
+        #[arg(short = 'o', long = "output")]
+        output: Option<String>
     }
 }
 
@@ -128,13 +134,89 @@ fn main() {
 
     // Parse subcommand
     match &cli.command {
-        Some(Sub::parse { file}) => {
+        Some(Sub::Parse { file, pretty, output}) => {
             if let Some(file) = file.as_deref() {
                 let res = match fs::metadata(file) {
                     Ok(md) => {
-
-                        // Implement a parse option that outputs json
-                        todo!()
+                        if md.is_dir() {
+                            todo!()
+                        } else if md.is_file() { 
+                            if let Some(out_file) = output.as_deref() {
+                                let mut location = current_dir().unwrap();
+                                let mut input = location.clone();
+                                let filePath = Path::new(file);
+                                input.push(filePath);
+        
+        
+                                location.push(out_file);
+        
+                                let output = parse_file(input.as_path());
+        
+                                match output {
+                                    Ok(ast) => {
+                                        if *pretty == true {
+                                            match serde_json::to_string_pretty(&ast) {
+                                                Ok(j) => {
+                                                    if let Err(e) = fs::write(location, j) {
+                                                        println!("{}: {}", style("[ERROR]").red(), e);
+                                                    }
+                                                },
+                                                Err(e) => {
+                                                    println!("{}: {}", style("[ERROR]").red(), e);
+                                                }
+                                            }
+                                        } else {
+                                            match serde_json::to_string(&ast) {
+                                                Ok(j) => {
+                                                    if let Err(e) = fs::write(location, j) {
+                                                        println!("{}: {}", style("[ERROR]").red(), e);
+                                                    }
+                                                },
+                                                Err(e) => {
+                                                    println!("{}: {}", style("[ERROR]").red(), e);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Err(e) => {
+                                        println!("{}: {}", style("[ERROR]").red(), e);
+                                    }
+                                }
+                            } else {
+                                let mut input = current_dir().unwrap();
+                                let filePath = Path::new(file);
+                                input.push(filePath);
+        
+                                let output = parse_file(input.as_path());
+        
+                                match output {
+                                    Ok(ast) => {
+                                        if *pretty == true {
+                                            match serde_json::to_string_pretty(&ast) {
+                                                Ok(j) => {
+                                                    println!("{}", j);
+                                                },
+                                                Err(e) => {
+                                                    println!("{}: {}", style("[ERROR]").red(), e);
+                                                }
+                                            }
+                                        } else {
+                                            match serde_json::to_string(&ast) {
+                                                Ok(j) => {
+                                                    println!("{}", j);
+                                                },
+                                                Err(e) => {
+                                                    println!("{}: {}", style("[ERROR]").red(), e);
+                                                }
+                                            }
+                                        }
+                                    },
+                                    Err(e) => {
+                                        println!("{}: {}", style("[ERROR]").red(), e);
+                                    },
+                                }
+                            }
+                        }
                     },
                     Err(e) => {
                         match e.kind() {
@@ -196,3 +278,4 @@ fn compile_directory(rd: ReadDir, output: PathBuf) {
         }
     }   
 }
+

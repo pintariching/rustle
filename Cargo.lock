@@ -1272,6 +1272,7 @@ dependencies = [
  "clap",
  "console",
  "rustle",
+ "serde_json",
 ]
 
 [[package]]
