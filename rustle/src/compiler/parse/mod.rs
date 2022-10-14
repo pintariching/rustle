@@ -1,7 +1,5 @@
-mod acorn;
-mod errors;
-mod index;
-mod read;
-mod state;
-mod swc;
-mod utils;
+mod fragments;
+pub mod parser;
+mod swc_helpers;
+
+pub use parser::Parser;

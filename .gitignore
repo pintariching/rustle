@@ -3,3 +3,5 @@
 .idea
 .vscode
 .prettierrc
+cargo.lock
+*.code-workspace
