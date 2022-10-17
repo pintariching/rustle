@@ -1,4 +1,4 @@
-use std::{fs::{self, ReadDir}, path::{Path, PathBuf}, io::ErrorKind, env::current_dir};
+use std::{fs::{self, ReadDir}, path::{Path, PathBuf, self}, io::ErrorKind, env::current_dir};
 
 
 use rustle::{compile_file_to_js, parse_file};
@@ -7,16 +7,14 @@ use console::style;
 
 
 #[derive(Parser)]
-#[command(name = "Rustle")]
-#[command(version = "0.0.1")]
-#[command(about = "Svelte compiler rewritten in Rust", long_about = None)]
+#[command(name = "Rustle", version = "0.0.1", about = "Svelte compiler rewritten in Rust", long_about = None)]
 struct Cli {
     file: Option<String>,
 
-    #[arg(short = 'o', long = "output")]
+    #[arg(short, long)]
     output: Option<String>,
 
-    #[arg(short = 'y', long = "yes")]
+    #[arg(short, long)]
     yes: Option<String>,
 
     #[command(subcommand)]
@@ -29,10 +27,10 @@ enum Sub {
     Parse {
         file: Option<String>,
 
-        #[arg(short = 'p', long = "pretty", default_value_t=false)]
+        #[arg(short,long, default_value_t=false)]
         pretty: bool,
 
-        #[arg(short = 'o', long = "output")]
+        #[arg(short,long)]
         output: Option<String>
     }
 }
@@ -42,24 +40,33 @@ fn main() {
     let cli = Cli::parse();
 
     if let Some(file) = cli.file.as_deref() {
-        let res = match fs::metadata(file) {
-            Ok(md) => {
-                if md.is_dir() {
-                    let files = match fs::read_dir(file) {
+         match fs::metadata(file) {
+            Ok(metadata) => {
+
+                let mut output_dir = match current_dir() {
+                    Ok(path_buf) => {
+                        path_buf
+                    },
+                    Err(e) => {
+                        panic!("{}: {}", style("[ERROR]").red(), e)
+                    }
+                };
+                
+                if metadata.is_dir() {
+                    match fs::read_dir(file) {
 
                         Ok(rd) => {
-                            let mut output = current_dir().unwrap();
-                            output.push("./dist");
-                            let dir_creation_result = fs::create_dir(output.clone());
+                            output_dir.push("./dist");
+                            let dir_creation_result = fs::create_dir(output_dir.clone());
 
 
                             if let Ok(()) = dir_creation_result {
-                                compile_directory(rd, output.clone())
+                                compile_directory(rd, output_dir.clone())
                             } else {
                                 let e = dir_creation_result.err().unwrap();
 
                                 if let ErrorKind::AlreadyExists = e.kind() {
-                                    compile_directory(rd, output.clone());
+                                    compile_directory(rd, output_dir.clone());
                                 } else {
                                     println!("{}: {}", style("[ERROR]").red(), e);
                                 }
@@ -70,12 +77,12 @@ fn main() {
                             println!("{}: {}", style("[ERROR]").red(), e);
                         }
                     };
-                } else if md.is_file() {
+                } else if metadata.is_file() {
                     if let Some(out_file) = cli.output.as_deref() {
                         let mut location = current_dir().unwrap();
                         let mut input = location.clone();
-                        let filePath = Path::new(file);
-                        input.push(filePath);
+                        let file_path = Path::new(file);
+                        input.push(file_path);
 
 
                         location.push(out_file);
@@ -93,11 +100,11 @@ fn main() {
                     } else {
                         let mut location = current_dir().unwrap();
                         let mut input = location.clone();
-                        let filePath = Path::new(file);
-                        input.push(filePath);
+                        let file_path = Path::new(file);
+                        input.push(file_path);
 
 
-                        location.push(filePath.file_stem().unwrap().to_str().unwrap().to_owned() + ".js");
+                        location.push(file_path.file_stem().unwrap().to_str().unwrap().to_owned() + ".js");
 
                         let output = compile_file_to_js(input.as_path(), location.as_path());
 
@@ -131,21 +138,20 @@ fn main() {
 
     }
 
-
     // Parse subcommand
     match &cli.command {
         Some(Sub::Parse { file, pretty, output}) => {
             if let Some(file) = file.as_deref() {
-                let res = match fs::metadata(file) {
-                    Ok(md) => {
-                        if md.is_dir() {
+                match fs::metadata(file) {
+                    Ok(metadata) => {
+                        if metadata.is_dir() {
                             todo!()
-                        } else if md.is_file() { 
+                        } else if metadata.is_file() { 
                             if let Some(out_file) = output.as_deref() {
                                 let mut location = current_dir().unwrap();
                                 let mut input = location.clone();
-                                let filePath = Path::new(file);
-                                input.push(filePath);
+                                let file_path = Path::new(file);
+                                input.push(file_path);
         
         
                                 location.push(out_file);
@@ -184,8 +190,8 @@ fn main() {
                                 }
                             } else {
                                 let mut input = current_dir().unwrap();
-                                let filePath = Path::new(file);
-                                input.push(filePath);
+                                let file_path = Path::new(file);
+                                input.push(file_path);
         
                                 let output = parse_file(input.as_path());
         
