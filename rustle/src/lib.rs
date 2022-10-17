@@ -22,3 +22,12 @@ pub fn parse_file(input: &Path) -> Result<RustleAst, std::io::Error> {
 
     Ok(ast)
 }
+
+pub fn compile_file_to_string(input: &Path) -> Result<String, std::io::Error> {
+    let source = fs::read_to_string(input)?;
+    let ast = Parser::new(&source).parse();
+    let analysis = analyse(&ast);
+    let generated = generate(ast, analysis);
+
+    Ok(generated)
+}

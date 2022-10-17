@@ -4,3 +4,7 @@
 .vscode
 .prettierrc
 *.code-workspace
+/examples/target
+/examples/*/target
+/examples/*/Cargo.lock
+/examples/Cargo.lock
