@@ -93,9 +93,7 @@ fn main() {
                             Err(e) => {
                                 println!("{}: {}", style("[ERROR]").red(), e);
                             },
-                            _ => {
-
-                            }
+                            _ => {}
                         }
                     } else {
                         let mut location = current_dir().unwrap();
@@ -112,9 +110,7 @@ fn main() {
                             Err(e) => {
                                 println!("{}: {}", style("[ERROR]").red(), e);
                             },
-                            _ => {
-
-                            }
+                            _ => {}
                         }
                     }
                 }
@@ -235,7 +231,7 @@ fn main() {
                             },
         
                             _ => {
-                                println!("{}: unexpected error", style("[ERROR]").red());
+                                println!("{}: Unexpected error", style("[ERROR]").red());
                             }
                         }
                     }
