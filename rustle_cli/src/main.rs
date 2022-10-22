@@ -17,24 +17,12 @@ struct Cli {
     #[arg(short, long)]
     yes: Option<String>,
 
-    #[command(subcommand)]
-    command: Option<Sub>
+    #[arg(short, long, default_value_t=false)]
+    ast: bool,
+
+    #[arg(short,long, default_value_t=false)]
+    pretty: bool,
 }
-
-
-#[derive(Subcommand)]
-enum Sub {
-    Parse {
-        file: Option<String>,
-
-        #[arg(short,long, default_value_t=false)]
-        pretty: bool,
-
-        #[arg(short,long)]
-        output: Option<String>
-    }
-}
-
 
 fn main() {
     let cli = Cli::parse();
@@ -78,39 +66,119 @@ fn main() {
                         }
                     };
                 } else if metadata.is_file() {
+                    let mut location = current_dir().unwrap();
+
                     if let Some(out_file) = cli.output.as_deref() {
-                        let mut location = current_dir().unwrap();
-                        let mut input = location.clone();
-                        let file_path = Path::new(file);
-                        input.push(file_path);
+                        if cli.ast == true {
+                            let mut input = location.clone();
+                            let file_path = Path::new(file);
+                            input.push(file_path);
+    
+    
+                            location.push(out_file);
+    
+                            let output = parse_file(input.as_path());
+    
+                            match output {
+                                Ok(ast) => {
+                                    if cli.pretty == true {
+                                        match serde_json::to_string_pretty(&ast) {
+                                            Ok(j) => {
+                                                if let Err(e) = fs::write(location, j) {
+                                                    println!("{}: {}", style("[ERROR]").red(), e);
+                                                }
+                                            },
+                                            Err(e) => {
+                                                println!("{}: {}", style("[ERROR]").red(), e);
+                                            }
+                                        }
+                                    } else {
+                                        match serde_json::to_string(&ast) {
+                                            Ok(j) => {
+                                                if let Err(e) = fs::write(location, j) {
+                                                    println!("{}: {}", style("[ERROR]").red(), e);
+                                                }
+                                            },
+                                            Err(e) => {
+                                                println!("{}: {}", style("[ERROR]").red(), e);
+                                            }
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    println!("{}: {}", style("[ERROR]").red(), e);
+                                }
+                            }         
+                        } else {
+                            let mut input = location.clone();
+                            let file_path = Path::new(file);
+                            input.push(file_path);
 
 
-                        location.push(out_file);
+                            location.push(out_file);
 
-                        let output = compile_file_to_js(input.as_path(), location.as_path());
+                            let output = compile_file_to_js(input.as_path(), location.as_path());
 
-                        match output {
-                            Err(e) => {
-                                println!("{}: {}", style("[ERROR]").red(), e);
-                            },
-                            _ => {}
+                            match output {
+                                Err(e) => {
+                                    println!("{}: {}", style("[ERROR]").red(), e);
+                                },
+                                _ => {}
+                            }
                         }
+
                     } else {
                         let mut location = current_dir().unwrap();
-                        let mut input = location.clone();
-                        let file_path = Path::new(file);
-                        input.push(file_path);
+
+                        if cli.ast == true {
+                            let mut input = current_dir().unwrap();
+                            let file_path = Path::new(file);
+                            input.push(file_path);
+    
+                            let output = parse_file(input.as_path());
+    
+                            match output {
+                                Ok(ast) => {
+                                    if cli.pretty == true {
+                                        match serde_json::to_string_pretty(&ast) {
+                                            Ok(j) => {
+                                                println!("{}", j);
+                                            },
+                                            Err(e) => {
+                                                println!("{}: {}", style("[ERROR]").red(), e);
+                                            }
+                                        }
+                                    } else {
+                                        match serde_json::to_string(&ast) {
+                                            Ok(j) => {
+                                                println!("{}", j);
+                                            },
+                                            Err(e) => {
+                                                println!("{}: {}", style("[ERROR]").red(), e);
+                                            }
+                                        }
+                                    }
+                                },
+                                Err(e) => {
+                                    println!("{}: {}", style("[ERROR]").red(), e);
+                                },
+                            }
+                        } else {
+                            let mut input = location.clone();
+                            let file_path = Path::new(file);
+                            input.push(file_path);
 
 
-                        location.push(file_path.file_stem().unwrap().to_str().unwrap().to_owned() + ".js");
+                            location.push(file_path.file_stem().unwrap().to_str().unwrap().to_owned() + ".js");
 
-                        let output = compile_file_to_js(input.as_path(), location.as_path());
+                            let output = compile_file_to_js(input.as_path(), location.as_path());
 
-                        match output {
-                            Err(e) => {
-                                println!("{}: {}", style("[ERROR]").red(), e);
-                            },
-                            _ => {}
+                            match output {
+                                Err(e) => {
+                                    println!("{}: {}", style("[ERROR]").red(), e);
+                                },
+                                _ => {}
+                            }
                         }
                     }
                 }
@@ -132,113 +200,6 @@ fn main() {
             }
         };
 
-    }
-
-    // Parse subcommand
-    match &cli.command {
-        Some(Sub::Parse { file, pretty, output}) => {
-            if let Some(file) = file.as_deref() {
-                match fs::metadata(file) {
-                    Ok(metadata) => {
-                        if metadata.is_dir() {
-                            todo!()
-                        } else if metadata.is_file() { 
-                            if let Some(out_file) = output.as_deref() {
-                                let mut location = current_dir().unwrap();
-                                let mut input = location.clone();
-                                let file_path = Path::new(file);
-                                input.push(file_path);
-        
-        
-                                location.push(out_file);
-        
-                                let output = parse_file(input.as_path());
-        
-                                match output {
-                                    Ok(ast) => {
-                                        if *pretty == true {
-                                            match serde_json::to_string_pretty(&ast) {
-                                                Ok(j) => {
-                                                    if let Err(e) = fs::write(location, j) {
-                                                        println!("{}: {}", style("[ERROR]").red(), e);
-                                                    }
-                                                },
-                                                Err(e) => {
-                                                    println!("{}: {}", style("[ERROR]").red(), e);
-                                                }
-                                            }
-                                        } else {
-                                            match serde_json::to_string(&ast) {
-                                                Ok(j) => {
-                                                    if let Err(e) = fs::write(location, j) {
-                                                        println!("{}: {}", style("[ERROR]").red(), e);
-                                                    }
-                                                },
-                                                Err(e) => {
-                                                    println!("{}: {}", style("[ERROR]").red(), e);
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Err(e) => {
-                                        println!("{}: {}", style("[ERROR]").red(), e);
-                                    }
-                                }
-                            } else {
-                                let mut input = current_dir().unwrap();
-                                let file_path = Path::new(file);
-                                input.push(file_path);
-        
-                                let output = parse_file(input.as_path());
-        
-                                match output {
-                                    Ok(ast) => {
-                                        if *pretty == true {
-                                            match serde_json::to_string_pretty(&ast) {
-                                                Ok(j) => {
-                                                    println!("{}", j);
-                                                },
-                                                Err(e) => {
-                                                    println!("{}: {}", style("[ERROR]").red(), e);
-                                                }
-                                            }
-                                        } else {
-                                            match serde_json::to_string(&ast) {
-                                                Ok(j) => {
-                                                    println!("{}", j);
-                                                },
-                                                Err(e) => {
-                                                    println!("{}: {}", style("[ERROR]").red(), e);
-                                                }
-                                            }
-                                        }
-                                    },
-                                    Err(e) => {
-                                        println!("{}: {}", style("[ERROR]").red(), e);
-                                    },
-                                }
-                            }
-                        }
-                    },
-                    Err(e) => {
-                        match e.kind() {
-                            ErrorKind::NotFound => {
-                                println!("{}: File or Directory not found", style("[ERROR]").red());
-                            },
-        
-                            ErrorKind::PermissionDenied => {
-                                println!("{}: Permission Denied", style("[ERROR]").red());
-                            },
-        
-                            _ => {
-                                println!("{}: Unexpected error", style("[ERROR]").red());
-                            }
-                        }
-                    }
-                };
-            }
-        },
-        None => {}
     }
 }
 
