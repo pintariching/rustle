@@ -1242,17 +1242,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustle_cli"
-version = "0.0.1-alpha"
-dependencies = [
- "clap",
- "console",
- "rustle_lib 0.0.1-alpha (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json",
-]
-
-[[package]]
-name = "rustle_lib"
+name = "rustle"
 version = "0.0.1-alpha"
 dependencies = [
  "lazy_static",
@@ -1264,6 +1254,16 @@ dependencies = [
  "swc_ecma_ast",
  "swc_ecma_codegen",
  "swc_ecma_parser",
+]
+
+[[package]]
+name = "rustle_cli"
+version = "0.0.1-alpha"
+dependencies = [
+ "clap",
+ "console",
+ "rustle_lib",
+ "serde_json",
 ]
 
 [[package]]

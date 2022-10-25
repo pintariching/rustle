@@ -1,5 +1,5 @@
 [package]
-name = "rustle_lib"
+name = "rustle"
 version = "0.0.1-alpha"
 authors = ["pintariching", "qwertydelle", "linrium", "iceghost", "linh-1", "TheMixu"]
 license = "MIT"
