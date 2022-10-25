@@ -1,7 +1,6 @@
 use std::{fs, path::Path};
 
 use compiler::{analyse::analyse, generate::generate, parse::Parser, RustleAst};
-use serde::Serialize;
 
 pub mod compiler;
 
