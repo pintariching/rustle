@@ -27,7 +27,7 @@ impl Parser {
     ///
     /// ```
     /// use std::fs;
-    /// use rustle::compiler::parse::Parser;
+    /// use rustle_lib::compiler::parse::Parser;
     ///
     /// let source = fs::read_to_string("tests/app.rustle").unwrap();
     /// let parser = Parser::new(&source);
@@ -71,7 +71,7 @@ impl Parser {
     /// # Examples
     ///
     /// ```
-    /// use rustle::compiler::parse::Parser;
+    /// use rustle_lib::compiler::parse::Parser;
     ///
     /// let mut parser = Parser::new("rustle is awesome");
     /// assert!(parser.match_str("rustle"));
@@ -100,7 +100,7 @@ impl Parser {
     /// # Examples
     ///
     /// ```
-    /// use rustle::compiler::parse::Parser;
+    /// use rustle_lib::compiler::parse::Parser;
     ///
     /// let mut parser = Parser::new("rustle is awesome");
     ///
@@ -131,7 +131,7 @@ impl Parser {
     /// # Examples
     ///
     /// ```
-    /// use rustle::compiler::parse::Parser;
+    /// use rustle_lib::compiler::parse::Parser;
     ///	use regex::Regex;
     ///
     /// let mut parser = Parser::new("rustle is awesome");

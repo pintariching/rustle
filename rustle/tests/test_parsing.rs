@@ -1,10 +1,10 @@
 use std::fs;
 use std::path::Path;
 
-use rustle::compile_file_to_js;
-use rustle::compiler::analyse::analyse;
-use rustle::compiler::generate::generate;
-use rustle::compiler::parse::Parser;
+use rustle_lib::compile_file_to_js;
+use rustle_lib::compiler::analyse::analyse;
+use rustle_lib::compiler::generate::generate;
+use rustle_lib::compiler::parse::Parser;
 
 #[test]
 fn test_parsing() {
