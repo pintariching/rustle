@@ -13,7 +13,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rustle = { path = "../rustle"}
+rustle_lib = "0.0.1-alpha"
 console = "0.15.2"
 clap = { version = "4.0.18", features = ["derive"] }
 serde_json = "1.0.87"
