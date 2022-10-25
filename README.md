@@ -7,10 +7,22 @@ The Svelte compiler, rewritten in Rust.
 This projects aims to make `Svelte` usable without `Node.js` and make the compiler _blazingly fast_.
 
 ## Work in progress
+
 This is still a big work in progress. Only a few parts of Svelte are working now and the CLI tool still needs some work.
 
-## Pre-release roadmap
-The only thing I would add before a 0.0.1 prerelease is a simple CLI tool.
+# Getting started
+
+### Installation
+
+To install with cargo, run `cargo install rustle_cli --version "0.0.1-alpha"` to install the alpha version of the CLI.
+
+### Using railwind_cli
+
+Run `rustle_cli app.rustle` to generate an `app.js` file. You can optionally specify a different output file with the `-o` flag.
+
+You can also specify a directory for example `rustle_cli src` to parse all the files in that directory.
+
+For debugging, you can print the generated AST with the `-a` or `--ast` flag and pretty print it with `-p`.
 
 ## License
 
