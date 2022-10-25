@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use clap::Parser;
 use console::style;
-use rustle_lib::{compile_file_to_js, parse_file};
+use rustle::{compile_file_to_js, parse_file};
 
 #[derive(Parser)]
 #[command(name = "Rustle", version = "0.0.1-alpha", about = "Svelte compiler rewritten in Rust", long_about = None)]
