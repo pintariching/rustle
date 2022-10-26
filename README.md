@@ -24,6 +24,98 @@ You can also specify a directory for example `rustle_cli src` to parse all the f
 
 For debugging, you can print the generated AST with the `-a` or `--ast` flag and pretty print it with `-p`.
 
+# Development
+
+A lot of features still need to be implemented before `rustle` is ready for use. Check the examples folder or `rustle/tests` to get a better look at currently is supported:
+
+- [x] on:click event handler
+- [x] arrow function with single assignment
+- [x] display variable (eg. {counter})
+
+Feature roadmap:
+- [ ] Dynamic attributes ({class} instead of class={class})
+- [ ] Styling (&lt;style&gt;&lt;/style&gt;)
+- [ ] Nested components
+- [ ] HTML tags ({@html htmlString})
+- [ ] Reactivity
+	- [x] Reactive assignments (on:click={handleClick})
+	- [ ] Reactive declarations ($: doubled = count * 2)
+	- [ ] Reactive statements
+- [ ] Props
+	- [ ] Declaring props
+	- [ ] Default values
+	- [ ] Spread props
+- [ ] Logic
+	- [ ] If blocks
+	- [ ] Else blocks
+	- [ ] Else-if blocks
+	- [ ] Each blocks
+	- [ ] Keyed each blocks
+	- [ ] Await blocks
+- [ ] Events
+	- [ ] DOM events
+	- [ ] Inline handlers
+	- [ ] Event modifiers
+	- [ ] Component events
+	- [ ] Event forwarding
+	- [ ] DOM event forwarding
+- [ ] Bindings
+	- [ ] Text inputs
+	- [ ] Numeric inputs
+	- [ ] Checkbox inputs
+	- [ ] Group inputs
+	- [ ] Textarea inputs
+	- [ ] File inputs
+	- [ ] Select bindings
+	- [ ] Select multiple
+	- [ ] Each block bindings
+	- [ ] Media elements
+	- [ ] Dimensions
+	- [ ] bind:this={canvas}
+	- [ ] Component bindings
+- [ ] Lifecycle
+	- [ ] onMount
+	- [ ] onDestroy
+	- [ ] beforeUpdate and afterUpdate
+	- [ ] tick
+- [ ] Stores
+	- [ ] Writable stores
+	- [ ] Auto-subscriptions
+	- [ ] Readable stores
+	- [ ] Derived stores
+	- [ ] Custom stores
+- [ ] Motion
+	- [ ] Tweened
+	- [ ] Spring
+- [ ] Transitions
+	- [ ] Adding parameters
+	- [ ] In and out
+	- [ ] Custom CSS transitions
+	- [ ] Custom JS transitions
+	- [ ] Transition events
+	- [ ] Deferred transitions
+- [ ] Animations
+- [ ] Easing
+- [ ] Actions
+	- [ ] Use directive
+	- [ ] Adding parameters
+- [ ] Components
+	- [ ] Slots
+	- [ ] Slot fallbacks
+	- [ ] Named slots
+	- [ ] Slot props
+	- [ ] Conditional slots
+- [ ] Special elements
+	- [ ] &lt;svelte:self&gt;
+	- [ ] &lt;svelte:component&gt;
+	- [ ] &lt;svelte:element&gt;
+	- [ ] &lt;svelte:window&gt;
+	- [ ] &lt;svelte:body&gt;
+	- [ ] &lt;svelte:head&gt;
+- [ ] Named exports
+- [ ] @debug tag
+
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE.md file for details
