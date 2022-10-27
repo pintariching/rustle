@@ -7,7 +7,7 @@ use super::swc_helpers::{parse_expression_at, swc_parse_javascript};
 use crate::compiler::{Fragment, RustleAttribute, RustleElement, RustleText};
 
 lazy_static! {
-    static ref ELEMENT_TAG_NAME: Regex = Regex::new("[a-z]").unwrap();
+    static ref ELEMENT_TAG_NAME: Regex = Regex::new("[a-z1-9]").unwrap();
     static ref ATTRIBUTE_NAME: Regex = Regex::new("[^=]").unwrap();
     static ref READ_TEXT: Regex = Regex::new("[^<{]").unwrap();
 }

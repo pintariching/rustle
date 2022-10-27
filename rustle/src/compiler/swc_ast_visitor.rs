@@ -53,6 +53,7 @@ impl Visitor<Option<String>> for Interpreter {
         match e {
             Expr::Update(ue) => self.visit_update_expr(ue),
             Expr::Arrow(ae) => self.visit_arrow_expr(ae),
+            Expr::Ident(i) => self.visit_identifier(i),
             _ => None,
         }
     }

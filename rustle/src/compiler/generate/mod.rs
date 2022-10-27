@@ -1,11 +1,11 @@
-use self::add_lifecycle_call::add_lifecycle_calls;
+use self::{add_lifecycle_call::add_lifecycle_calls, print_js::generate_js_from_expr};
 
-use super::{analyse::AnalysisResult, Fragment, RustleAst};
+use super::{analyse::AnalysisResult, expr_visitor::Visit, Fragment, RustleAst};
 use swc_ecma_ast::Expr;
 
 mod add_lifecycle_call;
 mod print_js;
-use print_js::print_js;
+use print_js::generate_js_from_script;
 
 struct Code {
     counter: usize,
@@ -29,7 +29,7 @@ pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
     }
 
     let updated_script = add_lifecycle_calls(ast.script);
-    let script = print_js(updated_script);
+    let script = generate_js_from_script(updated_script);
 
     format!(
         r#"
@@ -108,10 +108,7 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
             let variable_name = format!("txt_{}", code.counter);
             code.counter += 1;
 
-            let expression_name = match f {
-                Expr::Ident(ident) => ident.sym.to_string(),
-                _ => panic!(),
-            };
+            let expression_name = generate_js_from_expr(f).replace([';', '\n'], "");
 
             code.variables.push(variable_name.clone());
             code.create.push(format!(
@@ -122,16 +119,47 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
             code.create
                 .push(format!("{}.appendChild({});", parent, variable_name));
 
-            if analysis.will_change.contains(&expression_name) {
-                code.update.push(format!(
-                    r#"
-					if (changed.includes('{}')) {{
-						{}.data = {};
-					}}
-				"#,
-                    expression_name, variable_name, expression_name
-                ));
+            let names = f.extract_names();
+            if names.len() > 0 {
+                let mut changes = Vec::new();
+                for name in &names {
+                    if analysis.will_change.contains(name) {
+                        changes.push(name.as_str());
+                    }
+                }
+
+                if changes.len() > 1 {
+                    let names_json = format!("[\"{}\"]", changes.join("\", \""));
+
+                    for name in names {
+                        if analysis.will_change.contains(&name) {
+                            code.update.push(format!(
+                                r#"
+if ({}.some(name => changed.includes(name))) {{
+	{}.data = {};
+}}
+	"#,
+                                names_json, variable_name, expression_name
+                            ));
+                        }
+                    }
+                } else {
+                    if analysis.will_change.contains(names.first().unwrap()) {
+                        code.update.push(format!(
+                            r#"
+if (changed.includes("{}")) {{
+	{}.data = {};
+}}
+	"#,
+                            changes.first().unwrap(),
+                            variable_name,
+                            expression_name
+                        ));
+                    }
+                }
             }
+
+            if analysis.will_change.contains(&expression_name) {}
         }
         Fragment::Text(f) => {
             let variable_name = format!("txt_{}", code.counter);

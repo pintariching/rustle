@@ -1,6 +1,8 @@
 use swc_common::sync::Lrc;
-use swc_common::{FileName, SourceMap};
-use swc_ecma_ast::{EsVersion, Expr, Script};
+use swc_common::{FileName, SourceMap, Span};
+use swc_ecma_ast::{EsVersion, Expr, ExprStmt, Script, Stmt};
+use swc_ecma_codegen::text_writer::JsWriter;
+use swc_ecma_codegen::Emitter;
 use swc_ecma_parser::parse_file_as_expr;
 use swc_ecma_parser::parse_file_as_script;
 use swc_ecma_parser::Syntax;
@@ -62,7 +64,6 @@ pub fn parse_expression_at(parser: &mut Parser) -> Expr {
 
     expr.unwrap_parens().clone()
 }
-
 fn get_end_position(expr: &Expr) -> usize {
     match expr {
         Expr::This(e) => e.span.hi.0 as usize,

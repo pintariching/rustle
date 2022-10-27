@@ -1,8 +1,8 @@
-use swc_common::{sync::Lrc, SourceMap};
-use swc_ecma_ast::{EsVersion, Script};
+use swc_common::{sync::Lrc, SourceMap, Span};
+use swc_ecma_ast::{EsVersion, Expr, ExprStmt, Script, Stmt};
 use swc_ecma_codegen::{text_writer::JsWriter, Config, Emitter};
 
-pub fn print_js(script: Script) -> String {
+pub fn generate_js_from_script(script: Script) -> String {
     let mut buffer = Vec::new();
     {
         let cm: Lrc<SourceMap> = Default::default();
@@ -23,4 +23,19 @@ pub fn print_js(script: Script) -> String {
     }
 
     String::from_utf8(buffer).unwrap()
+}
+
+pub fn generate_js_from_expr(expr: &Expr) -> String {
+    generate_js_from_script(script_from_expr(expr))
+}
+
+pub fn script_from_expr(expr: &Expr) -> Script {
+    Script {
+        span: Span::default(),
+        body: vec![Stmt::Expr(ExprStmt {
+            span: Span::default(),
+            expr: Box::new(expr.clone()),
+        })],
+        shebang: None,
+    }
 }

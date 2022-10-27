@@ -11,6 +11,7 @@ fn test_parsing() {
     let source = fs::read_to_string("tests/app.rustle").unwrap();
     let ast = Parser::new(&source).parse();
     let analysis = analyse(&ast);
+
     let generated = generate(ast, analysis);
 
     fs::write("tests/app.js", generated).unwrap();
