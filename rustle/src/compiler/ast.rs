@@ -10,7 +10,13 @@ pub struct RustleAst {
 #[derive(Serialize)]
 pub struct RustleAttribute {
     pub name: String,
-    pub value: Expr,
+    pub value: AttributeValue,
+}
+
+#[derive(Serialize)]
+pub enum AttributeValue {
+    Expr(Expr),
+    String(String),
 }
 
 #[derive(Serialize)]

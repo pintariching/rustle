@@ -1,6 +1,6 @@
 use self::{add_lifecycle_call::add_lifecycle_calls, print_js::generate_js_from_expr};
 
-use super::{analyse::AnalysisResult, expr_visitor::Visit, Fragment, RustleAst};
+use super::{analyse::AnalysisResult, expr_visitor::Visit, AttributeValue, Fragment, RustleAst};
 use swc_ecma_ast::Expr;
 
 mod add_lifecycle_call;
@@ -79,7 +79,10 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                 if attr.name.starts_with("on:") {
                     let event_name = attr.name.chars().skip(3).collect::<String>();
                     let event_handler = match &attr.value {
-                        Expr::Ident(ident) => ident.sym.to_string(),
+                        AttributeValue::Expr(expr) => match expr {
+                            Expr::Ident(ident) => ident.sym.to_string(),
+                            _ => panic!("Unhandled event handler name"),
+                        },
                         _ => panic!("Unhandled event handler name"),
                     };
 
@@ -92,6 +95,14 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                         "{}.removeEventListener('{}', {});",
                         variable_name, event_name, event_handler
                     ));
+                }
+
+                match &attr.value {
+                    AttributeValue::String(str) => code.create.push(format!(
+                        "{}.setAttribute('{}', '{}');",
+                        variable_name, attr.name, str
+                    )),
+                    _ => (),
                 }
             }
 

@@ -1,6 +1,10 @@
 export default function () {
     let counter = 0;
-    const increment = () => (counter++, lifecycle.update(["counter"]));
+    const increment = () => {
+        counter += 3;
+        decrement();
+        lifecycle.update(["counter"]);
+    };
     const decrement = () => (counter--, lifecycle.update(["counter"]));
     function square(value) {
         return value * value;
@@ -8,7 +12,7 @@ export default function () {
 
     let button_1;
     let txt_2;
-    let div_3;
+    let h1_3;
     let txt_4;
     let txt_5;
     let txt_6;
@@ -21,14 +25,15 @@ export default function () {
             txt_2 = document.createTextNode("Increment");
             button_1.appendChild(txt_2);
             target.appendChild(button_1);
-            div_3 = document.createElement("div");
+            h1_3 = document.createElement("h1");
+            h1_3.setAttribute("class", "test-class");
             txt_4 = document.createTextNode(counter);
-            div_3.appendChild(txt_4);
+            h1_3.appendChild(txt_4);
             txt_5 = document.createTextNode(" ^ 2 = ");
-            div_3.appendChild(txt_5);
+            h1_3.appendChild(txt_5);
             txt_6 = document.createTextNode(square(counter));
-            div_3.appendChild(txt_6);
-            target.appendChild(div_3);
+            h1_3.appendChild(txt_6);
+            target.appendChild(h1_3);
             button_7 = document.createElement("button");
             button_7.addEventListener("click", decrement);
             txt_8 = document.createTextNode("Decrement");
@@ -47,7 +52,7 @@ export default function () {
         destroy() {
             button_1.removeEventListener("click", increment);
             target.removeChild(button_1);
-            target.removeChild(div_3);
+            target.removeChild(h1_3);
             button_7.removeEventListener("click", decrement);
             target.removeChild(button_7);
         },

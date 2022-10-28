@@ -5,7 +5,7 @@ use self::{
     extract_variables_that_change::extract_variables_that_change,
 };
 
-use super::{expr_visitor::Visit, Fragment, RustleAst};
+use super::{expr_visitor::Visit, AttributeValue, Fragment, RustleAst};
 use std::collections::HashSet;
 
 mod extract_variables;
@@ -47,7 +47,10 @@ fn traverse_fragment(fragment: &Fragment) -> Vec<String> {
 
             for attr in &f.attributes {
                 match &attr.value {
-                    Expr::Ident(ident) => will_use.push(ident.sym.to_string()),
+                    AttributeValue::Expr(expr) => match expr {
+                        Expr::Ident(ident) => will_use.push(ident.sym.to_string()),
+                        _ => (),
+                    },
                     _ => (),
                 }
             }

@@ -1,6 +1,9 @@
 <script>
   let counter = 0;
-  const increment = () => counter++;
+  const increment = () => {
+	counter += 3;
+	decrement();
+  }
   const decrement = () => counter--;
 
   function square(value) {
@@ -9,5 +12,5 @@
 </script>
 
 <button on:click={increment}>Increment</button>
-<div>{counter} ^ 2 = {square(counter)}</div>
+<h1 class="test-class">{counter} ^ 2 = {square(counter)}</h1>
 <button on:click={decrement}>Decrement</button>

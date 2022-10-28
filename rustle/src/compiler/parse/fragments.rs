@@ -4,12 +4,13 @@ use swc_ecma_ast::{Expr, Script};
 
 use super::parser::Parser;
 use super::swc_helpers::{parse_expression_at, swc_parse_javascript};
-use crate::compiler::{Fragment, RustleAttribute, RustleElement, RustleText};
+use crate::compiler::{AttributeValue, Fragment, RustleAttribute, RustleElement, RustleText};
 
 lazy_static! {
     static ref ELEMENT_TAG_NAME: Regex = Regex::new("[a-z1-9]").unwrap();
     static ref ATTRIBUTE_NAME: Regex = Regex::new("[^=]").unwrap();
     static ref READ_TEXT: Regex = Regex::new("[^<{]").unwrap();
+    static ref ATTRIBUTE_VALUE: Regex = Regex::new("[a-z0-9-]").unwrap();
 }
 
 /// Parses fragments given an end condition.
@@ -157,11 +158,34 @@ fn parse_attribute_list(parser: &mut Parser) -> Vec<RustleAttribute> {
 fn parse_attribute(parser: &mut Parser) -> RustleAttribute {
     let name = parser.read_while_matching(&ATTRIBUTE_NAME);
 
-    parser.eat("={");
+    if parser.match_str("={") {
+        parser.eat("={");
+        let value = parse_expression_at(parser);
+        parser.eat("}");
 
-    let value = parse_expression_at(parser);
+        return RustleAttribute {
+            name,
+            value: AttributeValue::Expr(value),
+        };
+    }
 
-    parser.eat("}");
+    parser.eat("=");
+    if parser.match_str("\"") {
+        parser.eat("\"");
+    } else if parser.match_str("'") {
+        parser.eat("'");
+    }
 
-    return RustleAttribute { name, value };
+    let value = parser.read_while_matching(&ATTRIBUTE_VALUE);
+
+    if parser.match_str("\"") {
+        parser.eat("\"");
+    } else if parser.match_str("'") {
+        parser.eat("'");
+    }
+
+    return RustleAttribute {
+        name,
+        value: AttributeValue::String(value),
+    };
 }
