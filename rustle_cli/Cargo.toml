@@ -1,6 +1,6 @@
 [package]
 name = "rustle_cli"
-version = "0.0.2-alpha"
+version = "0.1.0"
 authors = ["pintariching", "qwertydelle", "linrium", "iceghost", "linh-1", "TheMixu"]
 license = "MIT"
 description = "The CLI for the Svelte compiler, rewritten in Rust."
@@ -13,7 +13,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rustle = "0.0.1-alpha"
+rustle = "0.0.2-alpha"
 console = "0.15.2"
 clap = { version = "4.0.18", features = ["derive"] }
 serde_json = "1.0.87"
