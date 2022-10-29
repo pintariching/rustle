@@ -1,6 +1,6 @@
 [package]
 name = "rustle"
-version = "0.0.1-alpha"
+version = "0.0.2-alpha"
 authors = ["pintariching", "qwertydelle", "linrium", "iceghost", "linh-1", "TheMixu"]
 license = "MIT"
 description = "The Svelte compiler, rewritten in Rust."
@@ -19,8 +19,8 @@ regex = "1.6.0"
 serde = { version = "1.0.147", features = ["derive"] }
 serde_json = "1.0.87"
 
-swc = "0.232.54"
-swc_ecma_ast = "0.94.14"
-swc_ecma_parser = "0.122.20"
-swc_ecma_codegen = "0.127.24"
-swc_common = "0.29.10"
+swc = "0.232.67"
+swc_ecma_ast = "0.94.17"
+swc_ecma_parser = "0.122.23"
+swc_ecma_codegen = "0.127.28"
+swc_common = "0.29.13"
