@@ -1,15 +1,27 @@
-use swc_ecma_ast::Script;
+use swc_ecma_ast::{Decl, Script, Stmt};
 
-use crate::compiler::swc_ast_visitor::{Interpreter, Visitor};
+use crate::compiler::expr_visitor::Visit;
 
 pub fn extract_variables_that_change(script: &Script) -> Vec<String> {
-    let body = script.body.clone();
+    let mut changed_vars = Vec::new();
 
-    let mut interpreter = Interpreter;
-    let vars = body
-        .iter()
-        .filter_map(|stmt| Interpreter::visit_stmt(&mut interpreter, stmt))
-        .collect::<Vec<String>>();
+    for stmt in &script.body {
+        match stmt {
+            Stmt::Expr(_) => todo!(),
+            Stmt::Block(_) => todo!(),
+            Stmt::Decl(decl) => match decl {
+                Decl::Var(vdcl) => {
+                    for decl in &vdcl.decls {
+                        if let Some(expr) = &decl.init {
+                            changed_vars.append(&mut expr.extract_updated_names())
+                        }
+                    }
+                }
+                _ => (),
+            },
+            _ => (),
+        }
+    }
 
-    vars
+    changed_vars
 }

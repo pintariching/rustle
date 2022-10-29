@@ -1,10 +1,13 @@
 use swc_common::Span;
 use swc_ecma_ast::{
     ArrayLit, ArrowExpr, BlockStmtOrExpr, CallExpr, Callee, Expr, ExprOrSpread, ExprStmt, Ident,
-    Lit, MemberExpr, MemberProp, ParenExpr, PatOrExpr, Script, SeqExpr, Stmt, Str,
+    Lit, MemberExpr, MemberProp, ParenExpr, Pat, PatOrExpr, Script, SeqExpr, Stmt, Str,
 };
 
-use crate::compiler::swc_ast_visitor::{ArrowInterpreter, VisitArrowExpr};
+use crate::compiler::{
+    expr_visitor::Visit,
+    swc_ast_visitor::{ArrowInterpreter, VisitArrowExpr},
+};
 
 pub fn add_lifecycle_calls(mut script: Script) -> Script {
     let mut interpreter = ArrowInterpreter;
@@ -12,15 +15,6 @@ pub fn add_lifecycle_calls(mut script: Script) -> Script {
     let mut stmts = script.body.clone();
 
     for stmt in &mut stmts {
-        // match stmt {
-        //     Stmt::Expr(expr_stmt) => match expr_stmt.expr.unwrap_parens() {
-        //         Expr::Update(ue) => todo!(),
-        //         Expr::Assign(ae) => todo!(),
-        //         _ => todo!(),
-        //     },
-        //     _ => todo!(),
-        // }
-
         if let Some(mut arrow) = ArrowInterpreter::visit_stmt(&mut interpreter, stmt) {
             update_body_ast(&mut arrow);
         }
@@ -40,13 +34,19 @@ fn update_body_ast(arrow_expr: &mut ArrowExpr) {
                         Expr::Assign(a) => match &a.left {
                             PatOrExpr::Expr(e) => match e.unwrap_parens() {
                                 Expr::Ident(i) => names.push(i.sym.to_string()),
-                                _ => (),
+                                _ => println!(
+                                    "Unsupported expression for adding lifecycle: {:#?}",
+                                    expr
+                                ),
                             },
-                            PatOrExpr::Pat(_) => (),
+                            PatOrExpr::Pat(p) => match &**p {
+                                Pat::Ident(bi) => names.push(bi.id.sym.to_string()),
+                                p => println!("Unsupported pattern for adding lifecycle: {:#?}", p),
+                            },
                         },
-                        _ => (),
+                        e => println!("Unsupported expression for adding lifecycle: {:#?}", e),
                     },
-                    _ => (),
+                    s => println!("Unsupported statement for adding lifecycle: {:#?}", s),
                 };
             }
 
@@ -64,16 +64,20 @@ fn update_body_ast(arrow_expr: &mut ArrowExpr) {
         }
         BlockStmtOrExpr::Expr(expr) => match expr.unwrap_parens() {
             Expr::Update(ue) => {
-                let variable_name = ue.arg.clone().ident().unwrap().sym.to_string();
+                let variable_names = ue.arg.extract_names();
+                let mut lifecycle_updates = Vec::new();
+
+                lifecycle_updates.push(Box::new(Expr::Update(ue.clone())));
+
+                for var_name in variable_names {
+                    lifecycle_updates.push(Box::new(Expr::Call(lifecycle_update_ast(&var_name))));
+                }
 
                 let new_body = ParenExpr {
                     span: Span::default(),
                     expr: Box::new(Expr::Seq(SeqExpr {
                         span: Span::default(),
-                        exprs: vec![
-                            Box::new(Expr::Update(ue.clone())),
-                            Box::new(Expr::Call(lifecycle_update_ast(&variable_name))),
-                        ],
+                        exprs: lifecycle_updates,
                     })),
                 };
 

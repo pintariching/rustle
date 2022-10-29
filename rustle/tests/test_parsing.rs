@@ -8,7 +8,7 @@ use rustle::compiler::parse::Parser;
 
 #[test]
 fn test_parsing() {
-    let source = fs::read_to_string("tests/app.rustle").unwrap();
+    let source = fs::read_to_string("tests/app.svelte").unwrap();
     let ast = Parser::new(&source).parse();
     let analysis = analyse(&ast);
 
@@ -21,7 +21,7 @@ fn test_parsing() {
 
 #[test]
 fn test_compile_to_js() {
-    let input = Path::new("tests/app.rustle");
+    let input = Path::new("tests/app.svelte");
     let output = Path::new("tests/app.js");
 
     compile_file_to_js(input, output).unwrap();

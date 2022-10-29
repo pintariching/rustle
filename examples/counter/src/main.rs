@@ -24,7 +24,7 @@ async fn main() {
 }
 
 async fn index() -> impl IntoResponse {
-    let mut app = rustle::compile_file_to_string(Path::new("./static/app.rustle")).unwrap();
+    let mut app = rustle::compile_file_to_string(Path::new("./static/app.svelte")).unwrap();
     app = app.replace(
         "let counter = 0;",
         &format!(

@@ -180,7 +180,7 @@ if (changed.includes("{}")) {{
             code.create.push(format!(
                 "{} = document.createTextNode('{}');",
                 variable_name.clone(),
-                f.data.to_string()
+                f.data.to_string().trim()
             ));
             code.create
                 .push(format!("{}.appendChild({});", parent, variable_name));
