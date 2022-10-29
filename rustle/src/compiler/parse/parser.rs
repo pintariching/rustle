@@ -29,7 +29,7 @@ impl Parser {
     /// use std::fs;
     /// use rustle::compiler::parse::Parser;
     ///
-    /// let source = fs::read_to_string("tests/app.rustle").unwrap();
+    /// let source = fs::read_to_string("tests/app.svelte").unwrap();
     /// let parser = Parser::new(&source);
     /// ```
     pub fn new(content: &str) -> Self {

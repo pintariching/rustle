@@ -1238,6 +1238,8 @@ dependencies = [
 [[package]]
 name = "rustle"
 version = "0.0.2-alpha"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6639b0c226670a1081110c65491b588bb5abea3bd20d225d708f8b58cc1dc6c4"
 dependencies = [
  "lazy_static",
  "regex",
@@ -1252,9 +1254,7 @@ dependencies = [
 
 [[package]]
 name = "rustle"
-version = "0.0.2-alpha"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6639b0c226670a1081110c65491b588bb5abea3bd20d225d708f8b58cc1dc6c4"
+version = "0.1.0"
 dependencies = [
  "lazy_static",
  "regex",
@@ -1273,7 +1273,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "console",
- "rustle 0.0.2-alpha (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustle 0.0.2-alpha",
  "serde_json",
 ]
 
