@@ -12,5 +12,5 @@
 </script>
 
 <button on:click={increment}>Increment</button>
-<h1 class="test-class">{counter} ^ 2 = {square(counter)}</h1>
+<h1 disabled>{counter} ^ 2 = {square(counter)}</h1>
 <button on:click={decrement}>Decrement</button>

@@ -26,7 +26,7 @@ export default function () {
             button_1.appendChild(txt_2);
             target.appendChild(button_1);
             h1_3 = document.createElement("h1");
-            h1_3.setAttribute("class", "test-class");
+            h1_3.setAttribute("disabled", "");
             txt_4 = document.createTextNode(counter);
             h1_3.appendChild(txt_4);
             txt_5 = document.createTextNode(" ^ 2 = ");

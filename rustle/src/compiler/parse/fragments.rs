@@ -8,7 +8,7 @@ use crate::compiler::{AttributeValue, Fragment, RustleAttribute, RustleElement, 
 
 lazy_static! {
     static ref ELEMENT_TAG_NAME: Regex = Regex::new("[a-z1-9]").unwrap();
-    static ref ATTRIBUTE_NAME: Regex = Regex::new("[^=]").unwrap();
+    static ref ATTRIBUTE_NAME: Regex = Regex::new("[^=>]").unwrap();
     static ref READ_TEXT: Regex = Regex::new("[^<{]").unwrap();
     static ref ATTRIBUTE_VALUE: Regex = Regex::new("[a-z0-9-]").unwrap();
 }
@@ -153,8 +153,9 @@ fn parse_attribute_list(parser: &mut Parser) -> Vec<RustleAttribute> {
     attributes
 }
 
-/// Gets the attribute name and the expression between curly braces
-/// `on:click={action}` -> `on:click`, `action`
+/// Gets the attribute name and the value between curly braces
+/// `on:click={action}` -> `on:click`, `AttributeValue::Expr(action)`
+/// `class="py-5"` -> `class`, `AttributeValue::String("py-5".to_string())`
 fn parse_attribute(parser: &mut Parser) -> RustleAttribute {
     let name = parser.read_while_matching(&ATTRIBUTE_NAME);
 
@@ -169,23 +170,30 @@ fn parse_attribute(parser: &mut Parser) -> RustleAttribute {
         };
     }
 
-    parser.eat("=");
-    if parser.match_str("\"") {
-        parser.eat("\"");
-    } else if parser.match_str("'") {
-        parser.eat("'");
+    if parser.match_str("=\"") || parser.match_str("='") {
+        parser.eat("=");
+        if parser.match_str("\"") {
+            parser.eat("\"");
+        } else if parser.match_str("'") {
+            parser.eat("'");
+        }
+
+        let value = parser.read_while_matching(&ATTRIBUTE_VALUE);
+
+        if parser.match_str("\"") {
+            parser.eat("\"");
+        } else if parser.match_str("'") {
+            parser.eat("'");
+        }
+
+        return RustleAttribute {
+            name,
+            value: AttributeValue::String(value),
+        };
+    } else {
+        RustleAttribute {
+            name,
+            value: AttributeValue::String(String::new()),
+        }
     }
-
-    let value = parser.read_while_matching(&ATTRIBUTE_VALUE);
-
-    if parser.match_str("\"") {
-        parser.eat("\"");
-    } else if parser.match_str("'") {
-        parser.eat("'");
-    }
-
-    return RustleAttribute {
-        name,
-        value: AttributeValue::String(value),
-    };
 }
