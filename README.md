@@ -16,7 +16,7 @@ This is still a big work in progress. Only a few parts of Svelte are working now
 
 To install with cargo, run `cargo install rustle_cli"` to install the alpha version of the CLI.
 
-### Using railwind_cli
+### Using rustle_cli
 
 Run `rustle_cli app.rustle` to generate an `app.js` file. You can optionally specify a different output file with the `-o` flag.
 
