@@ -1,55 +1,62 @@
+export default function () {
+    let counter = {
+        count: 0,
+    };
+    const increment = () => {
+        counter.count += 3;
+        lifecycle.update(["counter"]);
+    };
+    const decrement = () => (counter.count--, lifecycle.update(["counter"]));
+    function square(value) {
+        return value * value;
+    }
 
-	export default function() {
-		let x = 0;
-let y = 0;
-const handleMousemove = (event)=>{
-    x = event.clientX;
-    y = event.clientY;
-    lifecycle.update([
-        "x"
-    ]);
-    lifecycle.update([
-        "y"
-    ]);
-};
+    let button_1;
+    let txt_2;
+    let h1_3;
+    let txt_4;
+    let txt_5;
+    let txt_6;
+    let button_7;
+    let txt_8;
+    const lifecycle = {
+        create(target) {
+            button_1 = document.createElement("button");
+            button_1.addEventListener("click", increment);
+            txt_2 = document.createTextNode("Increment");
+            button_1.appendChild(txt_2);
+            target.appendChild(button_1);
+            h1_3 = document.createElement("h1");
+            h1_3.setAttribute("disabled", "");
+            txt_4 = document.createTextNode(counter.count);
+            h1_3.appendChild(txt_4);
+            txt_5 = document.createTextNode("^ 2 =");
+            h1_3.appendChild(txt_5);
+            txt_6 = document.createTextNode(square(counter.count));
+            h1_3.appendChild(txt_6);
+            target.appendChild(h1_3);
+            button_7 = document.createElement("button");
+            button_7.addEventListener("click", decrement);
+            txt_8 = document.createTextNode("Decrement");
+            button_7.appendChild(txt_8);
+            target.appendChild(button_7);
+        },
+        update(changed) {
+            if (changed.includes("counter")) {
+                txt_4.data = counter.count;
+            }
 
-		let div_1;
-let txt_2;
-let txt_3;
-let txt_4;
-let txt_5;
-		const lifecycle = {
-			create(target) {
-				div_1 = document.createElement('div');
-div_1.addEventListener('mousemove', handleMousemove);
-div_1.setAttribute('class', 'full');
-txt_2 = document.createTextNode('The mouse position is x:');
-div_1.appendChild(txt_2);
-txt_3 = document.createTextNode(x);
-div_1.appendChild(txt_3);
-txt_4 = document.createTextNode('y:');
-div_1.appendChild(txt_4);
-txt_5 = document.createTextNode(y);
-div_1.appendChild(txt_5);
-target.appendChild(div_1);
-			},
-			update(changed) {
-				
-if (changed.includes("x")) {
-	txt_3.data = x;
+            if (changed.includes("counter")) {
+                txt_6.data = square(counter.count);
+            }
+        },
+        destroy() {
+            button_1.removeEventListener("click", increment);
+            target.removeChild(button_1);
+            target.removeChild(h1_3);
+            button_7.removeEventListener("click", decrement);
+            target.removeChild(button_7);
+        },
+    };
+    return lifecycle;
 }
-	
-
-if (changed.includes("y")) {
-	txt_5.data = y;
-}
-	
-			},
-			destroy() {
-				div_1.removeEventListener('mousemove', handleMousemove);
-target.removeChild(div_1);
-			},
-		};
-		return lifecycle;
-	}
-	

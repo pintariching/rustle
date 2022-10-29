@@ -1,13 +1,17 @@
 <script>
-	let x = 0;
-  let y = 0;
+  let counter = { count: 0 };
 
-	const handleMousemove = (event) => {
-		x = event.clientX;
-		y = event.clientY;
-	}
+  const increment = () => {
+	  counter.count += 3;
+  }
+
+  const decrement = () => counter.count--;
+
+  function square(value) {
+	  return value * value
+  }
 </script>
 
-<div on:mousemove={handleMousemove} class="full">
-  The mouse position is x:{x} y:{y}
-</div>
+<button on:click={increment}>Increment</button>
+<h1 disabled>{counter.count} ^ 2 = {square(counter.count)}</h1>
+<button on:click={decrement}>Decrement</button>

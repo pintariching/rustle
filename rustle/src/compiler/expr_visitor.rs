@@ -1,3 +1,5 @@
+use core::panic;
+
 use swc_ecma_ast::{BlockStmtOrExpr, Expr, Pat, PatOrExpr, Stmt};
 
 pub trait Visit {
@@ -30,11 +32,8 @@ fn recursive_extract(expr: &Expr, buf: &mut Vec<String>) {
     match expr {
         Expr::Ident(i) => buf.push(i.sym.to_string()),
         Expr::Bin(be) => {
-            let left = &*be.left;
-            let right = &*be.right;
-
-            recursive_extract(left, buf);
-            recursive_extract(right, buf);
+            recursive_extract(&*be.left, buf);
+            recursive_extract(&*be.right, buf);
         }
         Expr::Call(ce) => {
             for arg in &ce.args {
@@ -43,14 +42,30 @@ fn recursive_extract(expr: &Expr, buf: &mut Vec<String>) {
         }
         Expr::Member(me) => recursive_extract(&me.obj, buf),
         Expr::Update(ue) => recursive_extract(&*ue.arg, buf),
-        _ => println!("Unsupported expression: {:#?}", expr),
+        Expr::Assign(ae) => {
+            extract_pat_or_expr(&ae.left, buf);
+            recursive_extract(&ae.right, buf);
+        }
+        Expr::Lit(_) => (),
+        _ => panic!("{:#?}", expr),
+    }
+}
+
+fn extract_pat_or_expr(pat_or_expr: &PatOrExpr, buf: &mut Vec<String>) {
+    match pat_or_expr {
+        PatOrExpr::Expr(expr) => recursive_extract(expr, buf),
+        PatOrExpr::Pat(pat) => match &**pat {
+            Pat::Ident(bi) => buf.push(bi.sym.to_string()),
+            _ => panic!("{:#?}", pat),
+        },
     }
 }
 
 fn single_recursive_extract(expr: &Expr) -> Option<String> {
     match expr {
         Expr::Ident(i) => Some(i.sym.to_string()),
-        _ => None,
+        Expr::Member(me) => single_recursive_extract(&me.obj),
+        _ => panic!("{:#?}", expr),
     }
 }
 
@@ -63,7 +78,7 @@ fn recursive_updated_extract(expr: &Expr, buf: &mut Vec<String>) {
                 for stmt in &bs.stmts {
                     match stmt {
                         Stmt::Expr(es) => recursive_updated_extract(&*es.expr, buf),
-                        _ => println!("Unsupported statement: {:#?}", stmt),
+                        _ => panic!("{:#?}", expr),
                     }
                 }
             }
@@ -72,11 +87,12 @@ fn recursive_updated_extract(expr: &Expr, buf: &mut Vec<String>) {
             PatOrExpr::Expr(expr) => buf.push(single_recursive_extract(&*expr).unwrap()),
             PatOrExpr::Pat(pe) => match &**pe {
                 Pat::Ident(i) => buf.push(i.sym.to_string()),
-                _ => println!("Unsupported pattern or expression: {:#?}", pe),
+                _ => panic!(),
             },
         },
         Expr::Member(me) => buf.push(single_recursive_extract(&*me.obj).unwrap()),
         Expr::Lit(_) => (),
-        _ => println!("Unsupported expression: {:#?}", expr),
+        Expr::Object(_) => (),
+        _ => panic!("{:#?}", expr),
     }
 }

@@ -28,7 +28,7 @@ pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
         traverse(&fragment, "target".into(), &analysis, &mut code)
     }
 
-    let updated_script = add_lifecycle_calls(ast.script);
+    let updated_script = add_lifecycle_calls(ast.script, &analysis.will_change);
     let script = generate_js_from_script(updated_script);
 
     format!(
