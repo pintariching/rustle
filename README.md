@@ -39,7 +39,7 @@ Feature roadmap:
 - [ ] HTML tags ({@html htmlString})
 - [ ] Reactivity
 	- [x] Reactive assignments (on:click={handleClick})
-	- [ ] Reactive declarations ($: doubled = count * 2)
+	- [x] Reactive declarations ($: doubled = count * 2)
 	- [ ] Reactive statements
 - [ ] Props
 	- [ ] Declaring props

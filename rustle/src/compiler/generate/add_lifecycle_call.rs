@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use swc_common::Span;
 use swc_ecma_ast::{
     ArrayLit, BlockStmtOrExpr, CallExpr, Callee, Decl, Expr, ExprOrSpread, ExprStmt, Ident, Lit,
-    MemberExpr, MemberProp, ParenExpr, Script, SeqExpr, Stmt, Str,
+    ParenExpr, Script, SeqExpr, Stmt, Str,
 };
 
 use crate::compiler::expr_visitor::Visit;
@@ -86,18 +86,10 @@ fn update_body_ast(expr: &mut Expr, will_be_updated: &HashSet<String>) {
 fn lifecycle_update_ast(variable_name: &str) -> CallExpr {
     CallExpr {
         span: Span::default(),
-        callee: Callee::Expr(Box::new(Expr::Member(MemberExpr {
+        callee: Callee::Expr(Box::new(Expr::Ident(Ident {
             span: Span::default(),
-            obj: Box::new(Expr::Ident(Ident {
-                span: Span::default(),
-                sym: "lifecycle".into(),
-                optional: false,
-            })),
-            prop: MemberProp::Ident(Ident {
-                span: Span::default(),
-                sym: "update".into(),
-                optional: false,
-            }),
+            sym: "update".into(),
+            optional: false,
         }))),
         args: vec![ExprOrSpread {
             spread: None,

@@ -8,7 +8,7 @@ use console::style;
 use rustle::{compile_file_to_js, parse_file};
 
 #[derive(Parser)]
-#[command(name = "Rustle", version = "0.0.1-alpha", about = "Svelte compiler rewritten in Rust", long_about = None)]
+#[command(name = "Rustle", version = "0.1.1", about = "Svelte compiler rewritten in Rust", long_about = None)]
 struct Cli {
     file: Option<String>,
 

@@ -9,8 +9,12 @@ use rustle::compiler::parse::Parser;
 #[test]
 fn test_parsing() {
     let source = fs::read_to_string("tests/app.svelte").unwrap();
-    let ast = Parser::new(&source).parse();
-    let analysis = analyse(&ast);
+    let mut ast = Parser::new(&source).parse();
+    let analysis = analyse(&mut ast);
+
+    println!("Variables: {:#?}", analysis.variables);
+    println!("Will change: {:#?}", analysis.will_change);
+    println!("Will use in template: {:#?}", analysis.will_use_in_template);
 
     let generated = generate(ast, analysis);
 

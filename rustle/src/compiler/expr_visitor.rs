@@ -47,6 +47,17 @@ fn recursive_extract(expr: &Expr, buf: &mut Vec<String>) {
             recursive_extract(&ae.right, buf);
         }
         Expr::Lit(_) => (),
+        Expr::Arrow(ae) => match &ae.body {
+            BlockStmtOrExpr::BlockStmt(bs) => {
+                for stmt in &bs.stmts {
+                    match stmt {
+                        Stmt::Expr(expr) => recursive_extract(&expr.expr, buf),
+                        _ => panic!("{:#?}", stmt),
+                    }
+                }
+            }
+            BlockStmtOrExpr::Expr(expr) => recursive_extract(&expr, buf),
+        },
         _ => panic!("{:#?}", expr),
     }
 }
@@ -87,7 +98,7 @@ fn recursive_updated_extract(expr: &Expr, buf: &mut Vec<String>) {
             PatOrExpr::Expr(expr) => buf.push(single_recursive_extract(&*expr).unwrap()),
             PatOrExpr::Pat(pe) => match &**pe {
                 Pat::Ident(i) => buf.push(i.sym.to_string()),
-                _ => panic!(),
+                _ => panic!("{:#?}", pe),
             },
         },
         Expr::Member(me) => buf.push(single_recursive_extract(&*me.obj).unwrap()),

@@ -10,6 +10,7 @@ use print_js::generate_js_from_script;
 struct Code {
     counter: usize,
     variables: Vec<String>,
+    reactive_declarations: Vec<String>,
     create: Vec<String>,
     update: Vec<String>,
     destroy: Vec<String>,
@@ -19,6 +20,7 @@ pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
     let mut code = Code {
         counter: 1,
         variables: Vec::new(),
+        reactive_declarations: Vec::new(),
         create: Vec::new(),
         update: Vec::new(),
         destroy: Vec::new(),
@@ -31,31 +33,81 @@ pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
     let updated_script = add_lifecycle_calls(ast.script, &analysis.will_change);
     let script = generate_js_from_script(updated_script);
 
+    for rd in analysis.reactive_declarations {
+        let change_json = format!("[\"{}\"]", rd.dependencies.join("\", \""));
+        let assignee_json = format!("[\"{}\"]", rd.assignees.join("\", \""));
+        code.reactive_declarations.push(
+            format!(
+                r#"
+    if ({}.some(name => collectChanges.includes(name))) {{
+        {}
+        update({});
+    }}
+"#,
+                change_json,
+                generate_js_from_expr(&rd.node).trim_end(),
+                assignee_json
+            )
+            .into(),
+        );
+
+        for asignee in rd.assignees {
+            code.variables.push(asignee);
+        }
+    }
+
     format!(
         r#"
-	export default function() {{
-		{}
-		{}
-		const lifecycle = {{
-			create(target) {{
-				{}
-			}},
-			update(changed) {{
-				{}
-			}},
-			destroy() {{
-				{}
-			}},
-		}};
-		return lifecycle;
-	}}
-	"#,
-        script,
+export default function() {{
+    {}
+
+    let collectChanges = [];
+    let updateCalled = false;
+    function update(changed) {{
+        changed.forEach(c => collectChanges.push(c));
+        if (updateCalled) return;
+        updateCalled = true;
+
+        updateReactiveDeclarations(collectChanges);
+        if (typeof lifecycle !== "undefined") lifecycle.update(collectChanges);
+
+        collectChanges = [];
+        updateCalled = false;
+    }}
+    {}
+    update({});
+    function updateReactiveDeclarations() {{
+        {}
+    }}
+    var lifecycle = {{
+        create(target) {{
+            {}
+        }},
+        update(changed) {{
+            {}
+        }},
+        destroy() {{
+            {}
+        }},
+    }};
+    return lifecycle;
+}}
+    "#,
         code.variables
             .iter()
             .map(|v| format!("let {};", v))
             .collect::<Vec<String>>()
             .join("\n"),
+        script,
+        format!(
+            "[\"{}\"]",
+            analysis
+                .will_change
+                .into_iter()
+                .collect::<Vec<String>>()
+                .join("\", \"")
+        ),
+        code.reactive_declarations.join("\n"),
         code.create.join("\n"),
         code.update.join("\n"),
         code.destroy.join("\n")
@@ -147,9 +199,9 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                             code.update.push(format!(
                                 r#"
 if ({}.some(name => changed.includes(name))) {{
-	{}.data = {};
+    {}.data = {};
 }}
-	"#,
+    "#,
                                 names_json, variable_name, expression_name
                             ));
                         }
@@ -159,9 +211,9 @@ if ({}.some(name => changed.includes(name))) {{
                         code.update.push(format!(
                             r#"
 if (changed.includes("{}")) {{
-	{}.data = {};
+    {}.data = {};
 }}
-	"#,
+    "#,
                             changes.first().unwrap(),
                             variable_name,
                             expression_name

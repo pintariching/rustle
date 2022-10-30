@@ -1,6 +1,6 @@
 [package]
 name = "rustle"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["pintariching", "qwertydelle", "linrium", "iceghost", "linh-1", "TheMixu"]
 license = "MIT"
 description = "The Svelte compiler, rewritten in Rust."

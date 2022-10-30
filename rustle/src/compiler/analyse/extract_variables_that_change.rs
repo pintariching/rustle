@@ -19,6 +19,10 @@ pub fn extract_variables_that_change(script: &Script) -> Vec<String> {
                 }
                 _ => (),
             },
+            Stmt::Labeled(ls) => match &*ls.body {
+                Stmt::Expr(expr) => changed_vars.append(&mut expr.expr.extract_updated_names()),
+                _ => (),
+            },
             _ => (),
         }
     }
