@@ -1,6 +1,6 @@
 [package]
 name = "rustle"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["pintariching", "qwertydelle", "linrium", "iceghost", "linh-1", "TheMixu"]
 license = "MIT"
 description = "The Svelte compiler, rewritten in Rust."
@@ -20,7 +20,7 @@ rand = "0.8.5"
 serde = { version = "1.0.147", features = ["derive"] }
 serde_json = "1.0.87"
 
-swc = "0.232.68"
+swc = "0.232.69"
 swc_common = "0.29.13"
 
 swc_ecma_ast = "0.94.17"

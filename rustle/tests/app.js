@@ -44,13 +44,13 @@ const decrement = ()=>(counter--, update([
     var lifecycle = {
         create(target) {
             button_1 = document.createElement('button');
-            button_1.setAttribute('class', 'button rustle-jT3LlVD');
+            button_1.setAttribute('class', 'button rustle-jAVmikH');
             button_1.addEventListener('click', increment);
             txt_2 = document.createTextNode('Increment');
             button_1.appendChild(txt_2);
             target.appendChild(button_1);
             h1_3 = document.createElement('h1');
-            h1_3.setAttribute('class', 'text rustle-jT3LlVD');
+            h1_3.setAttribute('class', 'text rustle-jAVmikH');
             txt_4 = document.createTextNode(counter);
             h1_3.appendChild(txt_4);
             txt_5 = document.createTextNode('* 2 =');
@@ -59,7 +59,7 @@ const decrement = ()=>(counter--, update([
             h1_3.appendChild(txt_6);
             target.appendChild(h1_3);
             button_7 = document.createElement('button');
-            button_7.setAttribute('class', 'button rustle-jT3LlVD');
+            button_7.setAttribute('class', 'button rustle-jAVmikH');
             button_7.addEventListener('click', decrement);
             txt_8 = document.createTextNode('Decrement');
             button_7.appendChild(txt_8);
