@@ -7,8 +7,8 @@ use swc_ecma_parser::Syntax;
 
 use super::parser::Parser;
 
-/// Parser the provided string using `SWC` and returns
-/// a `swc_ecma_ast::Script`
+/// Parser the provided string using `swc_ecma_parser::parse_file_as_script` and returns
+/// a `swc_ecma_ast::Script`.
 ///
 /// # Arguments
 ///
@@ -33,7 +33,7 @@ pub fn swc_parse_javascript(source: &str) -> Script {
 /// Parses an expression at the given index
 /// and advances the `index` of the parser
 /// to the end of the parsed expression
-/// and returns `swc_ecma_ast::Expr`
+/// and returns `swc_ecma_ast::Expr`.
 ///
 /// # Arguments
 ///
@@ -62,6 +62,8 @@ pub fn parse_expression_at(parser: &mut Parser) -> Expr {
 
     expr.unwrap_parens().clone()
 }
+
+/// Gets the absolute end position of an expression.
 fn get_end_position(expr: &Expr) -> usize {
     match expr {
         Expr::This(e) => e.span.hi.0 as usize,

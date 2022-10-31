@@ -8,6 +8,36 @@ use swc_ecma_ast::{
 
 use crate::compiler::expr_visitor::Visit;
 
+/// Adds the calls to the `lifecycle.update()` function
+/// For example:
+///
+/// ```ignore
+/// // javascript
+/// const increment () => {
+///     counter++;
+/// }
+/// ```
+///
+/// turns into
+/// ```ignore
+/// // javascript
+/// const increment () => {
+///     counter++;
+///     update(["counter"]);
+/// }
+/// ```
+///
+/// and
+///
+/// ```ignore
+/// // javascript
+/// const increment () => counter++;
+/// ```
+/// turns into
+/// ```ignore
+/// // javascript
+/// const increment () => (counter++, update(["counter"]));
+/// ```
 pub fn add_lifecycle_calls(mut script: Script, will_be_updated: &HashSet<String>) -> Script {
     for stmt in &mut script.body {
         match stmt {
@@ -28,11 +58,14 @@ pub fn add_lifecycle_calls(mut script: Script, will_be_updated: &HashSet<String>
     script
 }
 
+// Updates an expression and adds the `lifecycle.update()` call
 fn update_body_ast(expr: &mut Expr, will_be_updated: &HashSet<String>) {
     match expr {
         Expr::Arrow(ae) => match &mut ae.body {
             BlockStmtOrExpr::BlockStmt(bs) => {
                 let mut names_to_update = Vec::new();
+
+                // check all variable names in a block statement if they're in the will_be_updated list
                 for stmt in &mut bs.stmts {
                     match stmt {
                         Stmt::Expr(expr) => {
@@ -46,6 +79,18 @@ fn update_body_ast(expr: &mut Expr, will_be_updated: &HashSet<String>) {
                     }
                 }
 
+                // for every variable that will be changed, insert a `update([name]);`
+                // statement at the end of the block statement
+
+                // const increment () => {
+                //     update(["counter"]);
+                // }
+                //          |
+                //          V
+                // const increment () => {
+                //     counter++;
+                //     update(["counter"]);
+                // }
                 for name in names_to_update {
                     bs.stmts.push(Stmt::Expr(ExprStmt {
                         span: Span::default(),
@@ -63,6 +108,11 @@ fn update_body_ast(expr: &mut Expr, will_be_updated: &HashSet<String>) {
                 }
 
                 let mut new_exprs = vec![expr.clone()];
+
+                // const increment () => counter++;
+                //                              |
+                //                              V
+                // const increment () => (counter++, update(["counter"]));
 
                 for name in names_to_update {
                     new_exprs.push(Box::new(Expr::Call(lifecycle_update_ast(&name))));
@@ -83,6 +133,8 @@ fn update_body_ast(expr: &mut Expr, will_be_updated: &HashSet<String>) {
     }
 }
 
+/// Returns a call expression to the update function `update([variable_name])`
+/// as an `swc_ecma_ast::CallExpr`
 fn lifecycle_update_ast(variable_name: &str) -> CallExpr {
     CallExpr {
         span: Span::default(),
@@ -99,7 +151,7 @@ fn lifecycle_update_ast(variable_name: &str) -> CallExpr {
                     spread: None,
                     expr: Box::new(Expr::Lit(Lit::Str(Str {
                         span: Span::default(),
-                        value: variable_name.into(),
+                        value: variable_name.trim().into(),
                         raw: Some(format!("\"{}\"", variable_name).into()),
                     }))),
                 })],

@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 
-use compiler::{analyse::analyse, generate::generate, parse::Parser, RustleAst};
+use compiler::{analyse, generate, Parser, RustleAst};
 
 pub mod compiler;
 

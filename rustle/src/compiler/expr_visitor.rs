@@ -28,6 +28,7 @@ impl Visit for Expr {
     }
 }
 
+/// Extracts all the variable names from an expression
 fn recursive_extract(expr: &Expr, buf: &mut Vec<String>) {
     match expr {
         Expr::Ident(i) => buf.push(i.sym.to_string()),
@@ -75,14 +76,20 @@ fn extract_pat_or_expr(pat_or_expr: &PatOrExpr, buf: &mut Vec<String>) {
 fn single_recursive_extract(expr: &Expr) -> Option<String> {
     match expr {
         Expr::Ident(i) => Some(i.sym.to_string()),
+        // could be a deeply nested value `counter.count.value`
         Expr::Member(me) => single_recursive_extract(&me.obj),
         _ => panic!("{:#?}", expr),
     }
 }
 
+/// Recursively calls itself and extracts all variables that will change.
+/// This is done by checking if the expression is an assignment -> `val = 5`
+/// or an update expression -> `val++`.
 fn recursive_updated_extract(expr: &Expr, buf: &mut Vec<String>) {
     match expr {
         Expr::Update(ue) => buf.push(single_recursive_extract(&*ue.arg).unwrap()),
+        // an Expr::Arrow can be a simple expr () => counter++
+        // or a block statement with multiple expressions () => { counter++; value++; }
         Expr::Arrow(ae) => match &ae.body {
             BlockStmtOrExpr::Expr(e) => recursive_updated_extract(&*e, buf),
             BlockStmtOrExpr::BlockStmt(bs) => {
@@ -102,6 +109,7 @@ fn recursive_updated_extract(expr: &Expr, buf: &mut Vec<String>) {
             },
         },
         Expr::Member(me) => buf.push(single_recursive_extract(&*me.obj).unwrap()),
+        // ignore Expr::Lit and Expr::Object as they don't update any values
         Expr::Lit(_) => (),
         Expr::Object(_) => (),
         _ => panic!("{:#?}", expr),

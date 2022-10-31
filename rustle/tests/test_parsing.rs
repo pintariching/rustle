@@ -2,9 +2,7 @@ use std::fs;
 use std::path::Path;
 
 use rustle::compile_file_to_js;
-use rustle::compiler::analyse::analyse;
-use rustle::compiler::generate::generate;
-use rustle::compiler::parse::Parser;
+use rustle::compiler::{analyse, generate, Parser};
 
 #[test]
 fn test_parsing() {
@@ -12,9 +10,9 @@ fn test_parsing() {
     let mut ast = Parser::new(&source).parse();
     let analysis = analyse(&mut ast);
 
-    println!("Variables: {:#?}", analysis.variables);
-    println!("Will change: {:#?}", analysis.will_change);
-    println!("Will use in template: {:#?}", analysis.will_use_in_template);
+    // println!("Variables: {:#?}", analysis.variables);
+    // println!("Will change: {:#?}", analysis.will_change);
+    // println!("Will use in template: {:#?}", analysis.will_use_in_template);
 
     let generated = generate(ast, analysis);
 

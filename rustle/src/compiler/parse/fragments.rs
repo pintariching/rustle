@@ -7,13 +7,20 @@ use super::swc_helpers::{parse_expression_at, swc_parse_javascript};
 use crate::compiler::{AttributeValue, Fragment, RustleAttribute, RustleElement, RustleText};
 
 lazy_static! {
+    // for HTML elements -> <h1> matches "h1"
     static ref ELEMENT_TAG_NAME: Regex = Regex::new("[a-z1-9]").unwrap();
+
+    // for matching the start of an attribute or the end of a tag
     static ref ATTRIBUTE_NAME: Regex = Regex::new("[^=>]").unwrap();
+
+    // for matching text inside tags <h1>some text</h1> -> "some text"
     static ref READ_TEXT: Regex = Regex::new("[^<{]").unwrap();
+
+    // for reading attribute values -> class="p-5" -> "p-5"
     static ref ATTRIBUTE_VALUE: Regex = Regex::new("[a-z0-9-]").unwrap();
 }
 
-/// Parses fragments given an end condition.
+/// Parses fragments given an end condition as a closure.
 ///
 /// # Arguments
 /// * `parser` - The `parser` struct containing the content to parse

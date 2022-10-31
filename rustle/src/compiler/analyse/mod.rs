@@ -26,11 +26,13 @@ pub struct ReactiveDeclaration {
     pub node: Expr,
 }
 
+/// Analyses the AST and removes reactive declarations from the `RustleAst` script
 pub fn analyse(ast: &mut RustleAst) -> AnalysisResult {
     let (root_variables, mut reactive_declarations) = extract_root_variables(&ast.script);
     let will_change = extract_variables_that_change(&ast.script);
 
-    // remove labeled statements from script body
+    // remove labeled statements from the script body
+    // as we add them later as regular variable declarations
     ast.script.body = ast
         .script
         .body
@@ -48,6 +50,14 @@ pub fn analyse(ast: &mut RustleAst) -> AnalysisResult {
         will_use_in_template.append(&mut used_variables);
     }
 
+    // sort reactive declarations, so that they update in the right order
+    // if they are written like this:
+    //
+    // $: quadruple = double * 2;
+    // $: double = counter * 2;
+    //
+    // the updateReactiveDeclarations() function gets called only once and
+    // quadruple isn't updated
     reactive_declarations.sort_by(|rd1, rd2| {
         // rd2 depends on what rd1 changes
         if rd1.dependencies.iter().any(|d| rd2.assignees.contains(d)) {

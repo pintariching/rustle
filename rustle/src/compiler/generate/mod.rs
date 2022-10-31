@@ -16,6 +16,7 @@ struct Code {
     destroy: Vec<String>,
 }
 
+/// Generates the javascript code from the AST and the analysis
 pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
     let mut code = Code {
         counter: 1,
@@ -26,24 +27,28 @@ pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
         destroy: Vec::new(),
     };
 
+    // checks what code to add into the final template
     for fragment in ast.fragments {
         traverse(&fragment, "target".into(), &analysis, &mut code)
     }
 
+    // add lifecycle calls to variables that will be updated
     let updated_script = add_lifecycle_calls(ast.script, &analysis.will_change);
+
+    // turn the AST script back into String, to be inserted into the final template
+    // TODO: the formatting of the generated js is not good, fix this somehow
     let script = generate_js_from_script(updated_script);
 
     for rd in analysis.reactive_declarations {
+        // transforms a vec into a js array ["name1", "name2"]
         let change_json = format!("[\"{}\"]", rd.dependencies.join("\", \""));
         let assignee_json = format!("[\"{}\"]", rd.assignees.join("\", \""));
         code.reactive_declarations.push(
             format!(
-                r#"
-    if ({}.some(name => collectChanges.includes(name))) {{
-        {}
-        update({});
-    }}
-"#,
+                r#"        if ({}.some(name => collectChanges.includes(name))) {{
+            {}
+            update({});
+        }}"#,
                 change_json,
                 generate_js_from_expr(&rd.node).trim_end(),
                 assignee_json
@@ -56,15 +61,15 @@ pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
         }
     }
 
+    // the final javascript template
     format!(
-        r#"
-export default function() {{
-    {}
+        r#"export default function() {{
+{}
 
     let collectChanges = [];
     let updateCalled = false;
     function update(changed) {{
-        changed.forEach(c => collectChanges.push(c));
+        changed.forEach((c) => collectChanges.push(c));
         if (updateCalled) return;
         updateCalled = true;
 
@@ -74,28 +79,31 @@ export default function() {{
         collectChanges = [];
         updateCalled = false;
     }}
-    {}
+
+{}
+
     update({});
+
     function updateReactiveDeclarations() {{
-        {}
+{}
     }}
+
     var lifecycle = {{
         create(target) {{
-            {}
+{}
         }},
         update(changed) {{
-            {}
+{}
         }},
         destroy() {{
-            {}
+{}
         }},
     }};
     return lifecycle;
-}}
-    "#,
+}}"#,
         code.variables
             .iter()
-            .map(|v| format!("let {};", v))
+            .map(|v| format!("    let {};", v))
             .collect::<Vec<String>>()
             .join("\n"),
         script,
@@ -114,20 +122,24 @@ export default function() {{
     )
 }
 
+/// traverses a node and checks what sort of element to create or function to add
 fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &mut Code) {
     match node {
         Fragment::Script(_) => (),
+        // adds HTML elements like <h1>, <div>, <button>
         Fragment::Element(f) => {
             let variable_name = format!("{}_{}", f.name, code.counter);
             code.counter += 1;
 
             code.variables.push(variable_name.clone());
             code.create.push(format!(
-                "{} = document.createElement('{}');",
+                "            {} = document.createElement('{}');",
                 variable_name, f.name
             ));
 
+            // adds attributes on:click, class, style
             for attr in &f.attributes {
+                // handles events
                 if attr.name.starts_with("on:") {
                     let event_name = attr.name.chars().skip(3).collect::<String>();
                     let event_handler = match &attr.value {
@@ -139,19 +151,20 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                     };
 
                     code.create.push(format!(
-                        "{}.addEventListener('{}', {});",
+                        "            {}.addEventListener('{}', {});",
                         variable_name, event_name, event_handler
                     ));
 
                     code.destroy.push(format!(
-                        "{}.removeEventListener('{}', {});",
+                        "            {}.removeEventListener('{}', {});",
                         variable_name, event_name, event_handler
                     ));
                 }
 
+                // handles attributes class, stye, disabled
                 match &attr.value {
                     AttributeValue::String(str) => code.create.push(format!(
-                        "{}.setAttribute('{}', '{}');",
+                        "            {}.setAttribute('{}', '{}');",
                         variable_name, attr.name, str
                     )),
                     _ => (),
@@ -162,11 +175,17 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                 traverse(fragment, variable_name.clone(), analysis, code);
             }
 
-            code.create
-                .push(format!("{}.appendChild({});", parent, variable_name));
-            code.destroy
-                .push(format!("{}.removeChild({});", parent, variable_name));
+            code.create.push(format!(
+                "            {}.appendChild({});",
+                parent, variable_name
+            ));
+            code.destroy.push(format!(
+                "            {}.removeChild({});",
+                parent, variable_name
+            ));
         }
+
+        // adds expressions inside curly braces as text nodes
         Fragment::Expression(f) => {
             let variable_name = format!("txt_{}", code.counter);
             code.counter += 1;
@@ -175,14 +194,18 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
 
             code.variables.push(variable_name.clone());
             code.create.push(format!(
-                "{} = document.createTextNode({});",
+                "            {} = document.createTextNode({});",
                 variable_name, expression_name
             ));
 
-            code.create
-                .push(format!("{}.appendChild({});", parent, variable_name));
+            code.create.push(format!(
+                "            {}.appendChild({});",
+                parent, variable_name
+            ));
 
             let names = f.extract_names();
+
+            // this is a mess
             if names.len() > 0 {
                 let mut changes = Vec::new();
                 for name in &names {
@@ -197,11 +220,9 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                     for name in names {
                         if analysis.will_change.contains(&name) {
                             code.update.push(format!(
-                                r#"
-if ({}.some(name => changed.includes(name))) {{
-    {}.data = {};
-}}
-    "#,
+                                r#"            if ({}.some(name => changed.includes(name))) {{
+                {}.data = {};
+            }}"#,
                                 names_json, variable_name, expression_name
                             ));
                         }
@@ -209,11 +230,9 @@ if ({}.some(name => changed.includes(name))) {{
                 } else {
                     if analysis.will_change.contains(names.first().unwrap()) {
                         code.update.push(format!(
-                            r#"
-if (changed.includes("{}")) {{
-    {}.data = {};
-}}
-    "#,
+                            r#"            if (changed.includes("{}")) {{
+                {}.data = {};
+            }}"#,
                             changes.first().unwrap(),
                             variable_name,
                             expression_name
@@ -224,18 +243,22 @@ if (changed.includes("{}")) {{
 
             if analysis.will_change.contains(&expression_name) {}
         }
+
+        // creates plain text nodes
         Fragment::Text(f) => {
             let variable_name = format!("txt_{}", code.counter);
             code.counter += 1;
 
             code.variables.push(variable_name.clone());
             code.create.push(format!(
-                "{} = document.createTextNode('{}');",
+                "            {} = document.createTextNode('{}');",
                 variable_name.clone(),
                 f.data.to_string().trim()
             ));
-            code.create
-                .push(format!("{}.appendChild({});", parent, variable_name));
+            code.create.push(format!(
+                "            {}.appendChild({});",
+                parent, variable_name
+            ));
         }
     }
 }

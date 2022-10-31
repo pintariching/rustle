@@ -1,7 +1,10 @@
-pub mod analyse;
-pub mod ast;
-pub mod expr_visitor;
-pub mod generate;
-pub mod parse;
-pub mod swc_ast_visitor;
+mod analyse;
+mod ast;
+mod expr_visitor;
+mod generate;
+mod parse;
+
+pub use analyse::analyse;
 pub use ast::*;
+pub use generate::generate;
+pub use parse::Parser;
