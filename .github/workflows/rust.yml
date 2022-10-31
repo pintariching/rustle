@@ -15,13 +15,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/cache@v3.0.11
+    - uses: actions/cache@v3
       with:
        path: |
-         ~/.cargo/registry
-         ~/.cargo/git
-         ./target
-       key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+         ~/.cargo/bin/
+         ~/.cargo/registry/index/
+         ~/.cargo/registry/cache/
+         ~/.cargo/git/db/
+         target/
+       key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - uses: actions/checkout@v3
     - name: Build
       run: cargo build --verbose
