@@ -1257,11 +1257,15 @@ name = "rustle"
 version = "0.1.2"
 dependencies = [
  "lazy_static",
+ "rand",
  "regex",
  "serde",
  "serde_json",
  "swc",
  "swc_common",
+ "swc_css_ast",
+ "swc_css_codegen",
+ "swc_css_parser",
  "swc_ecma_ast",
  "swc_ecma_codegen",
  "swc_ecma_parser",
@@ -1646,6 +1650,91 @@ dependencies = [
  "quote",
  "swc_macros_common",
  "syn",
+]
+
+[[package]]
+name = "swc_css_ast"
+version = "0.124.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec0a95e29f6b9e608560453c3ffe983d6c2a2a99d20dcc1a29b17e5fb8f74111"
+dependencies = [
+ "is-macro",
+ "serde",
+ "string_enum",
+ "swc_atoms",
+ "swc_common",
+]
+
+[[package]]
+name = "swc_css_codegen"
+version = "0.134.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1669ad895cbe0612c39c26e383552a3a58ebcfdbc4c1e07ebc7c3e9d9b03fda"
+dependencies = [
+ "auto_impl",
+ "bitflags",
+ "rustc-hash",
+ "serde",
+ "swc_atoms",
+ "swc_common",
+ "swc_css_ast",
+ "swc_css_codegen_macros",
+ "swc_css_utils",
+]
+
+[[package]]
+name = "swc_css_codegen_macros"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe27425548d11afee43ddbe1d0cd882cb5e042f61b1503651dae2219c92333f5"
+dependencies = [
+ "pmutil",
+ "proc-macro2",
+ "quote",
+ "swc_macros_common",
+ "syn",
+]
+
+[[package]]
+name = "swc_css_parser"
+version = "0.133.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f28266f6b5b41dd73cf42782912f94e7da86882edc2beab3daf37981234cc27a"
+dependencies = [
+ "bitflags",
+ "lexical",
+ "serde",
+ "swc_atoms",
+ "swc_common",
+ "swc_css_ast",
+]
+
+[[package]]
+name = "swc_css_utils"
+version = "0.121.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2dffbfffbe89ee68b97dd9aa9d92f69536267f3e653ac4e9e9a8624b2c87cc2c"
+dependencies = [
+ "once_cell",
+ "serde",
+ "serde_json",
+ "swc_atoms",
+ "swc_common",
+ "swc_css_ast",
+ "swc_css_visit",
+]
+
+[[package]]
+name = "swc_css_visit"
+version = "0.123.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "059e2eb4636c9d142b0e5c1c576324cb400e127c850c3b9bcfea0bbfe39af71e"
+dependencies = [
+ "serde",
+ "swc_atoms",
+ "swc_common",
+ "swc_css_ast",
+ "swc_visit",
 ]
 
 [[package]]

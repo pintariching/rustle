@@ -6,5 +6,5 @@ mod parse;
 
 pub use analyse::analyse;
 pub use ast::*;
-pub use generate::generate;
+pub use generate::{generate_css, generate_js};
 pub use parse::Parser;

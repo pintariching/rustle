@@ -1,5 +1,7 @@
 use lazy_static::lazy_static;
 use regex::Regex;
+use swc_css_ast::Stylesheet;
+use swc_ecma_ast::Script;
 
 use crate::compiler::{Fragment, RustleAst};
 
@@ -43,22 +45,39 @@ impl Parser {
     pub fn parse(&mut self) -> RustleAst {
         let mut fragments = parse_fragments(self, |parser| parser.index < parser.content.len());
 
-        let script_index = fragments
-            .iter()
-            .position(|f| match f {
-                Fragment::Script(_) => true,
-                _ => false,
-            })
-            .unwrap();
+        let mut script: Option<Script> = None;
+        let script_index = fragments.iter().position(|f| match f {
+            Fragment::Script(_) => true,
+            _ => false,
+        });
 
-        let script = if let Fragment::Script(s) = fragments.remove(script_index) {
-            Some(s)
-        } else {
-            None
+        if let Some(i) = script_index {
+            if let Fragment::Script(s) = fragments.remove(i) {
+                script = Some(s)
+            } else {
+                script = None
+            };
         }
-        .unwrap();
 
-        RustleAst { script, fragments }
+        let mut style: Option<Stylesheet> = None;
+        let style_index = fragments.iter().position(|f| match f {
+            Fragment::Style(_) => true,
+            _ => false,
+        });
+
+        if let Some(i) = style_index {
+            if let Fragment::Style(s) = fragments.remove(i) {
+                style = Some(s)
+            } else {
+                style = None
+            };
+        }
+
+        RustleAst {
+            script,
+            style,
+            fragments,
+        }
     }
 
     /// Checks if the string at the current index

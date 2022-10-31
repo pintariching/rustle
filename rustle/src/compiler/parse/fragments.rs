@@ -1,9 +1,10 @@
 use lazy_static::lazy_static;
 use regex::Regex;
+use swc_css_ast::Stylesheet;
 use swc_ecma_ast::{Expr, Script};
 
 use super::parser::Parser;
-use super::swc_helpers::{parse_expression_at, swc_parse_javascript};
+use super::swc_helpers::{parse_expression_at, swc_parse_css, swc_parse_javascript};
 use crate::compiler::{AttributeValue, Fragment, RustleAttribute, RustleElement, RustleText};
 
 lazy_static! {
@@ -17,7 +18,7 @@ lazy_static! {
     static ref READ_TEXT: Regex = Regex::new("[^<{]").unwrap();
 
     // for reading attribute values -> class="p-5" -> "p-5"
-    static ref ATTRIBUTE_VALUE: Regex = Regex::new("[a-z0-9-]").unwrap();
+    static ref ATTRIBUTE_VALUE: Regex = Regex::new("[a-z0-9-\\s]").unwrap();
 }
 
 /// Parses fragments given an end condition as a closure.
@@ -47,6 +48,10 @@ pub fn parse_fragments<F: Fn(&mut Parser) -> bool>(
 pub fn parse_fragment(parser: &mut Parser) -> Option<Fragment> {
     if let Some(script) = parse_script(parser) {
         return Some(Fragment::Script(script));
+    }
+
+    if let Some(style) = parse_style(parser) {
+        return Some(Fragment::Style(style));
     }
 
     if let Some(element) = parse_element(parser) {
@@ -83,6 +88,30 @@ fn parse_script(parser: &mut Parser) -> Option<Script> {
         parser.eat("</script>");
 
         return Some(script);
+    }
+
+    None
+}
+
+/// Checks if the index starts at a `<style>` tag and returns
+/// the content between it and a `</style>` tag as a `swc_css_ast::Stylesheet`.
+///
+/// Sets the `parser.index` to the end of the closing `</style>` tag.
+///
+/// Returns `None` if the current index doesn't start at a `<style>` tag.
+fn parse_style(parser: &mut Parser) -> Option<Stylesheet> {
+    if parser.match_str("<style>") {
+        parser.eat("<style>");
+        let start_index = parser.index;
+        let end_index = parser.content.find("</style>").unwrap();
+        let style = parser.content.get(start_index..end_index).unwrap();
+
+        let stylesheet = swc_parse_css(style);
+
+        parser.index = end_index;
+        parser.eat("</style>");
+
+        return Some(stylesheet);
     }
 
     None

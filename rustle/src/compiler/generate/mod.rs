@@ -4,7 +4,11 @@ use super::{analyse::AnalysisResult, expr_visitor::Visit, AttributeValue, Fragme
 use swc_ecma_ast::Expr;
 
 mod add_lifecycle_call;
+mod generate_css;
+mod print_css;
 mod print_js;
+
+pub use generate_css::generate_css;
 use print_js::generate_js_from_script;
 
 struct Code {
@@ -17,7 +21,7 @@ struct Code {
 }
 
 /// Generates the javascript code from the AST and the analysis
-pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
+pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
     let mut code = Code {
         counter: 1,
         variables: Vec::new(),
@@ -28,18 +32,21 @@ pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
     };
 
     // checks what code to add into the final template
-    for fragment in ast.fragments {
+    for fragment in &ast.fragments {
         traverse(&fragment, "target".into(), &analysis, &mut code)
     }
 
     // add lifecycle calls to variables that will be updated
-    let updated_script = add_lifecycle_calls(ast.script, &analysis.will_change);
+    let script = if let Some(script) = &mut ast.script {
+        let updated_script = add_lifecycle_calls(script, &analysis.will_change);
+        generate_js_from_script(updated_script)
+    } else {
+        String::new()
+    };
 
     // turn the AST script back into String, to be inserted into the final template
     // TODO: the formatting of the generated js is not good, fix this somehow
-    let script = generate_js_from_script(updated_script);
-
-    for rd in analysis.reactive_declarations {
+    for rd in &analysis.reactive_declarations {
         // transforms a vec into a js array ["name1", "name2"]
         let change_json = format!("[\"{}\"]", rd.dependencies.join("\", \""));
         let assignee_json = format!("[\"{}\"]", rd.assignees.join("\", \""));
@@ -56,8 +63,8 @@ pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
             .into(),
         );
 
-        for asignee in rd.assignees {
-            code.variables.push(asignee);
+        for asignee in &rd.assignees {
+            code.variables.push(asignee.clone());
         }
     }
 
@@ -111,6 +118,7 @@ pub fn generate(ast: RustleAst, analysis: AnalysisResult) -> String {
             "[\"{}\"]",
             analysis
                 .will_change
+                .clone()
                 .into_iter()
                 .collect::<Vec<String>>()
                 .join("\", \"")
@@ -163,10 +171,20 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
 
                 // handles attributes class, stye, disabled
                 match &attr.value {
-                    AttributeValue::String(str) => code.create.push(format!(
-                        "            {}.setAttribute('{}', '{}');",
-                        variable_name, attr.name, str
-                    )),
+                    AttributeValue::String(value) => {
+                        // add unique scope to attributes if it's a class
+                        if attr.name == "class" {
+                            code.create.push(format!(
+                                "            {}.setAttribute('{}', '{} {}');",
+                                variable_name, attr.name, value, analysis.css_unique_scope
+                            ));
+                        } else {
+                            code.create.push(format!(
+                                "            {}.setAttribute('{}', '{}');",
+                                variable_name, attr.name, value
+                            ));
+                        }
+                    }
                     _ => (),
                 }
             }
@@ -260,5 +278,7 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                 parent, variable_name
             ));
         }
+
+        Fragment::Style(_) => (),
     }
 }

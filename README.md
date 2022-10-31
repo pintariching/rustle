@@ -31,10 +31,12 @@ A lot of features still need to be implemented before `rustle` is ready for use.
 - [x] on:click event handler
 - [x] arrow function with single assignment
 - [x] display variable (eg. {counter})
+- [x] scoped CSS
+- [x] reactive declarations (currently only simple assignment declarations work)
 
 Feature roadmap:
 - [ ] Dynamic attributes ({class} instead of class={class})
-- [ ] Styling (&lt;style&gt;&lt;/style&gt;)
+- [x] Styling (&lt;style&gt;&lt;/style&gt;)
 - [ ] Nested components
 - [ ] HTML tags ({@html htmlString})
 - [ ] Reactivity

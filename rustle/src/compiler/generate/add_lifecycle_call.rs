@@ -38,7 +38,10 @@ use crate::compiler::expr_visitor::Visit;
 /// // javascript
 /// const increment () => (counter++, update(["counter"]));
 /// ```
-pub fn add_lifecycle_calls(mut script: Script, will_be_updated: &HashSet<String>) -> Script {
+pub fn add_lifecycle_calls<'a>(
+    script: &'a mut Script,
+    will_be_updated: &HashSet<String>,
+) -> &'a mut Script {
     for stmt in &mut script.body {
         match stmt {
             Stmt::Decl(decl) => match decl {

@@ -3,7 +3,7 @@ use swc_ecma_ast::{EsVersion, Expr, ExprStmt, Script, Stmt};
 use swc_ecma_codegen::{text_writer::JsWriter, Config, Emitter};
 
 /// Generates javascript code as a `String` from a given `swc_ecma-ast:Script`
-pub fn generate_js_from_script(script: Script) -> String {
+pub fn generate_js_from_script(script: &Script) -> String {
     let mut buffer = Vec::new();
     {
         let cm: Lrc<SourceMap> = Default::default();
@@ -28,7 +28,7 @@ pub fn generate_js_from_script(script: Script) -> String {
 
 /// Generates javascript code as a `String` from a given `swc_ecma-ast:Expr`
 pub fn generate_js_from_expr(expr: &Expr) -> String {
-    generate_js_from_script(script_from_expr(expr))
+    generate_js_from_script(&script_from_expr(expr))
 }
 
 pub fn script_from_expr(expr: &Expr) -> Script {
