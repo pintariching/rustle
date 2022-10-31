@@ -23,7 +23,7 @@ jobs:
          ~/.cargo/registry/cache/
          ~/.cargo/git/db/
          target/
-       key: ${{ runner.os }}-cargo-${{ hashFiles('../Cargo.lock') }}
+       key: ${{ runner.os }}-cargo-${{ hashFiles('./**/Cargo.lock') }}
     - uses: actions/checkout@v3
     - name: Build
       run: cargo build --verbose
