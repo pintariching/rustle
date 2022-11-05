@@ -1,0 +1,66 @@
+{
+  "script": {
+    "type": "Script",
+    "span": {
+      "start": 0,
+      "end": 0,
+      "ctxt": 0
+    },
+    "body": [],
+    "interpreter": null
+  },
+  "imports_exports": [
+    {
+      "type": "ImportDeclaration",
+      "span": {
+        "start": 6,
+        "end": 45,
+        "ctxt": 0
+      },
+      "specifiers": [
+        {
+          "type": "ImportDefaultSpecifier",
+          "span": {
+            "start": 13,
+            "end": 20,
+            "ctxt": 0
+          },
+          "local": {
+            "type": "Identifier",
+            "span": {
+              "start": 13,
+              "end": 20,
+              "ctxt": 0
+            },
+            "value": "Counter",
+            "optional": false
+          }
+        }
+      ],
+      "source": {
+        "type": "StringLiteral",
+        "span": {
+          "start": 26,
+          "end": 44,
+          "ctxt": 0
+        },
+        "value": "./Counter.svelte",
+        "raw": "\"./Counter.svelte\""
+      },
+      "typeOnly": false,
+      "asserts": null
+    }
+  ],
+  "style": null,
+  "fragments": [
+    {
+      "NestedComponent": {
+        "name": "Counter",
+        "attributes": [],
+        "fragments": [],
+        "nested_component": true
+      }
+    }
+  ],
+  "is_component": false
+}

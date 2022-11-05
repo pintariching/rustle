@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 
-use compiler::{analyse, generate_js, Parser, RustleAst};
+use compiler::{analyse, generate_js, Fragment, Parser, RustleAst};
 
 pub mod compiler;
 
@@ -11,6 +11,14 @@ pub fn compile_file_to_js(input: &Path, output: &Path) -> Result<(), std::io::Er
     let generated = generate_js(&mut ast, &analysis);
 
     fs::write(output, generated)?;
+
+    // check if file contains any nested components
+    if ast.fragments.iter().any(|f| match f {
+        Fragment::Element(e) => e.nested_component,
+        _ => false,
+    }) {
+        todo!()
+    }
 
     Ok(())
 }

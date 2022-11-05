@@ -1,18 +1,19 @@
 use lazy_static::lazy_static;
 use regex::Regex;
 use swc_css_ast::Stylesheet;
-use swc_ecma_ast::{Expr, Script};
+use swc_ecma_ast::{Expr, Program};
 
 use super::parser::Parser;
 use super::swc_helpers::{parse_expression_at, swc_parse_css, swc_parse_javascript};
+use super::utils::is_html_tag;
 use crate::compiler::{AttributeValue, Fragment, RustleAttribute, RustleElement, RustleText};
 
 lazy_static! {
     // for HTML elements -> <h1> matches "h1"
-    static ref ELEMENT_TAG_NAME: Regex = Regex::new("[a-z1-9]").unwrap();
+    static ref ELEMENT_TAG_NAME: Regex = Regex::new("[A-Za-z1-9]").unwrap();
 
     // for matching the start of an attribute or the end of a tag
-    static ref ATTRIBUTE_NAME: Regex = Regex::new("[^=>]").unwrap();
+    static ref ATTRIBUTE_NAME: Regex = Regex::new("[^=>/]").unwrap();
 
     // for matching text inside tags <h1>some text</h1> -> "some text"
     static ref READ_TEXT: Regex = Regex::new("[^<{]").unwrap();
@@ -46,8 +47,8 @@ pub fn parse_fragments<F: Fn(&mut Parser) -> bool>(
 /// # Arguments
 /// * `parser` - The `parser` struct containing the content to parse.
 pub fn parse_fragment(parser: &mut Parser) -> Option<Fragment> {
-    if let Some(script) = parse_script(parser) {
-        return Some(Fragment::Script(script));
+    if let Some(program) = parse_program(parser) {
+        return Some(Fragment::Program(program));
     }
 
     if let Some(style) = parse_style(parser) {
@@ -55,6 +56,9 @@ pub fn parse_fragment(parser: &mut Parser) -> Option<Fragment> {
     }
 
     if let Some(element) = parse_element(parser) {
+        if element.nested_component {
+            return Some(Fragment::NestedComponent(element));
+        }
         return Some(Fragment::Element(element));
     }
 
@@ -76,18 +80,18 @@ pub fn parse_fragment(parser: &mut Parser) -> Option<Fragment> {
 /// Sets the `parser.index` to the end of the closing `</script>` tag.
 ///
 /// Returns `None` if the current index doesn't start at a `<script>` tag.
-fn parse_script(parser: &mut Parser) -> Option<Script> {
+fn parse_program(parser: &mut Parser) -> Option<Program> {
     if parser.match_str("<script>") {
         parser.eat("<script>");
         let start_index = parser.index;
         let end_index = parser.content.find("</script>").unwrap();
         let code = parser.content.get(start_index..end_index).unwrap();
-        let script = swc_parse_javascript(code);
+        let program = swc_parse_javascript(code);
 
         parser.index = end_index;
         parser.eat("</script>");
 
-        return Some(script);
+        return Some(program);
     }
 
     None
@@ -131,15 +135,35 @@ fn parse_element(parser: &mut Parser) -> Option<RustleElement> {
         parser.eat("<");
 
         let tag_name = parser.read_while_matching(&ELEMENT_TAG_NAME);
+
+        let mut nested_component = false;
+        if !is_html_tag(&tag_name) {
+            nested_component = true;
+        }
+
         let attributes = parse_attribute_list(parser);
+
+        if parser.match_next_char('/') {
+            parser.eat("/");
+            parser.eat(">");
+
+            return Some(RustleElement {
+                name: tag_name,
+                attributes,
+                fragments: Vec::new(),
+                nested_component,
+            });
+        }
+
         parser.eat(">");
 
-        let end_tag = format!("</{}>", tag_name);
+        let end_tag = format!("</{}>", &tag_name);
 
         let element = Some(RustleElement {
             name: tag_name,
-            attributes: attributes,
+            attributes,
             fragments: parse_fragments(parser, |parser| !parser.match_str(&end_tag)),
+            nested_component,
         });
 
         parser.eat(end_tag.as_str());
@@ -175,13 +199,13 @@ fn parse_text(parser: &mut Parser) -> Option<RustleText> {
     None
 }
 
-/// Parses all the attributes inside a tag untill the closing `>`
+/// Parses all the attributes inside a tag untill the closing `>` or `/`
 /// for example `on:click={action}`
 fn parse_attribute_list(parser: &mut Parser) -> Vec<RustleAttribute> {
     let mut attributes = Vec::new();
     parser.skip_whitespace();
 
-    while !parser.match_str(">") {
+    while !parser.match_next_chars(&['>', '/']) {
         attributes.push(parse_attribute(parser));
         parser.skip_whitespace();
     }

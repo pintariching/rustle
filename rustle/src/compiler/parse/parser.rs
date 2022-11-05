@@ -1,7 +1,8 @@
 use lazy_static::lazy_static;
 use regex::Regex;
+use swc_common::Span;
 use swc_css_ast::Stylesheet;
-use swc_ecma_ast::Script;
+use swc_ecma_ast::{ModuleItem, Program, Script};
 
 use crate::compiler::{Fragment, RustleAst};
 
@@ -46,16 +47,37 @@ impl Parser {
         let mut fragments = parse_fragments(self, |parser| parser.index < parser.content.len());
 
         let mut script: Option<Script> = None;
-        let script_index = fragments.iter().position(|f| match f {
-            Fragment::Script(_) => true,
+        let mut imports_exports: Option<Vec<ModuleItem>> = None;
+        let program_index = fragments.iter().position(|f| match f {
+            Fragment::Program(_) => true,
             _ => false,
         });
 
-        if let Some(i) = script_index {
-            if let Fragment::Script(s) = fragments.remove(i) {
-                script = Some(s)
-            } else {
-                script = None
+        if let Some(i) = program_index {
+            if let Fragment::Program(p) = fragments.remove(i) {
+                // split import and exports from the other statements
+                match p {
+                    Program::Module(m) => {
+                        let mut stmts = Vec::new();
+                        let mut imps_exps = Vec::new();
+
+                        for mi in m.body {
+                            match mi {
+                                ModuleItem::ModuleDecl(_) => imps_exps.push(mi),
+                                ModuleItem::Stmt(s) => stmts.push(s),
+                            }
+                        }
+
+                        script = Some(Script {
+                            span: Span::default(),
+                            body: stmts,
+                            shebang: None,
+                        });
+
+                        imports_exports = Some(imps_exps);
+                    }
+                    Program::Script(s) => script = Some(s),
+                }
             };
         }
 
@@ -75,8 +97,10 @@ impl Parser {
 
         RustleAst {
             script,
+            imports_exports,
             style,
             fragments,
+            is_component: false,
         }
     }
 
@@ -106,6 +130,68 @@ impl Parser {
             .collect::<String>()
             .as_str()
             == str
+    }
+
+    /// Checks if the character at the current index
+    /// matches the provided char
+    ///
+    /// # Arguments
+    ///
+    /// * `char_to_match` - The char to match
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rustle::compiler::Parser;
+    ///
+    /// let mut parser = Parser::new("rustle is awesome");
+    /// assert!(parser.match_next_char('r'));
+    ///
+    /// parser.index = 10;
+    /// assert!(parser.match_next_char('a'));
+    /// ```
+    pub fn match_next_char(&mut self, char_to_match: char) -> bool {
+        let char = self.content.chars().nth(self.index);
+
+        if let Some(c) = char {
+            return c == char_to_match;
+        } else {
+            return false;
+        }
+    }
+
+    /// Checks if the character at the current index
+    /// matches the provided array of chars
+    ///
+    /// # Arguments
+    ///
+    /// * `chars_to_match` - The array of chars to match
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rustle::compiler::Parser;
+    ///
+    /// let mut parser = Parser::new("rustle is awesome");
+    /// assert!(parser.match_next_chars(&['a', 'b', 'r']));
+    ///
+    /// parser.index = 10;
+    /// assert!(parser.match_next_chars(&['a']));
+    /// ```
+    pub fn match_next_chars(&mut self, chars_to_match: &[char]) -> bool {
+        let char = self.content.chars().nth(self.index);
+
+        if let Some(c) = char {
+            for char_to_match in chars_to_match {
+                if c == *char_to_match {
+                    return true;
+                }
+            }
+
+            return false;
+        } else {
+            return false;
+        }
     }
 
     /// Eats the provided string at the index
@@ -169,7 +255,7 @@ impl Parser {
             self.content
                 .chars()
                 .nth(self.index)
-                .unwrap()
+                .unwrap_or_else(|| panic!("{self:#?}"))
                 .to_string()
                 .as_str(),
         ) {

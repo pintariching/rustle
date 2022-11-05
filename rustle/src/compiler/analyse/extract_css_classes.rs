@@ -28,6 +28,7 @@ pub fn extract_css_classes(stylesheet: &Stylesheet) -> Vec<String> {
                     }
                 }
                 QualifiedRulePrelude::ListOfComponentValues(_) => panic!("{:#?}", ql),
+                QualifiedRulePrelude::RelativeSelectorList(_) => panic!("{:#?}", ql),
             },
             _ => panic!("CSS rule not supported: {:#?}", rule),
         }

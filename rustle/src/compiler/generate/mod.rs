@@ -1,7 +1,10 @@
-use self::{add_lifecycle_call::add_lifecycle_calls, print_js::generate_js_from_expr};
+use self::{
+    add_lifecycle_call::add_lifecycle_calls,
+    print_js::{generate_js_from_expr, generate_js_from_module_item},
+};
 
 use super::{analyse::AnalysisResult, expr_visitor::Visit, AttributeValue, Fragment, RustleAst};
-use swc_ecma_ast::Expr;
+use swc_ecma_ast::{Expr, ModuleDecl, ModuleItem};
 
 mod add_lifecycle_call;
 mod generate_css;
@@ -14,7 +17,9 @@ use print_js::generate_js_from_script;
 struct Code {
     counter: usize,
     variables: Vec<String>,
+    nested_components: Vec<String>,
     reactive_declarations: Vec<String>,
+    imports: Vec<String>,
     create: Vec<String>,
     update: Vec<String>,
     destroy: Vec<String>,
@@ -25,7 +30,9 @@ pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
     let mut code = Code {
         counter: 1,
         variables: Vec::new(),
+        nested_components: Vec::new(),
         reactive_declarations: Vec::new(),
+        imports: Vec::new(),
         create: Vec::new(),
         update: Vec::new(),
         destroy: Vec::new(),
@@ -68,11 +75,32 @@ pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
         }
     }
 
+    // change import from "svelte" to "js" and add it to imports
+    if let Some(ie) = &mut ast.imports_exports {
+        for mi in ie {
+            match mi {
+                ModuleItem::ModuleDecl(md) => match md {
+                    ModuleDecl::Import(i) => {
+                        let mut name = i.src.value.to_string();
+                        name = name.replace("svelte", "js");
+
+                        i.src.value = name.into();
+                        i.src.raw = None;
+
+                        code.imports.push(generate_js_from_module_item(mi));
+                    }
+                    _ => (),
+                },
+                _ => (),
+            }
+        }
+    }
+
     // the final javascript template
     format!(
-        r#"export default function() {{
-{}
-
+        r#"{}
+export default function() {{
+{}{}
     let collectChanges = [];
     let updateCalled = false;
     function update(changed) {{
@@ -108,11 +136,13 @@ pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
     }};
     return lifecycle;
 }}"#,
+        code.imports.join(""),
         code.variables
             .iter()
             .map(|v| format!("    let {};", v))
             .collect::<Vec<String>>()
             .join("\n"),
+        code.nested_components.join("\n"),
         script,
         format!(
             "[\"{}\"]",
@@ -133,7 +163,7 @@ pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
 /// traverses a node and checks what sort of element to create or function to add
 fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &mut Code) {
     match node {
-        Fragment::Script(_) => (),
+        Fragment::Program(_) => (),
         // adds HTML elements like <h1>, <div>, <button>
         Fragment::Element(f) => {
             let variable_name = format!("{}_{}", f.name, code.counter);
@@ -280,5 +310,15 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
         }
 
         Fragment::Style(_) => (),
+        Fragment::NestedComponent(nc) => {
+            let variable_name = format!("{}_{}", nc.name.to_lowercase(), code.counter);
+            code.counter += 1;
+
+            code.nested_components
+                .push(format!("    let {} = {}();", variable_name, nc.name));
+
+            code.create
+                .push(format!("            {}.create(target);", variable_name));
+        }
     }
 }

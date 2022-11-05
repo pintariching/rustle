@@ -2,12 +2,11 @@ use swc_common::source_map::Pos;
 use swc_common::sync::Lrc;
 use swc_common::{BytePos, FileName, SourceMap};
 use swc_css_ast::Stylesheet;
+use swc_css_parser::parse_str;
 use swc_css_parser::parser::ParserConfig;
-use swc_css_parser::{parse_file, parse_str};
-use swc_ecma_ast::{EsVersion, Expr, Script};
-use swc_ecma_parser::parse_file_as_expr;
-use swc_ecma_parser::parse_file_as_script;
+use swc_ecma_ast::{EsVersion, Expr, Program};
 use swc_ecma_parser::Syntax;
+use swc_ecma_parser::{parse_file_as_expr, parse_file_as_program};
 
 use super::parser::Parser;
 
@@ -18,11 +17,11 @@ use super::parser::Parser;
 ///
 /// * `source` - The Javascript string to parse
 ///
-pub fn swc_parse_javascript(source: &str) -> Script {
+pub fn swc_parse_javascript(source: &str) -> Program {
     let cm: Lrc<SourceMap> = Default::default();
     let fm = cm.new_source_file(FileName::Anon, source.into());
 
-    let result = parse_file_as_script(
+    let result = parse_file_as_program(
         &fm,
         Syntax::Es(Default::default()),
         EsVersion::latest(),

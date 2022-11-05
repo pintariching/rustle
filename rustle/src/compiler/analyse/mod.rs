@@ -115,7 +115,7 @@ pub fn analyse(ast: &mut RustleAst) -> AnalysisResult {
 fn extract_variables_in_template(fragment: &Fragment) -> Vec<String> {
     let mut will_use = Vec::new();
     match fragment {
-        Fragment::Script(_) => (),
+        Fragment::Program(_) => (),
         Fragment::Element(f) => {
             for child in &f.fragments {
                 let mut child_vars = extract_variables_in_template(child);

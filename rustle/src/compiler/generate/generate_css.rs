@@ -5,7 +5,6 @@ use swc_css_ast::{
     ClassSelector, ComplexSelectorChildren, Ident, QualifiedRulePrelude, Rule, Stylesheet,
     SubclassSelector,
 };
-use swc_ecma_ast::Class;
 
 use crate::compiler::{analyse::AnalysisResult, RustleAst};
 
@@ -44,6 +43,7 @@ fn remove_unused_css(stylesheet: &mut Stylesheet, used_classes: &HashSet<String>
                 })
             }),
             QualifiedRulePrelude::ListOfComponentValues(_) => panic!("{:#?}", ql),
+            QualifiedRulePrelude::RelativeSelectorList(_) => panic!("{:#?}", ql),
         },
         _ => panic!("CSS rule not supported: {:#?}", r),
     })
@@ -74,6 +74,7 @@ fn add_unique_scope(stylesheet: &mut Stylesheet, scope: &str) {
                     }
                 }
                 QualifiedRulePrelude::ListOfComponentValues(_) => panic!("{:#?}", ql),
+                QualifiedRulePrelude::RelativeSelectorList(_) => panic!("{:#?}", ql),
             },
             _ => panic!("CSS rule not supported: {:#?}", rule),
         }
