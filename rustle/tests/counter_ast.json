@@ -1,0 +1,272 @@
+{
+  "script": {
+    "type": "Script",
+    "span": {
+      "start": 0,
+      "end": 0,
+      "ctxt": 0
+    },
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "span": {
+          "start": 29,
+          "end": 61,
+          "ctxt": 0
+        },
+        "kind": "const",
+        "declare": false,
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "span": {
+              "start": 35,
+              "end": 60,
+              "ctxt": 0
+            },
+            "id": {
+              "type": "Identifier",
+              "span": {
+                "start": 35,
+                "end": 44,
+                "ctxt": 0
+              },
+              "value": "increment",
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "init": {
+              "type": "ArrowFunctionExpression",
+              "span": {
+                "start": 47,
+                "end": 60,
+                "ctxt": 0
+              },
+              "params": [],
+              "body": {
+                "type": "UpdateExpression",
+                "span": {
+                  "start": 53,
+                  "end": 60,
+                  "ctxt": 0
+                },
+                "operator": "++",
+                "prefix": false,
+                "argument": {
+                  "type": "Identifier",
+                  "span": {
+                    "start": 53,
+                    "end": 58,
+                    "ctxt": 0
+                  },
+                  "value": "count",
+                  "optional": false
+                }
+              },
+              "async": false,
+              "generator": false,
+              "typeParameters": null,
+              "returnType": null
+            },
+            "definite": false
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "span": {
+          "start": 66,
+          "end": 98,
+          "ctxt": 0
+        },
+        "kind": "const",
+        "declare": false,
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "span": {
+              "start": 72,
+              "end": 97,
+              "ctxt": 0
+            },
+            "id": {
+              "type": "Identifier",
+              "span": {
+                "start": 72,
+                "end": 81,
+                "ctxt": 0
+              },
+              "value": "decrement",
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "init": {
+              "type": "ArrowFunctionExpression",
+              "span": {
+                "start": 84,
+                "end": 97,
+                "ctxt": 0
+              },
+              "params": [],
+              "body": {
+                "type": "UpdateExpression",
+                "span": {
+                  "start": 90,
+                  "end": 97,
+                  "ctxt": 0
+                },
+                "operator": "--",
+                "prefix": false,
+                "argument": {
+                  "type": "Identifier",
+                  "span": {
+                    "start": 90,
+                    "end": 95,
+                    "ctxt": 0
+                  },
+                  "value": "count",
+                  "optional": false
+                }
+              },
+              "async": false,
+              "generator": false,
+              "typeParameters": null,
+              "returnType": null
+            },
+            "definite": false
+          }
+        ]
+      }
+    ],
+    "interpreter": null
+  },
+  "imports": [],
+  "exports": [
+    {
+      "type": "ExportDeclaration",
+      "span": {
+        "start": 6,
+        "end": 23,
+        "ctxt": 0
+      },
+      "declaration": {
+        "type": "VariableDeclaration",
+        "span": {
+          "start": 13,
+          "end": 23,
+          "ctxt": 0
+        },
+        "kind": "let",
+        "declare": false,
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "span": {
+              "start": 17,
+              "end": 22,
+              "ctxt": 0
+            },
+            "id": {
+              "type": "Identifier",
+              "span": {
+                "start": 17,
+                "end": 22,
+                "ctxt": 0
+              },
+              "value": "count",
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "init": null,
+            "definite": false
+          }
+        ]
+      }
+    }
+  ],
+  "style": null,
+  "fragments": [
+    {
+      "Element": {
+        "name": "button",
+        "attributes": [
+          {
+            "name": "on:click",
+            "value": {
+              "Expr": {
+                "type": "Identifier",
+                "span": {
+                  "start": 1,
+                  "end": 10,
+                  "ctxt": 0
+                },
+                "value": "increment",
+                "optional": false
+              }
+            }
+          }
+        ],
+        "fragments": [
+          {
+            "Text": {
+              "data": "Increment"
+            }
+          }
+        ],
+        "nested_component": false
+      }
+    },
+    {
+      "Element": {
+        "name": "h1",
+        "attributes": [],
+        "fragments": [
+          {
+            "Expression": {
+              "type": "Identifier",
+              "span": {
+                "start": 1,
+                "end": 6,
+                "ctxt": 0
+              },
+              "value": "count",
+              "optional": false
+            }
+          }
+        ],
+        "nested_component": false
+      }
+    },
+    {
+      "Element": {
+        "name": "button",
+        "attributes": [
+          {
+            "name": "on:click",
+            "value": {
+              "Expr": {
+                "type": "Identifier",
+                "span": {
+                  "start": 1,
+                  "end": 10,
+                  "ctxt": 0
+                },
+                "value": "decrement",
+                "optional": false
+              }
+            }
+          }
+        ],
+        "fragments": [
+          {
+            "Text": {
+              "data": "Decrement"
+            }
+          }
+        ],
+        "nested_component": false
+      }
+    }
+  ],
+  "is_component": false
+}

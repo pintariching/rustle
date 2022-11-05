@@ -6,10 +6,53 @@
       "end": 0,
       "ctxt": 0
     },
-    "body": [],
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "span": {
+          "start": 51,
+          "end": 67,
+          "ctxt": 0
+        },
+        "kind": "let",
+        "declare": false,
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "span": {
+              "start": 55,
+              "end": 66,
+              "ctxt": 0
+            },
+            "id": {
+              "type": "Identifier",
+              "span": {
+                "start": 55,
+                "end": 62,
+                "ctxt": 0
+              },
+              "value": "counter",
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "init": {
+              "type": "NumericLiteral",
+              "span": {
+                "start": 65,
+                "end": 66,
+                "ctxt": 0
+              },
+              "value": 5.0,
+              "raw": "5"
+            },
+            "definite": false
+          }
+        ]
+      }
+    ],
     "interpreter": null
   },
-  "imports_exports": [
+  "imports": [
     {
       "type": "ImportDeclaration",
       "span": {
@@ -51,12 +94,29 @@
       "asserts": null
     }
   ],
+  "exports": [],
   "style": null,
   "fragments": [
     {
       "NestedComponent": {
         "name": "Counter",
-        "attributes": [],
+        "attributes": [
+          {
+            "name": "count",
+            "value": {
+              "Expr": {
+                "type": "Identifier",
+                "span": {
+                  "start": 1,
+                  "end": 8,
+                  "ctxt": 0
+                },
+                "value": "counter",
+                "optional": false
+              }
+            }
+          }
+        ],
         "fragments": [],
         "nested_component": true
       }

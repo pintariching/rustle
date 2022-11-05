@@ -1,5 +1,7 @@
 <script>
     import Counter from "./Counter.svelte";
+
+    let counter = 5;
 </script>
 
-<Counter />
+<Counter count={counter} />

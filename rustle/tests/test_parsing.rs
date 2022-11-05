@@ -34,6 +34,11 @@ fn test_parsing() {
 
     let counter = fs::read_to_string("tests/Counter.svelte").unwrap();
     let mut ast = Parser::new(&counter).parse();
+    fs::write(
+        "tests/counter_ast.json",
+        serde_json::to_string_pretty(&ast).unwrap(),
+    )
+    .unwrap();
     let analysis = analyse(&mut ast);
     let js = generate_js(&mut ast, &analysis);
     fs::write("tests/Counter.js", js).unwrap();

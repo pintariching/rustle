@@ -4,7 +4,7 @@ use self::{
 };
 
 use super::{analyse::AnalysisResult, expr_visitor::Visit, AttributeValue, Fragment, RustleAst};
-use swc_ecma_ast::{Expr, ModuleDecl, ModuleItem};
+use swc_ecma_ast::{Decl, Expr, ModuleDecl, ModuleItem, Pat};
 
 mod add_lifecycle_call;
 mod generate_css;
@@ -37,6 +37,59 @@ pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
         update: Vec::new(),
         destroy: Vec::new(),
     };
+
+    // change import from "svelte" to "js" and add it to imports
+    if let Some(i) = &mut ast.imports {
+        for mi in i {
+            match mi {
+                ModuleItem::ModuleDecl(md) => match md {
+                    ModuleDecl::Import(i) => {
+                        let mut name = i.src.value.to_string();
+                        name = name.replace("svelte", "js");
+
+                        i.src.value = name.into();
+                        i.src.raw = None;
+
+                        code.imports.push(generate_js_from_module_item(mi));
+                    }
+                    _ => (),
+                },
+                _ => (),
+            }
+        }
+    }
+
+    // generate exports
+    if let Some(e) = &ast.exports {
+        for mi in e {
+            match mi {
+                ModuleItem::ModuleDecl(md) => match md {
+                    ModuleDecl::ExportDecl(ed) => match &ed.decl {
+                        Decl::Var(vd) => {
+                            for decl in &vd.decls {
+                                match &decl.name {
+                                    Pat::Ident(i) => {
+                                        let export_name = i.sym.to_string();
+
+                                        code.variables.push(export_name.clone());
+
+                                        code.create.push(format!(
+                                            "            {} = props.{};",
+                                            export_name, export_name
+                                        ));
+                                    }
+                                    _ => (),
+                                }
+                            }
+                        }
+                        _ => (),
+                    },
+                    _ => (),
+                },
+                _ => (),
+            }
+        }
+    }
 
     // checks what code to add into the final template
     for fragment in &ast.fragments {
@@ -75,27 +128,6 @@ pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
         }
     }
 
-    // change import from "svelte" to "js" and add it to imports
-    if let Some(ie) = &mut ast.imports_exports {
-        for mi in ie {
-            match mi {
-                ModuleItem::ModuleDecl(md) => match md {
-                    ModuleDecl::Import(i) => {
-                        let mut name = i.src.value.to_string();
-                        name = name.replace("svelte", "js");
-
-                        i.src.value = name.into();
-                        i.src.raw = None;
-
-                        code.imports.push(generate_js_from_module_item(mi));
-                    }
-                    _ => (),
-                },
-                _ => (),
-            }
-        }
-    }
-
     // the final javascript template
     format!(
         r#"{}
@@ -124,10 +156,10 @@ export default function() {{
     }}
 
     var lifecycle = {{
-        create(target) {{
+        create(target, props) {{
 {}
         }},
-        update(changed) {{
+        update(changed, props) {{
 {}
         }},
         destroy() {{
@@ -279,10 +311,11 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                     if analysis.will_change.contains(names.first().unwrap()) {
                         code.update.push(format!(
                             r#"            if (changed.includes("{}")) {{
-                {}.data = {};
+                {}.data = props ? props.{} : {};
             }}"#,
                             changes.first().unwrap(),
                             variable_name,
+                            expression_name,
                             expression_name
                         ));
                     }
@@ -314,11 +347,27 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
             let variable_name = format!("{}_{}", nc.name.to_lowercase(), code.counter);
             code.counter += 1;
 
+            let mut attrs = Vec::new();
+            for attr in &nc.attributes {
+                attrs.push(format!(
+                    "{}: {}",
+                    attr.name,
+                    match &attr.value {
+                        AttributeValue::Expr(e) =>
+                            generate_js_from_expr(e).replace([';', '\n'], ""),
+                        AttributeValue::String(s) => s.clone(),
+                    }
+                ));
+            }
+
             code.nested_components
                 .push(format!("    let {} = {}();", variable_name, nc.name));
 
-            code.create
-                .push(format!("            {}.create(target);", variable_name));
+            code.create.push(format!(
+                "            {}.create(target, {{ {} }});",
+                variable_name,
+                attrs.join(", ")
+            ));
         }
     }
 }

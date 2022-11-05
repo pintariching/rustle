@@ -5,7 +5,8 @@ use swc_ecma_ast::{Expr, ModuleItem, Program, Script};
 #[derive(Debug, Serialize)]
 pub struct RustleAst {
     pub script: Option<Script>,
-    pub imports_exports: Option<Vec<ModuleItem>>,
+    pub imports: Option<Vec<ModuleItem>>,
+    pub exports: Option<Vec<ModuleItem>>,
     pub style: Option<Stylesheet>,
     pub fragments: Vec<Fragment>,
     pub is_component: bool,

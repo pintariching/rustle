@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use swc_common::Span;
 use swc_css_ast::Stylesheet;
-use swc_ecma_ast::{ModuleItem, Program, Script};
+use swc_ecma_ast::{ModuleDecl, ModuleItem, Program, Script};
 
 use crate::compiler::{Fragment, RustleAst};
 
@@ -47,7 +47,8 @@ impl Parser {
         let mut fragments = parse_fragments(self, |parser| parser.index < parser.content.len());
 
         let mut script: Option<Script> = None;
-        let mut imports_exports: Option<Vec<ModuleItem>> = None;
+        let mut imports: Option<Vec<ModuleItem>> = None;
+        let mut exports: Option<Vec<ModuleItem>> = None;
         let program_index = fragments.iter().position(|f| match f {
             Fragment::Program(_) => true,
             _ => false,
@@ -59,11 +60,17 @@ impl Parser {
                 match p {
                     Program::Module(m) => {
                         let mut stmts = Vec::new();
-                        let mut imps_exps = Vec::new();
+                        let mut imps = Vec::new();
+                        let mut exps = Vec::new();
 
                         for mi in m.body {
                             match mi {
-                                ModuleItem::ModuleDecl(_) => imps_exps.push(mi),
+                                ModuleItem::ModuleDecl(ref md) => match md {
+                                    ModuleDecl::Import(_) => imps.push(mi.clone()),
+                                    ModuleDecl::ExportDecl(_) => exps.push(mi.clone()),
+                                    ModuleDecl::ExportNamed(_) => (),
+                                    _ => (),
+                                },
                                 ModuleItem::Stmt(s) => stmts.push(s),
                             }
                         }
@@ -74,7 +81,8 @@ impl Parser {
                             shebang: None,
                         });
 
-                        imports_exports = Some(imps_exps);
+                        imports = Some(imps);
+                        exports = Some(exps);
                     }
                     Program::Script(s) => script = Some(s),
                 }
@@ -97,7 +105,8 @@ impl Parser {
 
         RustleAst {
             script,
-            imports_exports,
+            imports,
+            exports,
             style,
             fragments,
             is_component: false,

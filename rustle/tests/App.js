@@ -1,6 +1,6 @@
 import Counter from "./Counter.js";
 
-export default function() {
+export default function () {
     let counter_1 = Counter();
     let collectChanges = [];
     let updateCalled = false;
@@ -16,24 +16,18 @@ export default function() {
         updateCalled = false;
     }
 
-
+    let counter = 5;
 
     update([""]);
 
-    function updateReactiveDeclarations() {
-
-    }
+    function updateReactiveDeclarations() {}
 
     var lifecycle = {
-        create(target) {
-            counter_1.create(target);
+        create(target, props) {
+            counter_1.create(target, { count: counter });
         },
-        update(changed) {
-
-        },
-        destroy() {
-
-        },
+        update(changed, props) {},
+        destroy() {},
     };
     return lifecycle;
 }

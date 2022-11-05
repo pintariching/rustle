@@ -1,5 +1,5 @@
 <script>
-    let count = 0;
+    export let count;
 
     const increment = () => count++;
     const decrement = () => count--;

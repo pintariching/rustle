@@ -1,5 +1,6 @@
 
 export default function() {
+    let count;
     let button_1;
     let txt_2;
     let h1_3;
@@ -20,7 +21,6 @@ export default function() {
         updateCalled = false;
     }
 
-let count = 0;
 const increment = ()=>(count++, update([
         "count"
     ]));
@@ -36,7 +36,8 @@ const decrement = ()=>(count--, update([
     }
 
     var lifecycle = {
-        create(target) {
+        create(target, props) {
+            count = props.count;
             button_1 = document.createElement('button');
             button_1.addEventListener('click', increment);
             txt_2 = document.createTextNode('Increment');
@@ -52,9 +53,9 @@ const decrement = ()=>(count--, update([
             button_5.appendChild(txt_6);
             target.appendChild(button_5);
         },
-        update(changed) {
+        update(changed, props) {
             if (changed.includes("count")) {
-                txt_4.data = count;
+                txt_4.data = props ? props.count : count;
             }
         },
         destroy() {
