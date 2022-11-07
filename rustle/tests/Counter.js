@@ -7,6 +7,7 @@ export default function() {
     let txt_4;
     let button_5;
     let txt_6;
+
     let collectChanges = [];
     let updateCalled = false;
     function update(changed) {

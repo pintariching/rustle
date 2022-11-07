@@ -48,6 +48,136 @@
             "definite": false
           }
         ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "span": {
+          "start": 73,
+          "end": 107,
+          "ctxt": 0
+        },
+        "kind": "const",
+        "declare": false,
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "span": {
+              "start": 79,
+              "end": 106,
+              "ctxt": 0
+            },
+            "id": {
+              "type": "Identifier",
+              "span": {
+                "start": 79,
+                "end": 88,
+                "ctxt": 0
+              },
+              "value": "increment",
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "init": {
+              "type": "ArrowFunctionExpression",
+              "span": {
+                "start": 91,
+                "end": 106,
+                "ctxt": 0
+              },
+              "params": [],
+              "body": {
+                "type": "UpdateExpression",
+                "span": {
+                  "start": 97,
+                  "end": 106,
+                  "ctxt": 0
+                },
+                "operator": "++",
+                "prefix": false,
+                "argument": {
+                  "type": "Identifier",
+                  "span": {
+                    "start": 97,
+                    "end": 104,
+                    "ctxt": 0
+                  },
+                  "value": "counter",
+                  "optional": false
+                }
+              },
+              "async": false,
+              "generator": false,
+              "typeParameters": null,
+              "returnType": null
+            },
+            "definite": false
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "span": {
+          "start": 112,
+          "end": 146,
+          "ctxt": 0
+        },
+        "kind": "const",
+        "declare": false,
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "span": {
+              "start": 118,
+              "end": 145,
+              "ctxt": 0
+            },
+            "id": {
+              "type": "Identifier",
+              "span": {
+                "start": 118,
+                "end": 127,
+                "ctxt": 0
+              },
+              "value": "decrement",
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "init": {
+              "type": "ArrowFunctionExpression",
+              "span": {
+                "start": 130,
+                "end": 145,
+                "ctxt": 0
+              },
+              "params": [],
+              "body": {
+                "type": "UpdateExpression",
+                "span": {
+                  "start": 136,
+                  "end": 145,
+                  "ctxt": 0
+                },
+                "operator": "--",
+                "prefix": false,
+                "argument": {
+                  "type": "Identifier",
+                  "span": {
+                    "start": 136,
+                    "end": 143,
+                    "ctxt": 0
+                  },
+                  "value": "counter",
+                  "optional": false
+                }
+              },
+              "async": false,
+              "generator": false,
+              "typeParameters": null,
+              "returnType": null
+            },
+            "definite": false
+          }
+        ]
       }
     ],
     "interpreter": null
@@ -97,6 +227,66 @@
   "exports": [],
   "style": null,
   "fragments": [
+    {
+      "Element": {
+        "name": "button",
+        "attributes": [
+          {
+            "name": "on:click",
+            "value": {
+              "Expr": {
+                "type": "Identifier",
+                "span": {
+                  "start": 1,
+                  "end": 10,
+                  "ctxt": 0
+                },
+                "value": "increment",
+                "optional": false
+              }
+            }
+          }
+        ],
+        "fragments": [
+          {
+            "Text": {
+              "data": "Increment from parent"
+            }
+          }
+        ],
+        "nested_component": false
+      }
+    },
+    {
+      "Element": {
+        "name": "button",
+        "attributes": [
+          {
+            "name": "on:click",
+            "value": {
+              "Expr": {
+                "type": "Identifier",
+                "span": {
+                  "start": 1,
+                  "end": 10,
+                  "ctxt": 0
+                },
+                "value": "decrement",
+                "optional": false
+              }
+            }
+          }
+        ],
+        "fragments": [
+          {
+            "Text": {
+              "data": "Decrement from parent"
+            }
+          }
+        ],
+        "nested_component": false
+      }
+    },
     {
       "NestedComponent": {
         "name": "Counter",

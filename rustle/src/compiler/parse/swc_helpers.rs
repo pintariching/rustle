@@ -111,7 +111,7 @@ fn get_end_position(expr: &Expr) -> usize {
         Expr::TsNonNull(e) => e.span.hi.0 as usize,
         Expr::TsAs(e) => e.span.hi.0 as usize,
         Expr::TsInstantiation(e) => e.span.hi.0 as usize,
-        Expr::TsSatisfaction(e) => e.span.hi.0 as usize,
+        Expr::TsSatisfies(e) => e.span.hi.0 as usize,
         Expr::PrivateName(e) => e.span.hi.0 as usize,
         Expr::OptChain(e) => e.span.hi.0 as usize,
         Expr::Invalid(e) => e.span.hi.0 as usize,

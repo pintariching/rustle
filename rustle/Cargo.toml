@@ -14,18 +14,18 @@ edition = "2021"
 
 [dependencies]
 lazy_static = "1.4.0"
-regex = "1.6.0"
+regex = "1.7.0"
 rand = "0.8.5"
 
 serde = { version = "1.0.147", features = ["derive"] }
 serde_json = "1.0.87"
 
-swc = "0.232.76"
+swc = "0.232.82"
 swc_common = "0.29.13"
 
-swc_ecma_ast = "0.94.17"
-swc_ecma_parser = "0.122.24"
-swc_ecma_codegen = "0.127.29"
+swc_ecma_ast = "0.94.18"
+swc_ecma_parser = "0.122.25"
+swc_ecma_codegen = "0.127.30"
 
 swc_css_ast = "0.124.5"
 swc_css_parser = "0.133.16"

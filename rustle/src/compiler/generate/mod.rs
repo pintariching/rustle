@@ -132,7 +132,8 @@ pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
     format!(
         r#"{}
 export default function() {{
-{}{}
+{}
+{}
     let collectChanges = [];
     let updateCalled = false;
     function update(changed) {{
@@ -349,14 +350,19 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
 
             let mut attrs = Vec::new();
             for attr in &nc.attributes {
-                attrs.push(format!(
-                    "{}: {}",
-                    attr.name,
-                    match &attr.value {
-                        AttributeValue::Expr(e) =>
-                            generate_js_from_expr(e).replace([';', '\n'], ""),
-                        AttributeValue::String(s) => s.clone(),
-                    }
+                let attr_value = match &attr.value {
+                    AttributeValue::Expr(e) => generate_js_from_expr(e).replace([';', '\n'], ""),
+                    AttributeValue::String(s) => s.clone(),
+                };
+
+                let current_attr = format!("{}: {}", attr.name, attr_value);
+                attrs.push(current_attr.clone());
+
+                code.update.push(format!(
+                    r#"            if (changed.includes("{}")) {{
+                {}.update("{}", {{ {} }});
+}}"#,
+                    attr_value, variable_name, attr.name, current_attr
                 ));
             }
 
