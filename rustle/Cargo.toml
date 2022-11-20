@@ -1,7 +1,7 @@
 [package]
 name = "rustle"
-version = "0.1.4"
-authors = ["pintariching", "qwertydelle", "linrium", "iceghost", "linh-1", "TheMixu"]
+version = "0.1.5"
+authors = ["pintariching", "qwertydelle", "linrium", "iceghost", "linh-1", "fawaz-alesayi", "TheMixu"]
 license = "MIT"
 description = "The Svelte compiler, rewritten in Rust."
 readme = "../README.md"
@@ -18,15 +18,15 @@ regex = "1.7.0"
 rand = "0.8.5"
 
 serde = { version = "1.0.147", features = ["derive"] }
-serde_json = "1.0.87"
+serde_json = "1.0.88"
 
-swc = "0.232.82"
-swc_common = "0.29.13"
+swc = "0.232.105"
+swc_common = "0.29.15"
 
-swc_ecma_ast = "0.94.18"
-swc_ecma_parser = "0.122.25"
-swc_ecma_codegen = "0.127.30"
+swc_ecma_ast = "0.94.20"
+swc_ecma_parser = "0.122.28"
+swc_ecma_codegen = "0.127.34"
 
-swc_css_ast = "0.124.5"
-swc_css_parser = "0.133.16"
-swc_css_codegen = "0.134.16"
+swc_css_ast = "0.127.2"
+swc_css_parser = "0.136.3"
+swc_css_codegen = "0.137.3"

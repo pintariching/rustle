@@ -2,11 +2,11 @@ use swc_common::source_map::Pos;
 use swc_common::sync::Lrc;
 use swc_common::{BytePos, FileName, SourceMap};
 use swc_css_ast::Stylesheet;
-use swc_css_parser::parse_str;
+use swc_css_parser::parse_string_input;
 use swc_css_parser::parser::ParserConfig;
 use swc_ecma_ast::{EsVersion, Expr, Program};
-use swc_ecma_parser::Syntax;
 use swc_ecma_parser::{parse_file_as_expr, parse_file_as_program};
+use swc_ecma_parser::{StringInput, Syntax};
 
 use super::parser::Parser;
 
@@ -125,14 +125,13 @@ pub fn swc_parse_css(source: &str) -> Stylesheet {
         legacy_nesting: false,
     };
 
-    let result = parse_str::<Stylesheet>(
+    let input = StringInput::new(
         source,
         BytePos::from_usize(0),
         BytePos::from_usize(source.len()),
-        config,
-        &mut vec![],
-    )
-    .unwrap();
+    );
+
+    let result = parse_string_input(input, config, &mut vec![]).unwrap();
 
     result
 }
