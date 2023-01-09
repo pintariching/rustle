@@ -2,12 +2,12 @@
 import {
     noop,
     SvelteComponent,
-    attr,
     detach,
     text,
-    append,
-    element,
+    attr,
     insert,
+    element,
+    append,
 } from "svelte/internal"
 
 

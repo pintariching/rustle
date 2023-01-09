@@ -6,7 +6,7 @@ use compiler::{analyse, generate_js, Fragment, Parser, RustleAst};
 pub mod compiler;
 
 lazy_static! {
-    static ref INSERT: 'static str = include_str!("runtime/internal/insert.ts");
+    pub static ref INSERT: &'static str = include_str!("runtime/internal/insert.ts");
 }
 
 pub fn compile_file_to_js(input: &Path, output: &Path) -> Result<(), std::io::Error> {

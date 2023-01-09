@@ -2,16 +2,16 @@
   "script": {
     "type": "Script",
     "span": {
-      "start": 7,
-      "end": 143,
+      "start": 6,
+      "end": 137,
       "ctxt": 0
     },
     "body": [
       {
         "type": "VariableDeclaration",
         "span": {
-          "start": 7,
-          "end": 20,
+          "start": 6,
+          "end": 19,
           "ctxt": 0
         },
         "kind": "let",
@@ -20,15 +20,15 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 11,
-              "end": 19,
+              "start": 10,
+              "end": 18,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 11,
-                "end": 15,
+                "start": 10,
+                "end": 14,
                 "ctxt": 0
               },
               "value": "name",
@@ -38,8 +38,8 @@
             "init": {
               "type": "NumericLiteral",
               "span": {
-                "start": 18,
-                "end": 19,
+                "start": 17,
+                "end": 18,
                 "ctxt": 0
               },
               "value": 1.0,
@@ -52,8 +52,8 @@
       {
         "type": "VariableDeclaration",
         "span": {
-          "start": 26,
-          "end": 40,
+          "start": 24,
+          "end": 38,
           "ctxt": 0
         },
         "kind": "let",
@@ -62,15 +62,15 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 30,
-              "end": 39,
+              "start": 28,
+              "end": 37,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 30,
-                "end": 35,
+                "start": 28,
+                "end": 33,
                 "ctxt": 0
               },
               "value": "world",
@@ -80,8 +80,8 @@
             "init": {
               "type": "NumericLiteral",
               "span": {
-                "start": 38,
-                "end": 39,
+                "start": 36,
+                "end": 37,
                 "ctxt": 0
               },
               "value": 2.0,
@@ -94,8 +94,8 @@
       {
         "type": "VariableDeclaration",
         "span": {
-          "start": 46,
-          "end": 62,
+          "start": 43,
+          "end": 59,
           "ctxt": 0
         },
         "kind": "let",
@@ -104,15 +104,15 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 50,
-              "end": 61,
+              "start": 47,
+              "end": 58,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 50,
-                "end": 57,
+                "start": 47,
+                "end": 54,
                 "ctxt": 0
               },
               "value": "changed",
@@ -122,8 +122,8 @@
             "init": {
               "type": "NumericLiteral",
               "span": {
-                "start": 60,
-                "end": 61,
+                "start": 57,
+                "end": 58,
                 "ctxt": 0
               },
               "value": 3.0,
@@ -136,8 +136,8 @@
       {
         "type": "VariableDeclaration",
         "span": {
-          "start": 70,
-          "end": 101,
+          "start": 65,
+          "end": 96,
           "ctxt": 0
         },
         "kind": "const",
@@ -146,15 +146,15 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 76,
-              "end": 100,
+              "start": 71,
+              "end": 95,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 76,
-                "end": 85,
+                "start": 71,
+                "end": 80,
                 "ctxt": 0
               },
               "value": "increment",
@@ -164,16 +164,16 @@
             "init": {
               "type": "ArrowFunctionExpression",
               "span": {
-                "start": 88,
-                "end": 100,
+                "start": 83,
+                "end": 95,
                 "ctxt": 0
               },
               "params": [],
               "body": {
                 "type": "UpdateExpression",
                 "span": {
-                  "start": 94,
-                  "end": 100,
+                  "start": 89,
+                  "end": 95,
                   "ctxt": 0
                 },
                 "operator": "++",
@@ -181,8 +181,8 @@
                 "argument": {
                   "type": "Identifier",
                   "span": {
-                    "start": 94,
-                    "end": 98,
+                    "start": 89,
+                    "end": 93,
                     "ctxt": 0
                   },
                   "value": "name",
@@ -201,8 +201,8 @@
       {
         "type": "VariableDeclaration",
         "span": {
-          "start": 107,
-          "end": 143,
+          "start": 101,
+          "end": 137,
           "ctxt": 0
         },
         "kind": "const",
@@ -211,15 +211,15 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 113,
-              "end": 142,
+              "start": 107,
+              "end": 136,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 113,
-                "end": 124,
+                "start": 107,
+                "end": 118,
                 "ctxt": 0
               },
               "value": "increment_s",
@@ -229,16 +229,16 @@
             "init": {
               "type": "ArrowFunctionExpression",
               "span": {
-                "start": 127,
-                "end": 142,
+                "start": 121,
+                "end": 136,
                 "ctxt": 0
               },
               "params": [],
               "body": {
                 "type": "UpdateExpression",
                 "span": {
-                  "start": 133,
-                  "end": 142,
+                  "start": 127,
+                  "end": 136,
                   "ctxt": 0
                 },
                 "operator": "++",
@@ -246,8 +246,8 @@
                 "argument": {
                   "type": "Identifier",
                   "span": {
-                    "start": 133,
-                    "end": 140,
+                    "start": 127,
+                    "end": 134,
                     "ctxt": 0
                   },
                   "value": "changed",
