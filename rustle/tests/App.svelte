@@ -1,12 +1,10 @@
 <script>
-    import Counter from "./Counter.svelte";
+    let name = 1;
+    let world = 2;
+    let changed = 3;
 
-    let counter = 5;
-
-    const increment = () => counter++;
-    const decrement = () => counter--;
+    const increment = () => name++;
+    const increment_s = () => changed++;
 </script>
-
-<button on:click={increment}>Increment from parent</button>
-<button on:click={decrement}>Decrement from parent</button>
-<Counter count={counter} />
+  
+<h1 class="test">Hello {name} Clicked {name} {world} {changed}!</h1>

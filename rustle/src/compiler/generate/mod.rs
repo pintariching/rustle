@@ -1,10 +1,11 @@
+use std::{collections::{hash_set::HashSet, hash_map::RandomState, HashMap}, ffi::OsStr};
 use self::{
     add_lifecycle_call::add_lifecycle_calls,
     print_js::{generate_js_from_expr, generate_js_from_module_item},
 };
 
 use super::{analyse::AnalysisResult, expr_visitor::Visit, AttributeValue, Fragment, RustleAst};
-use swc_ecma_ast::{Decl, Expr, ModuleDecl, ModuleItem, Pat};
+use swc_ecma_ast::{Decl, Expr, ModuleDecl, ModuleItem, Pat, Stmt, Lit};
 
 mod add_lifecycle_call;
 mod generate_css;
@@ -13,30 +14,94 @@ mod print_js;
 
 pub use generate_css::generate_css;
 use print_js::generate_js_from_script;
+use indoc::indoc;
 
 struct Code {
     counter: usize,
+    ctx_counter: usize,
+    ctx_tracker: HashMap<String, usize>,
     variables: Vec<String>,
+    c_variables: Vec<String>,
+    variables_tracker: HashMap<String, String>,
     nested_components: Vec<String>,
     reactive_declarations: Vec<String>,
     imports: Vec<String>,
+    internals_imports: HashSet<String>,
     create: Vec<String>,
+    mount: Vec<String>,
     update: Vec<String>,
     destroy: Vec<String>,
 }
 
 /// Generates the javascript code from the AST and the analysis
-pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
+pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult, input_name: &OsStr) -> String {
     let mut code = Code {
         counter: 1,
+        ctx_counter: 0,
+        ctx_tracker: HashMap::new(),
         variables: Vec::new(),
+        c_variables: Vec::new(),
+        variables_tracker: HashMap::new(),
         nested_components: Vec::new(),
         reactive_declarations: Vec::new(),
         imports: Vec::new(),
+        internals_imports: HashSet::new(),
         create: Vec::new(),
+        mount: Vec::new(),
         update: Vec::new(),
         destroy: Vec::new(),
     };
+
+
+    //Variable declarations
+    if let Some(script) = &mut ast.script { 
+        for stmt in &mut script.body {
+            match stmt {
+                Stmt::Decl(decl) => match decl {
+                    Decl::Var(vd) => {
+                        for v in &mut vd.decls {
+                            let mut key = String::new();
+                            let mut val = String::new(); 
+
+                            if let Some(expr) = &mut v.init {
+                                match &**expr {
+                                    Expr::Lit(l) => {
+                                        match l {
+                                            Lit::Str(s) => {
+                                                val = s.value.to_string()
+                                            },
+                                            Lit::Num(n) => {
+                                                val = n.raw.clone().unwrap().to_string()
+                                            },
+                                            Lit::Bool(b) => {
+                                                val = b.value.to_string()
+                                            },
+                                            _ => ()
+                                        }
+                                    },
+                                    _ => {
+                                        ()
+                                    }
+                                }
+                            }
+
+                            match &v.name {
+                                Pat::Ident(i) => key = i.id.sym.to_string(),
+                                _ => panic!("{:#?}", decl),
+                            }
+
+                            if key.len() > 0 && val.len() > 0 {
+                                code.variables_tracker.insert(key, val);
+                            }
+                        }
+                    }
+                    _ => (),
+                },
+                _ => (),
+            }
+        }
+    }
+    
 
     // change import from "svelte" to "js" and add it to imports
     if let Some(i) = &mut ast.imports {
@@ -93,7 +158,7 @@ pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
 
     // checks what code to add into the final template
     for fragment in &ast.fragments {
-        traverse(&fragment, "target".into(), &analysis, &mut code)
+        traverse(&fragment, "target".into(), &analysis, &mut code, None)
     }
 
     // add lifecycle calls to variables that will be updated
@@ -103,6 +168,7 @@ pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
     } else {
         String::new()
     };
+    
 
     // turn the AST script back into String, to be inserted into the final template
     // TODO: the formatting of the generated js is not good, fix this somehow
@@ -128,73 +194,69 @@ pub fn generate_js(ast: &mut RustleAst, analysis: &AnalysisResult) -> String {
         }
     }
 
-    // the final javascript template
-    format!(
-        r#"{}
-export default function() {{
-{}
-{}
-    let collectChanges = [];
-    let updateCalled = false;
-    function update(changed) {{
-        changed.forEach((c) => collectChanges.push(c));
-        if (updateCalled) return;
-        updateCalled = true;
+    
+    //Check for internal imports
+    let mut import_statment = String::from("");
 
-        updateReactiveDeclarations(collectChanges);
-        if (typeof lifecycle !== "undefined") lifecycle.update(collectChanges);
+    if code.internals_imports.len() > 0 {
+        import_statment = format!(indoc!{r#"
+        import {{
+            noop,
+            SvelteComponent,
+            {imports}
+        }} from "svelte/internal"
+        "#},
+        imports = code.internals_imports.iter().map(|v| format!("{},", v)).collect::<Vec<String>>().join("\n    "))
+    }
 
-        collectChanges = [];
-        updateCalled = false;
-    }}
+    // New TODO - Finish hopefully being one-to-one with the svelte compiler
+    format!(indoc!{r#"
+        /* {source_name}.svelte generated by Rustle 0.1.5 */
+        {imports_internal}
 
-{}
+        function create_fragment(ctx) {{
+            {variables}
 
-    update({});
+            return {{
+                c() {{
+                    {create}
+                }},
+                m(target, anchor) {{
+                    {mounts}
+                }},
+                p: noop,
+                i: noop,
+                o: noop,
+                d(detaching) {{
+                    {destroy}
+                }}
+            }};
+        }}
 
-    function updateReactiveDeclarations() {{
-{}
-    }}
+        {constants}
 
-    var lifecycle = {{
-        create(target, props) {{
-{}
-        }},
-        update(changed, props) {{
-{}
-        }},
-        destroy() {{
-{}
-        }},
-    }};
-    return lifecycle;
-}}"#,
-        code.imports.join(""),
-        code.variables
-            .iter()
-            .map(|v| format!("    let {};", v))
-            .collect::<Vec<String>>()
-            .join("\n"),
-        code.nested_components.join("\n"),
-        script,
-        format!(
-            "[\"{}\"]",
-            analysis
-                .will_change
-                .clone()
-                .into_iter()
-                .collect::<Vec<String>>()
-                .join("\", \"")
-        ),
-        code.reactive_declarations.join("\n"),
-        code.create.join("\n"),
-        code.update.join("\n"),
-        code.destroy.join("\n")
-    )
+        class {source_name} extends SvelteComponent {{
+            constructor(options) {{
+                super();
+                init(this, options, null, create_fragment, safe_not_equal, {{}});
+            }}
+        }}
+
+        export default {source_name}
+    "#},
+    source_name = input_name.to_str().unwrap(),
+    imports_internal = import_statment,
+    variables = code.variables.iter().map(|v| format!("let {};", v)).collect::<Vec<String>>().join("\n    "),
+    create = code.create.join("\n            "),
+    mounts = code.mount.join("\n            "),
+    destroy = code.destroy.join("\n            "),
+    constants = code.c_variables.join("\n")
+
+)
 }
 
 /// traverses a node and checks what sort of element to create or function to add
-fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &mut Code) {
+fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &mut Code, op: Option<&Fragment>) {
     match node {
         Fragment::Program(_) => (),
         // adds HTML elements like <h1>, <div>, <button>
@@ -202,11 +264,27 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
             let variable_name = format!("{}_{}", f.name, code.counter);
             code.counter += 1;
 
+            if parent == "target" {
+                code.destroy.push(format!(
+                    "if (detaching) detach({});",
+                    variable_name
+                )); 
+                code.internals_imports.insert("detach".to_string());
+            }
+
             code.variables.push(variable_name.clone());
             code.create.push(format!(
-                "            {} = document.createElement('{}');",
+                "{} = element('{}');",
                 variable_name, f.name
             ));
+
+            code.mount.push(format!(
+                "insert(target, {}, anchor);",
+                variable_name
+            ));
+
+            code.internals_imports.insert("element".to_string());
+            code.internals_imports.insert("insert".to_string());
 
             // adds attributes on:click, class, style
             for attr in &f.attributes {
@@ -222,12 +300,12 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                     };
 
                     code.create.push(format!(
-                        "            {}.addEventListener('{}', {});",
+                        "{}.addEventListener('{}', {});",
                         variable_name, event_name, event_handler
                     ));
 
                     code.destroy.push(format!(
-                        "            {}.removeEventListener('{}', {});",
+                        "{}.removeEventListener('{}', {});",
                         variable_name, event_name, event_handler
                     ));
                 }
@@ -238,12 +316,14 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                         // add unique scope to attributes if it's a class
                         if attr.name == "class" {
                             code.create.push(format!(
-                                "            {}.setAttribute('{}', '{} {}');",
-                                variable_name, attr.name, value, analysis.css_unique_scope
+                                r#"attr({},"{}","{}");"#,
+                                variable_name, attr.name, value,
                             ));
+
+                            code.internals_imports.insert("attr".to_string());
                         } else {
                             code.create.push(format!(
-                                "            {}.setAttribute('{}', '{}');",
+                                "{}.setAttribute('{}', '{}');",
                                 variable_name, attr.name, value
                             ));
                         }
@@ -252,18 +332,32 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                 }
             }
 
+            let optimize = f.fragments.iter().find(|&x| {
+                match x {
+                    Fragment::Program(_) => false,
+                    Fragment::Element(_) => false,
+                    Fragment::Expression(f) => {
+                        let expression_name = generate_js_from_expr(f).replace([';', '\n'], "");
+                        analysis.will_change.contains(&expression_name)
+                    },
+                    Fragment::Style(_) => false,
+                    Fragment::NestedComponent(_) => false,
+                    Fragment::Text(_) => false,
+                }
+            });
+
             for fragment in &f.fragments {
-                traverse(fragment, variable_name.clone(), analysis, code);
+                traverse(fragment, variable_name.clone(), analysis, code, optimize);
             }
 
-            code.create.push(format!(
-                "            {}.appendChild({});",
-                parent, variable_name
-            ));
-            code.destroy.push(format!(
-                "            {}.removeChild({});",
-                parent, variable_name
-            ));
+            // code.create.push(format!(
+            //     "{}.appendChild({});",
+            //     parent, variable_name
+            // ));
+            // code.destroy.push(format!(
+            //     "{}.removeChild({});",
+            //     parent, variable_name
+            // ));
         }
 
         // adds expressions inside curly braces as text nodes
@@ -271,18 +365,68 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
             let variable_name = format!("txt_{}", code.counter);
             code.counter += 1;
 
+            if parent == "target" {
+                code.destroy.push(format!(
+                    "if (detaching) detach({});",
+                    variable_name
+                )); 
+                code.internals_imports.insert("detach".to_string());
+            }
+
             let expression_name = generate_js_from_expr(f).replace([';', '\n'], "");
 
-            code.variables.push(variable_name.clone());
-            code.create.push(format!(
-                "            {} = document.createTextNode({});",
-                variable_name, expression_name
-            ));
+            if let None = op {
+                code.create.push(format!(
+                    r#"{}.textContent += `${{{}}}`;"#,
+                    parent, expression_name
+                ));
+            }else {
+                code.variables.push(variable_name.clone());
 
-            code.create.push(format!(
-                "            {}.appendChild({});",
-                parent, variable_name
-            ));
+                if analysis.will_change.contains(&expression_name) {
+                    let current_ctx = code.ctx_tracker.get(&expression_name);
+
+                    match current_ctx {
+                        Some(i) => {
+                            code.create.push(format!(
+                                "{} = text(/* {} */ ctx[{}]);",
+                                variable_name, expression_name , i
+                            ));
+                        },
+                        None => {
+                            code.ctx_tracker.insert(expression_name.clone(), code.ctx_counter);
+
+                            code.create.push(format!(
+                                "{} = text(/* {} */ ctx[{}]);",
+                                variable_name, expression_name , code.ctx_counter
+                            ));
+
+                            code.ctx_counter += 1;
+                        }
+                    }
+                } else {
+                    code.create.push(format!(
+                        "{} = text({});",
+                        variable_name, expression_name,
+                    ));
+
+                    let value = code.variables_tracker.get(&expression_name).unwrap();
+
+                    code.c_variables.push(format!(
+                        "let {} = {};",
+                        expression_name, value
+                    ));
+                }
+
+                code.internals_imports.insert("text".to_string());
+
+                code.mount.push(format!(
+                    "append({}, {});",
+                    parent, variable_name
+                ));
+
+                code.internals_imports.insert("append".to_string());
+            }
 
             let names = f.extract_names();
 
@@ -322,8 +466,6 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
                     }
                 }
             }
-
-            if analysis.will_change.contains(&expression_name) {}
         }
 
         // creates plain text nodes
@@ -331,22 +473,81 @@ fn traverse(node: &Fragment, parent: String, analysis: &AnalysisResult, code: &m
             let variable_name = format!("txt_{}", code.counter);
             code.counter += 1;
 
-            code.variables.push(variable_name.clone());
-            code.create.push(format!(
-                "            {} = document.createTextNode('{}');",
-                variable_name.clone(),
-                f.data.to_string().trim()
-            ));
-            code.create.push(format!(
-                "            {}.appendChild({});",
-                parent, variable_name
-            ));
+            if parent == "target" {
+                code.destroy.push(format!(
+                    "if (detaching) detach({});",
+                    variable_name
+                )); 
+                code.internals_imports.insert("detach".to_string());
+            }
+
+            if let None = op { 
+                if parent == "target" {
+                    code.variables.push(variable_name.clone());
+
+                    code.create.push(format!(
+                        r#"{} = text("{}");"#,
+                        variable_name.clone(),
+                        f.data.to_string().trim()
+                    ));
+
+                    code.internals_imports.insert("text".to_string());
+
+                    code.mount.push(format!(
+                        "insert(target, {}, anchor);",
+                        variable_name
+                    ));
+
+                    code.internals_imports.insert("insert".to_string());
+                } else {
+                    code.create.push(format!(
+                        r#"{}.textContent += "{}";"#,
+                        parent, f.data.to_string()
+                    ));
+                }
+            } else {
+                code.variables.push(variable_name.clone());
+
+                code.create.push(format!(
+                    r#"{} = text("{}");"#,
+                    variable_name.clone(),
+                    f.data.to_string()
+                ));
+
+                code.internals_imports.insert("text".to_string());
+
+                if parent.len() > 0 {
+                    code.mount.push(format!(
+                        "append({}, {});",
+                        parent, variable_name
+                    ));
+
+                    code.internals_imports.insert("append".to_string());
+                } else {
+                    code.mount.push(format!(
+                        "insert(target, {}, anchor);",
+                        variable_name
+                    ));
+
+                    code.internals_imports.insert("insert".to_string());
+                }
+
+            }
+
         }
 
         Fragment::Style(_) => (),
         Fragment::NestedComponent(nc) => {
             let variable_name = format!("{}_{}", nc.name.to_lowercase(), code.counter);
             code.counter += 1;
+
+            if parent == "target" {
+                code.destroy.push(format!(
+                    "if (detaching) detach({});",
+                    variable_name
+                )); 
+                code.internals_imports.insert("detach".to_string());
+            }
 
             let mut attrs = Vec::new();
             for attr in &nc.attributes {

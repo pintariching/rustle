@@ -8,7 +8,7 @@ pub fn compile_file_to_js(input: &Path, output: &Path) -> Result<(), std::io::Er
     let source = fs::read_to_string(input)?;
     let mut ast = Parser::new(&source).parse();
     let analysis = analyse(&mut ast);
-    let generated = generate_js(&mut ast, &analysis);
+    let generated = generate_js(&mut ast, &analysis, input.file_stem().unwrap());
 
     fs::write(output, generated)?;
 
@@ -34,7 +34,7 @@ pub fn compile_file_to_string(input: &Path) -> Result<String, std::io::Error> {
     let source = fs::read_to_string(input)?;
     let mut ast = Parser::new(&source).parse();
     let analysis = analyse(&mut ast);
-    let generated = generate_js(&mut ast, &analysis);
+    let generated = generate_js(&mut ast, &analysis, input.file_stem().unwrap());
 
     Ok(generated)
 }

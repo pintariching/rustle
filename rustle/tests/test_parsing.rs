@@ -1,3 +1,4 @@
+use std::ffi::OsStr;
 use std::fs;
 use std::path::Path;
 
@@ -26,7 +27,7 @@ fn test_parsing() {
     //     analysis.css_classes_in_template
     // );
 
-    let js = generate_js(&mut ast, &analysis);
+    let js = generate_js(&mut ast, &analysis, OsStr::new("App"));
     let css = generate_css(&mut ast, &analysis);
 
     fs::write("tests/App.js", js).unwrap();
@@ -40,7 +41,7 @@ fn test_parsing() {
     )
     .unwrap();
     let analysis = analyse(&mut ast);
-    let js = generate_js(&mut ast, &analysis);
+    let js = generate_js(&mut ast, &analysis, OsStr::new("Counter"));
     fs::write("tests/Counter.js", js).unwrap();
 
     assert!(true)

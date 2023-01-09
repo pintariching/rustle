@@ -10,8 +10,8 @@
       {
         "type": "VariableDeclaration",
         "span": {
-          "start": 29,
-          "end": 61,
+          "start": 32,
+          "end": 64,
           "ctxt": 0
         },
         "kind": "const",
@@ -20,15 +20,15 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 35,
-              "end": 60,
+              "start": 38,
+              "end": 63,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 35,
-                "end": 44,
+                "start": 38,
+                "end": 47,
                 "ctxt": 0
               },
               "value": "increment",
@@ -38,16 +38,16 @@
             "init": {
               "type": "ArrowFunctionExpression",
               "span": {
-                "start": 47,
-                "end": 60,
+                "start": 50,
+                "end": 63,
                 "ctxt": 0
               },
               "params": [],
               "body": {
                 "type": "UpdateExpression",
                 "span": {
-                  "start": 53,
-                  "end": 60,
+                  "start": 56,
+                  "end": 63,
                   "ctxt": 0
                 },
                 "operator": "++",
@@ -55,8 +55,8 @@
                 "argument": {
                   "type": "Identifier",
                   "span": {
-                    "start": 53,
-                    "end": 58,
+                    "start": 56,
+                    "end": 61,
                     "ctxt": 0
                   },
                   "value": "count",
@@ -75,8 +75,8 @@
       {
         "type": "VariableDeclaration",
         "span": {
-          "start": 66,
-          "end": 98,
+          "start": 70,
+          "end": 102,
           "ctxt": 0
         },
         "kind": "const",
@@ -85,15 +85,15 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 72,
-              "end": 97,
+              "start": 76,
+              "end": 101,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 72,
-                "end": 81,
+                "start": 76,
+                "end": 85,
                 "ctxt": 0
               },
               "value": "decrement",
@@ -103,16 +103,16 @@
             "init": {
               "type": "ArrowFunctionExpression",
               "span": {
-                "start": 84,
-                "end": 97,
+                "start": 88,
+                "end": 101,
                 "ctxt": 0
               },
               "params": [],
               "body": {
                 "type": "UpdateExpression",
                 "span": {
-                  "start": 90,
-                  "end": 97,
+                  "start": 94,
+                  "end": 101,
                   "ctxt": 0
                 },
                 "operator": "--",
@@ -120,8 +120,8 @@
                 "argument": {
                   "type": "Identifier",
                   "span": {
-                    "start": 90,
-                    "end": 95,
+                    "start": 94,
+                    "end": 99,
                     "ctxt": 0
                   },
                   "value": "count",
@@ -145,15 +145,15 @@
     {
       "type": "ExportDeclaration",
       "span": {
-        "start": 6,
-        "end": 23,
+        "start": 7,
+        "end": 24,
         "ctxt": 0
       },
       "declaration": {
         "type": "VariableDeclaration",
         "span": {
-          "start": 13,
-          "end": 23,
+          "start": 14,
+          "end": 24,
           "ctxt": 0
         },
         "kind": "let",
@@ -162,15 +162,15 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 17,
-              "end": 22,
+              "start": 18,
+              "end": 23,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 17,
-                "end": 22,
+                "start": 18,
+                "end": 23,
                 "ctxt": 0
               },
               "value": "count",
