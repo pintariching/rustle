@@ -2,16 +2,16 @@
   "script": {
     "type": "Script",
     "span": {
-      "start": 0,
-      "end": 0,
+      "start": 7,
+      "end": 143,
       "ctxt": 0
     },
     "body": [
       {
         "type": "VariableDeclaration",
         "span": {
-          "start": 51,
-          "end": 67,
+          "start": 7,
+          "end": 20,
           "ctxt": 0
         },
         "kind": "let",
@@ -20,30 +20,30 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 55,
-              "end": 66,
+              "start": 11,
+              "end": 19,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 55,
-                "end": 62,
+                "start": 11,
+                "end": 15,
                 "ctxt": 0
               },
-              "value": "counter",
+              "value": "name",
               "optional": false,
               "typeAnnotation": null
             },
             "init": {
               "type": "NumericLiteral",
               "span": {
-                "start": 65,
-                "end": 66,
+                "start": 18,
+                "end": 19,
                 "ctxt": 0
               },
-              "value": 5.0,
-              "raw": "5"
+              "value": 1.0,
+              "raw": "1"
             },
             "definite": false
           }
@@ -52,8 +52,92 @@
       {
         "type": "VariableDeclaration",
         "span": {
-          "start": 73,
-          "end": 107,
+          "start": 26,
+          "end": 40,
+          "ctxt": 0
+        },
+        "kind": "let",
+        "declare": false,
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "span": {
+              "start": 30,
+              "end": 39,
+              "ctxt": 0
+            },
+            "id": {
+              "type": "Identifier",
+              "span": {
+                "start": 30,
+                "end": 35,
+                "ctxt": 0
+              },
+              "value": "world",
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "init": {
+              "type": "NumericLiteral",
+              "span": {
+                "start": 38,
+                "end": 39,
+                "ctxt": 0
+              },
+              "value": 2.0,
+              "raw": "2"
+            },
+            "definite": false
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "span": {
+          "start": 46,
+          "end": 62,
+          "ctxt": 0
+        },
+        "kind": "let",
+        "declare": false,
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "span": {
+              "start": 50,
+              "end": 61,
+              "ctxt": 0
+            },
+            "id": {
+              "type": "Identifier",
+              "span": {
+                "start": 50,
+                "end": 57,
+                "ctxt": 0
+              },
+              "value": "changed",
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "init": {
+              "type": "NumericLiteral",
+              "span": {
+                "start": 60,
+                "end": 61,
+                "ctxt": 0
+              },
+              "value": 3.0,
+              "raw": "3"
+            },
+            "definite": false
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "span": {
+          "start": 70,
+          "end": 101,
           "ctxt": 0
         },
         "kind": "const",
@@ -62,15 +146,15 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 79,
-              "end": 106,
+              "start": 76,
+              "end": 100,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 79,
-                "end": 88,
+                "start": 76,
+                "end": 85,
                 "ctxt": 0
               },
               "value": "increment",
@@ -80,16 +164,16 @@
             "init": {
               "type": "ArrowFunctionExpression",
               "span": {
-                "start": 91,
-                "end": 106,
+                "start": 88,
+                "end": 100,
                 "ctxt": 0
               },
               "params": [],
               "body": {
                 "type": "UpdateExpression",
                 "span": {
-                  "start": 97,
-                  "end": 106,
+                  "start": 94,
+                  "end": 100,
                   "ctxt": 0
                 },
                 "operator": "++",
@@ -97,11 +181,11 @@
                 "argument": {
                   "type": "Identifier",
                   "span": {
-                    "start": 97,
-                    "end": 104,
+                    "start": 94,
+                    "end": 98,
                     "ctxt": 0
                   },
-                  "value": "counter",
+                  "value": "name",
                   "optional": false
                 }
               },
@@ -117,8 +201,8 @@
       {
         "type": "VariableDeclaration",
         "span": {
-          "start": 112,
-          "end": 146,
+          "start": 107,
+          "end": 143,
           "ctxt": 0
         },
         "kind": "const",
@@ -127,46 +211,46 @@
           {
             "type": "VariableDeclarator",
             "span": {
-              "start": 118,
-              "end": 145,
+              "start": 113,
+              "end": 142,
               "ctxt": 0
             },
             "id": {
               "type": "Identifier",
               "span": {
-                "start": 118,
-                "end": 127,
+                "start": 113,
+                "end": 124,
                 "ctxt": 0
               },
-              "value": "decrement",
+              "value": "increment_s",
               "optional": false,
               "typeAnnotation": null
             },
             "init": {
               "type": "ArrowFunctionExpression",
               "span": {
-                "start": 130,
-                "end": 145,
+                "start": 127,
+                "end": 142,
                 "ctxt": 0
               },
               "params": [],
               "body": {
                 "type": "UpdateExpression",
                 "span": {
-                  "start": 136,
-                  "end": 145,
+                  "start": 133,
+                  "end": 142,
                   "ctxt": 0
                 },
-                "operator": "--",
+                "operator": "++",
                 "prefix": false,
                 "argument": {
                   "type": "Identifier",
                   "span": {
-                    "start": 136,
-                    "end": 143,
+                    "start": 133,
+                    "end": 140,
                     "ctxt": 0
                   },
-                  "value": "counter",
+                  "value": "changed",
                   "optional": false
                 }
               },
@@ -182,133 +266,87 @@
     ],
     "interpreter": null
   },
-  "imports": [
-    {
-      "type": "ImportDeclaration",
-      "span": {
-        "start": 6,
-        "end": 45,
-        "ctxt": 0
-      },
-      "specifiers": [
-        {
-          "type": "ImportDefaultSpecifier",
-          "span": {
-            "start": 13,
-            "end": 20,
-            "ctxt": 0
-          },
-          "local": {
-            "type": "Identifier",
-            "span": {
-              "start": 13,
-              "end": 20,
-              "ctxt": 0
-            },
-            "value": "Counter",
-            "optional": false
-          }
-        }
-      ],
-      "source": {
-        "type": "StringLiteral",
-        "span": {
-          "start": 26,
-          "end": 44,
-          "ctxt": 0
-        },
-        "value": "./Counter.svelte",
-        "raw": "\"./Counter.svelte\""
-      },
-      "typeOnly": false,
-      "asserts": null
-    }
-  ],
-  "exports": [],
+  "imports": null,
+  "exports": null,
   "style": null,
   "fragments": [
     {
       "Element": {
-        "name": "button",
+        "name": "h1",
         "attributes": [
           {
-            "name": "on:click",
+            "name": "class",
             "value": {
-              "Expr": {
-                "type": "Identifier",
-                "span": {
-                  "start": 1,
-                  "end": 10,
-                  "ctxt": 0
-                },
-                "value": "increment",
-                "optional": false
-              }
+              "String": "test"
             }
           }
         ],
         "fragments": [
           {
             "Text": {
-              "data": "Increment from parent"
+              "data": "Hello "
             }
-          }
-        ],
-        "nested_component": false
-      }
-    },
-    {
-      "Element": {
-        "name": "button",
-        "attributes": [
+          },
           {
-            "name": "on:click",
-            "value": {
-              "Expr": {
-                "type": "Identifier",
-                "span": {
-                  "start": 1,
-                  "end": 10,
-                  "ctxt": 0
-                },
-                "value": "decrement",
-                "optional": false
-              }
+            "Expression": {
+              "type": "Identifier",
+              "span": {
+                "start": 1,
+                "end": 5,
+                "ctxt": 0
+              },
+              "value": "name",
+              "optional": false
             }
-          }
-        ],
-        "fragments": [
+          },
           {
             "Text": {
-              "data": "Decrement from parent"
+              "data": " Clicked "
+            }
+          },
+          {
+            "Expression": {
+              "type": "Identifier",
+              "span": {
+                "start": 1,
+                "end": 5,
+                "ctxt": 0
+              },
+              "value": "name",
+              "optional": false
+            }
+          },
+          {
+            "Expression": {
+              "type": "Identifier",
+              "span": {
+                "start": 1,
+                "end": 6,
+                "ctxt": 0
+              },
+              "value": "world",
+              "optional": false
+            }
+          },
+          {
+            "Expression": {
+              "type": "Identifier",
+              "span": {
+                "start": 1,
+                "end": 8,
+                "ctxt": 0
+              },
+              "value": "changed",
+              "optional": false
+            }
+          },
+          {
+            "Text": {
+              "data": "!"
             }
           }
         ],
         "nested_component": false
-      }
-    },
-    {
-      "NestedComponent": {
-        "name": "Counter",
-        "attributes": [
-          {
-            "name": "count",
-            "value": {
-              "Expr": {
-                "type": "Identifier",
-                "span": {
-                  "start": 1,
-                  "end": 8,
-                  "ctxt": 0
-                },
-                "value": "counter",
-                "optional": false
-              }
-            }
-          }
-        ],
-        "fragments": [],
-        "nested_component": true
       }
     }
   ],
