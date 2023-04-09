@@ -14,7 +14,7 @@ This is still a big work in progress. Only a few parts of Svelte are working now
 
 ### Installation
 
-To install with cargo, run `cargo install rustle_cli"` to install the alpha version of the CLI.
+To install with cargo, run `cargo install rustle_cli` to install the alpha version of the CLI.
 
 ### Using rustle_cli
 
