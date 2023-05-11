@@ -1,9 +1,9 @@
 [package]
 name = "rustle"
 version = "0.1.5"
-authors = ["pintariching", "qwertydelle", "linrium", "iceghost", "linh-1", "fawaz-alesayi", "TheMixu"]
+authors = ["pintariching"]
 license = "MIT"
-description = "The Svelte compiler, rewritten in Rust."
+description = "A Svelte-like compiler written in Rust."
 readme = "../README.md"
 homepage = "https://github.com/pintariching/rustle"
 repository = "https://github.com/pintariching/rustle"
@@ -13,21 +13,3 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-lazy_static = "1.4.0"
-regex = "1.7.1"
-rand = "0.8.5"
-indoc = "1.0.8"
-
-serde = { version = "1.0.152", features = ["derive"] }
-serde_json = "1.0.91"
-
-swc = "0.239.1"
-swc_common = "0.29.27"
-
-swc_ecma_ast = "0.95.11"
-swc_ecma_parser = "0.123.16"
-swc_ecma_codegen = "0.128.18"
-
-swc_css_ast = "0.134.0"
-swc_css_parser = "0.143.0"
-swc_css_codegen = "0.144.0"
